@@ -5,6 +5,27 @@
 // vw 适配基础配置
 :root {
   --design-width: 375; // 设计稿基准宽度
+
+  // 项目颜色变量
+  --color-primary: #c5ff33;
+  --color-bg-primary: #121212;
+  --color-bg-secondary: #1f1f1f;
+  --color-text-primary: #ffffff;
+  --color-text-secondary: #8f8f8f;
+  --color-text-black: #000000;
+  --color-border-primary: #121212;
+  --color-white: #ffffff;
+}
+
+// 全局背景色和底部padding（为底部导航栏留空间）
+body {
+  background-color: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  padding-bottom: vw(66); // 42 + 12*2 = 66，为底部导航栏留出空间
+
+  @media (min-width: 768px) {
+    padding-bottom: 66px;
+  }
 }
 
 // 响应式混合宏

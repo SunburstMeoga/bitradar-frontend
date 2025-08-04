@@ -1,0 +1,12 @@
+const Account = () => {
+  return (
+    <div className="min-h-screen p-[20vw] pb-[86vw]" style={{ backgroundColor: '#121212' }}>
+      <div className="text-center pt-[40vw]">
+        <h1 className="text-[24vw] font-bold text-white mb-[16vw]">Account</h1>
+        <p className="text-[16vw] text-[#8f8f8f]">账户页面</p>
+      </div>
+    </div>
+  );
+};
+
+export default Account;

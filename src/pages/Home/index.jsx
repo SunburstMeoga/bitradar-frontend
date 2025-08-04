@@ -1,29 +1,25 @@
 import { useTranslation } from 'react-i18next';
 import VwTest from '../../components/VwTest';
-import './index.scss';
 
 const Home = () => {
   const { t } = useTranslation();
 
   return (
-    <div className="home-container">
+    <div className="min-h-screen p-[20vw] pb-[86vw]" style={{ backgroundColor: '#121212' }}>
       {/* 原有的简单演示 */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="text-center mb-12">
-          <h1 className="home-title">
+      <div className="max-w-7xl mx-auto px-[16vw] py-[32vw]">
+        <div className="text-center mb-[48vw]">
+          <h1 className="text-[32vw] font-bold text-[#c5ff33] mb-[16vw]">
             {t('home.title')}
           </h1>
-          <p className="home-subtitle">
+          <p className="text-[20vw] text-white mb-[8vw] font-semibold">
             {t('home.welcome')}
           </p>
-          <p className="home-description">
+          <p className="text-[16vw] text-[#8f8f8f] mb-[32vw]">
             {t('home.description')}
           </p>
         </div>
       </div>
-      <div className='w-[200vw] mx-auto h-[300vw] bg-primary' ></div>
-      {/* vw 插件测试 */}
-      <VwTest />
     </div>
   );
 };
