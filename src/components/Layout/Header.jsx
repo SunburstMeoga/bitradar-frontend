@@ -32,7 +32,7 @@ const Header = () => {
         {/* 右侧钱包连接按钮 */}
         <div>
           {isConnected ? (
-            <button className="flex items-center gap-[8vw] bg-transparent border border-[#121212] rounded-[4vw] p-[9vw] hover:border-[#c5ff33] transition-all">
+            <button className="w-[112vw] h-[36vw] flex items-center gap-[4vw] bg-transparent border border-[#3D3D3D] rounded-[34vw] p-[9vw] hover:border-[#3D3D3D] transition-all">
               <img src={binanceIcon} alt="BSC" className="w-[16vw] h-[16vw] object-contain" />
               <span className="text-white text-size-[13vw] font-medium">{formatAddress(account)}</span>
               <img src={downIcon} alt="Down" className="w-[16vw] h-[16vw] object-contain" />

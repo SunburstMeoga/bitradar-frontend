@@ -1,5 +1,6 @@
 import { createBrowserRouter } from 'react-router-dom';
 import Layout from '../components/Layout';
+import Trade from '../pages/Trade';
 import Home from '../pages/Home';
 import History from '../pages/History';
 import Account from '../pages/Account';
@@ -12,6 +13,10 @@ export const router = createBrowserRouter([
     children: [
       {
         index: true,
+        element: <Trade />,
+      },
+      {
+        path: 'home',
         element: <Home />,
       },
       {

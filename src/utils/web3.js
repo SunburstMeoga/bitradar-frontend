@@ -117,7 +117,7 @@ export const isCorrectNetwork = (chainId) => {
 export const formatAddress = (address, start = 3, end = 3) => {
   if (!address) return '';
   if (address.length <= start + end) return address;
-  return `${address.slice(0, start + 2)}...${address.slice(-end)}`;
+  return `${address.slice(0, start)}...${address.slice(-end)}`;
 };
 
 // 监听账户变化

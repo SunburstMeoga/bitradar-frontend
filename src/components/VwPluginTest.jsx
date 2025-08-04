@@ -1,7 +1,23 @@
+import { formatAddress } from '../utils/web3';
+
 const VwPluginTest = () => {
+  // 测试地址格式化
+  const testAddress = '0x1234567890abcdef1234567890abcdef12345678';
+  const formattedAddress = formatAddress(testAddress);
+
   return (
     <div className="p-[20vw] bg-white text-black">
       <h1 className="text-size-[24vw] font-bold mb-[16vw]">vw插件测试</h1>
+
+      {/* 地址格式化测试 */}
+      <div className="bg-blue-100 p-[8vw] mb-[16vw] rounded-[4vw]">
+        <h2 className="text-size-[16vw] font-bold mb-[8vw]">地址格式化测试</h2>
+        <div className="text-size-[12vw]">
+          <p><strong>原地址:</strong> {testAddress}</p>
+          <p><strong>格式化后:</strong> {formattedAddress}</p>
+          <p><strong>预期结果:</strong> 0x1...678 (前3位+0x，后3位)</p>
+        </div>
+      </div>
       
       <div className="space-y-[16vw]">
         {/* 测试padding */}
@@ -31,10 +47,12 @@ const VwPluginTest = () => {
           </div>
         </div>
         
-        {/* 测试margin */}
+        {/* 测试margin（包括负margin） */}
         <div className="bg-pink-200 p-[8vw]">
           <div className="bg-orange-300 mb-[16vw] p-[8vw]">mb-[16vw] - 下边距16px</div>
           <div className="bg-orange-300 mx-[20vw] p-[8vw]">mx-[20vw] - 左右边距20px</div>
+          <div className="bg-red-400 -mt-[12vw] p-[8vw] text-white">-mt-[12vw] - 负上边距-12px</div>
+          <div className="bg-blue-400 -mx-[8vw] p-[8vw] text-white">-mx-[8vw] - 负左右边距-8px</div>
         </div>
         
         {/* 测试圆角和边框 */}

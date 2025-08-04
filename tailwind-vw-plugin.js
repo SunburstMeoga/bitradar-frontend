@@ -8,13 +8,14 @@ function vw(px) {
   return `${(px / baseWidth) * 100}vw`
 }
 
-// 创建通用的值处理函数
+// 创建通用的值处理函数（支持负数）
 function createValueHandler(cssProperty) {
   return (value) => {
     if (typeof value !== 'string') {
       return { [cssProperty]: value }
     }
-    const match = value.match(/^(\d+(?:\.\d+)?)vw$/)
+    // 支持正数和负数的vw值：12vw, -12vw, 12.5vw, -12.5vw
+    const match = value.match(/^(-?\d+(?:\.\d+)?)vw$/)
     if (match) {
       const pxValue = parseFloat(match[1])
       return {
@@ -117,7 +118,8 @@ const vwPlugin = plugin(function({ matchUtilities, theme }) {
     },
     {
       values: theme('margin'),
-      type: ['length', 'percentage']
+      type: ['length', 'percentage'],
+      supportsNegativeValues: true
     }
   )
 

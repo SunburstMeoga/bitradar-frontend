@@ -76,39 +76,57 @@ export default {
       minHeight: {
         'screen-vw': '100vh',
       },
+      letterSpacing: {
+        '0.15': '0.15px',
+      },
+      lineHeight: {
+        '20': '20px',
+      },
     },
   },
   plugins: [
     require('./tailwind-vw-plugin.js')
   ],
   safelist: [
-    // 保护动态生成的vw类名
+    // 保护动态生成的vw类名（支持负值）
     {
-      pattern: /w-\[\d+(\.\d+)?vw\]/,
+      pattern: /^w-\[\d+(\.\d+)?vw\]$/,
       variants: ['sm', 'md', 'lg', 'xl', '2xl'],
     },
     {
-      pattern: /h-\[\d+(\.\d+)?vw\]/,
+      pattern: /^h-\[\d+(\.\d+)?vw\]$/,
       variants: ['sm', 'md', 'lg', 'xl', '2xl'],
     },
     {
-      pattern: /text-\[\d+(\.\d+)?vw\]/,
+      pattern: /^text-size-\[\d+(\.\d+)?vw\]$/,
       variants: ['sm', 'md', 'lg', 'xl', '2xl'],
     },
     {
-      pattern: /p-\[\d+(\.\d+)?vw\]/,
+      pattern: /^font-size-\[\d+(\.\d+)?vw\]$/,
       variants: ['sm', 'md', 'lg', 'xl', '2xl'],
     },
     {
-      pattern: /m-\[\d+(\.\d+)?vw\]/,
+      pattern: /^p[trblxy]?-\[\d+(\.\d+)?vw\]$/,
       variants: ['sm', 'md', 'lg', 'xl', '2xl'],
     },
     {
-      pattern: /gap-\[\d+(\.\d+)?vw\]/,
+      pattern: /^m[trblxy]?-\[\d+(\.\d+)?vw\]$/,
       variants: ['sm', 'md', 'lg', 'xl', '2xl'],
     },
     {
-      pattern: /space-[xy]-\[\d+(\.\d+)?vw\]/,
+      pattern: /^-m[trblxy]?-\[\d+(\.\d+)?vw\]$/,
+      variants: ['sm', 'md', 'lg', 'xl', '2xl'],
+    },
+    {
+      pattern: /^gap-\[\d+(\.\d+)?vw\]$/,
+      variants: ['sm', 'md', 'lg', 'xl', '2xl'],
+    },
+    {
+      pattern: /^rounded-\[\d+(\.\d+)?vw\]$/,
+      variants: ['sm', 'md', 'lg', 'xl', '2xl'],
+    },
+    {
+      pattern: /^border-\[\d+(\.\d+)?vw\]$/,
       variants: ['sm', 'md', 'lg', 'xl', '2xl'],
     },
   ],

@@ -28,6 +28,8 @@ body {
   }
 }
 
+// 自定义滑块样式已移至组件内实现
+
 // 响应式混合宏
 @mixin responsive($property, $mobile-value, $tablet-value: null, $desktop-value: null) {
   // 移动端（默认）

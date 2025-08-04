@@ -80,6 +80,85 @@ This project features an advanced mobile adaptation system with four different a
 }
 ```
 
+## 🎯 vw Plugin Usage Rules
+
+### **重要提醒：所有数值都基于 375px 设计稿，直接使用设计稿中的 px 值**
+
+#### **完整语法规范**：
+
+```jsx
+// 尺寸相关（直接使用设计稿px值）
+className = "w-[104vw] h-[24vw]"; // 宽高：104×24px
+className = "w-[130vw] h-[34vw]"; // 按钮：130×34px
+className = "w-[375vw] h-[346vw]"; // 全屏宽度：375×346px
+
+// 内边距（直接使用设计稿px值）
+className = "p-[11vw]"; // 全方向：11px
+className = "px-[16vw] py-[11vw]"; // 左右16px，上下11px
+className = "pt-[16vw] pr-[16vw] pb-[14vw] pl-[16vw]"; // 各方向独立设置
+
+// 外边距（直接使用设计稿px值，支持负值）
+className = "m-[16vw]"; // 全方向：16px
+className = "mx-[20vw] my-[12vw]"; // 左右20px，上下12px
+className = "mb-[16vw] mt-[12vw]"; // 下16px，上12px
+className = "-mt-[12vw]"; // 负上边距：-12px
+className = "-mx-[8vw] -my-[4vw]"; // 负左右边距：-8px，负上下边距：-4px
+
+// 字体大小（使用专用前缀，直接使用设计稿px值）
+className = "text-size-[11vw]"; // 字体：11px
+className = "text-size-[15vw]"; // 字体：15px
+className = "text-size-[34vw]"; // 大字体：34px
+className = "font-size-[13vw]"; // 字体：13px（另一种写法）
+
+// 文字颜色（保持原Tailwind语法）
+className = "text-white"; // 白色
+className = "text-[#c5ff33]"; // 主色调
+className = "text-[#8f8f8f]"; // 灰色
+
+// 其他属性（直接使用设计稿px值）
+className = "rounded-[4vw]"; // 圆角：4px
+className = "rounded-[12vw]"; // 圆角：12px
+className = "rounded-[34vw]"; // 圆角：34px（胶囊形状）
+className = "gap-[8vw]"; // 间距：8px
+className = "border-[1vw]"; // 边框：1px
+
+// 计算公式（自动处理，无需手动计算）
+// vw值 = (设计稿px值 / 375) * 100
+// 例如：104px = (104 / 375) * 100 = 27.733vw
+```
+
+#### **字体粗细对照表**：
+
+```jsx
+className = "font-normal"; // 400
+className = "font-medium"; // 500
+className = "font-semibold"; // 600
+className = "font-bold"; // 700
+```
+
+#### **常用颜色值**：
+
+```jsx
+// 主色调
+#c5ff33 (rgb(197, 255, 51))
+
+// 背景色
+#121212 (rgb(18, 18, 18))
+#1f1f1f (rgb(31, 31, 31))
+#3d3d3d (rgb(61, 61, 61))
+
+// 边框色
+#292929 (rgb(41, 41, 41))
+
+// 文字色
+#ffffff (白色)
+#8f8f8f (rgb(143, 143, 143))
+
+// 状态色
+#00bc4b (rgb(0, 188, 75)) - 涨
+#f5384e (rgb(245, 56, 78)) - 跌
+```
+
 ## 🚀 Quick Start
 
 ### Prerequisites
