@@ -34,14 +34,14 @@ const Header = () => {
           {isConnected ? (
             <button className="flex items-center gap-[8vw] bg-transparent border border-[#121212] rounded-[4vw] p-[9vw] hover:border-[#c5ff33] transition-all">
               <img src={binanceIcon} alt="BSC" className="w-[16vw] h-[16vw] object-contain" />
-              <span className="text-white text-[13vw] font-medium">{formatAddress(account)}</span>
+              <span className="text-white text-size-[13vw] font-medium">{formatAddress(account)}</span>
               <img src={downIcon} alt="Down" className="w-[16vw] h-[16vw] object-contain" />
             </button>
           ) : (
             <button
               onClick={handleConnect}
               disabled={isConnecting}
-              className="w-[130vw] h-[34vw] bg-white text-black text-[15vw] font-medium rounded-[4vw] flex items-center justify-center hover:bg-gray-100 disabled:opacity-60 disabled:cursor-not-allowed transition-all"
+              className="w-[130vw] h-[34vw] bg-white text-black text-size-[15vw] font-semibold rounded-[34vw] flex items-center justify-center hover:bg-gray-100 disabled:opacity-60 disabled:cursor-not-allowed transition-all"
             >
               {isConnecting ? '连接中...' : '连接钱包'}
             </button>

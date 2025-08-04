@@ -58,10 +58,10 @@ const Footer = () => {
           return (
             <div
               key={item.key}
-              className="flex-1 h-[42vw] flex flex-col items-center justify-center cursor-pointer hover:opacity-80 transition-all"
+              className="flex-1 h-[42vw] flex flex-col justify-between items-center cursor-pointer hover:opacity-80 transition-all"
               onClick={() => handleNavClick(item.path)}
             >
-              <div className="flex items-center justify-center mb-[2vw]">
+              <div className="flex items-center justify-center">
                 <img
                   src={active ? item.activeIcon : item.icon}
                   alt={item.label}
@@ -69,7 +69,7 @@ const Footer = () => {
                 />
               </div>
               <div
-                className={`text-[11vw] font-medium text-center leading-none ${
+                className={`text-size-[11vw] font-medium text-center leading-none ${
                   active ? 'text-[#c5ff33]' : 'text-[#8f8f8f]'
                 }`}
               >

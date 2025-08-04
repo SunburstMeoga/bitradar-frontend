@@ -51,10 +51,11 @@ const vwPlugin = plugin(function({ matchUtilities, theme }) {
     }
   )
 
-  // 处理字体大小 text-[数字vw]
+  // 处理字体大小 text-size-[数字vw] 或 font-[数字vw]
   matchUtilities(
     {
-      'text': createValueHandler('font-size'),
+      'text-size': createValueHandler('font-size'),
+      'font-size': createValueHandler('font-size'),
     },
     {
       values: theme('fontSize'),
@@ -62,10 +63,28 @@ const vwPlugin = plugin(function({ matchUtilities, theme }) {
     }
   )
 
-  // 处理内边距 p-[数字vw]
+  // 处理内边距相关
   matchUtilities(
     {
       'p': createValueHandler('padding'),
+      'px': (value) => {
+        const handler = createValueHandler('padding-left')
+        const result1 = handler(value)
+        const handler2 = createValueHandler('padding-right')
+        const result2 = handler2(value)
+        return { ...result1, ...result2 }
+      },
+      'py': (value) => {
+        const handler = createValueHandler('padding-top')
+        const result1 = handler(value)
+        const handler2 = createValueHandler('padding-bottom')
+        const result2 = handler2(value)
+        return { ...result1, ...result2 }
+      },
+      'pt': createValueHandler('padding-top'),
+      'pr': createValueHandler('padding-right'),
+      'pb': createValueHandler('padding-bottom'),
+      'pl': createValueHandler('padding-left'),
     },
     {
       values: theme('padding'),
@@ -73,13 +92,44 @@ const vwPlugin = plugin(function({ matchUtilities, theme }) {
     }
   )
 
-  // 处理外边距 m-[数字vw]
+  // 处理外边距相关
   matchUtilities(
     {
       'm': createValueHandler('margin'),
+      'mx': (value) => {
+        const handler = createValueHandler('margin-left')
+        const result1 = handler(value)
+        const handler2 = createValueHandler('margin-right')
+        const result2 = handler2(value)
+        return { ...result1, ...result2 }
+      },
+      'my': (value) => {
+        const handler = createValueHandler('margin-top')
+        const result1 = handler(value)
+        const handler2 = createValueHandler('margin-bottom')
+        const result2 = handler2(value)
+        return { ...result1, ...result2 }
+      },
+      'mt': createValueHandler('margin-top'),
+      'mr': createValueHandler('margin-right'),
+      'mb': createValueHandler('margin-bottom'),
+      'ml': createValueHandler('margin-left'),
     },
     {
       values: theme('margin'),
+      type: ['length', 'percentage']
+    }
+  )
+
+  // 处理其他常用属性
+  matchUtilities(
+    {
+      'gap': createValueHandler('gap'),
+      'rounded': createValueHandler('border-radius'),
+      'border': createValueHandler('border-width'),
+    },
+    {
+      values: theme('spacing'),
       type: ['length', 'percentage']
     }
   )
