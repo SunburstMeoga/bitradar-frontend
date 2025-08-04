@@ -167,7 +167,7 @@ const Trade = () => {
             className={`w-[127vw] h-[50vw] rounded-[12vw] flex items-center justify-center gap-[8vw] ${isButtonsDisabled ? 'cursor-not-allowed' : 'cursor-pointer'}`}
             style={{
               backgroundColor: '#00bc4b',
-              filter: isButtonsDisabled ? 'brightness(0.7)' : 'brightness(1)'
+              filter: isButtonsDisabled ? 'brightness(0.3)' : 'brightness(1)'
             }}
           >
             <img src={buyUpIcon} alt="Up" className="w-[24vw] h-[24vw]" />
@@ -185,7 +185,7 @@ const Trade = () => {
             className={`w-[127vw] h-[50vw] rounded-[12vw] flex items-center justify-center gap-[8vw] ${isButtonsDisabled ? 'cursor-not-allowed' : 'cursor-pointer'}`}
             style={{
               backgroundColor: '#f5384e',
-              filter: isButtonsDisabled ? 'brightness(0.7)' : 'brightness(1)'
+              filter: isButtonsDisabled ? 'brightness(0.3)' : 'brightness(1)'
             }}
           >
             <img src={buyDownIcon} alt="Down" className="w-[24vw] h-[24vw]" />
