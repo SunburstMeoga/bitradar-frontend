@@ -1,5 +1,4 @@
 import { useState, useCallback } from 'react';
-import TradingChart from '../../components/TradingChart';
 import pUSDIcon from '../../assets/icons/pUSD.png';
 import upDownIcon from '../../assets/icons/up-down.png';
 import buyUpIcon from '../../assets/icons/buy-up.png';
@@ -89,8 +88,9 @@ const Trade = () => {
         </div>
       </div>
 
-      {/* 实时价格图表 */}
-      <TradingChart onPriceUpdate={handlePriceUpdate} />
+      <div className='w-full h-[346vw] mb-[10vw] flex justify-center items-center' >
+        图表
+      </div>
 
       {/* 交易卡片 */}
       <div className="w-[375vw] h-[246vw] flex flex-col items-center justify-center">
