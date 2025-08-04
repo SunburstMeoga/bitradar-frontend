@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
+import PriceChart from '../../components/PriceChart';
 import pUSDIcon from '../../assets/icons/pUSD.png';
 import upDownIcon from '../../assets/icons/up-down.png';
 import buyUpIcon from '../../assets/icons/buy-up.png';
@@ -9,11 +10,24 @@ import sliderIcon from '../../assets/icons/slider.png';
 const Trade = () => {
   const [tradeAmount, setTradeAmount] = useState(1);
   const [sliderValue, setSliderValue] = useState(1);
+  const [currentPrice, setCurrentPrice] = useState(67234.56);
+  const [priceChange, setPriceChange] = useState(2.34);
+
   const balance = 654.3;
-  const currentPrice = 67234.56;
-  const priceChange = 2.34; // 正数为涨，负数为跌
   const isUp = priceChange > 0;
   const isButtonsDisabled = tradeAmount === 0; // 当交易金额为0时禁用按钮
+
+  // 处理价格更新
+  const handlePriceUpdate = useCallback((priceData) => {
+    setCurrentPrice(prevPrice => {
+      // 计算价格变化百分比
+      if (prevPrice > 0) {
+        const change = ((priceData.price - prevPrice) / prevPrice) * 100;
+        setPriceChange(change);
+      }
+      return priceData.price;
+    });
+  }, []);
 
   // 处理滑块变化
   const handleSliderChange = (e) => {7
@@ -75,13 +89,8 @@ const Trade = () => {
         </div>
       </div>
 
-      {/* 折线图占位 */}
-      <div 
-        className="w-[375vw] h-[346vw] flex items-center justify-center text-white text-size-[16vw]"
-        style={{ backgroundColor: '#1a1a1a' }}
-      >
-        图表区域占位 (375×346)
-      </div>
+      {/* 实时价格图表 */}
+      <PriceChart onPriceUpdate={handlePriceUpdate} />
 
       {/* 交易卡片 */}
       <div className="w-[375vw] h-[246vw] flex flex-col items-center justify-center">
