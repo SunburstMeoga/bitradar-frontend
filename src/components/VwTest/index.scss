@@ -1,0 +1,26 @@
+.vw-test {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 20px 0;
+}
+
+// 添加一些调试样式
+.vw-test {
+  * {
+    box-sizing: border-box;
+  }
+  
+  // 调试信息
+  &::before {
+    content: "当前视口宽度: " attr(data-width) "px";
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    z-index: 1000;
+  }
+}

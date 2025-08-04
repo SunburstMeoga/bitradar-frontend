@@ -1,0 +1,181 @@
+// 使用vite.config.js中定义的vw函数
+.home-container {
+  min-height: calc(100vh - 64px - 60px); // 减去header和footer高度
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  padding: vw(20) 0;
+}
+
+.home-title {
+  font-size: vw(32);
+  font-weight: 700;
+  color: #C5FF33;
+  margin-bottom: vw(16);
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.home-subtitle {
+  font-size: vw(20);
+  color: #374151;
+  margin-bottom: vw(8);
+  font-weight: 600;
+}
+
+.home-description {
+  font-size: vw(16);
+  color: #6B7280;
+  margin-bottom: vw(32);
+}
+
+// 主要演示div：200px宽 300px高
+.demo-box {
+  width: vw(200);
+  height: vw(300);
+  background: linear-gradient(135deg, #C5FF33 0%, #a8e024 100%);
+  border-radius: vw(16);
+  box-shadow: 0 vw(8) vw(32) rgba(197, 255, 51, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, rgba(255, 255, 255, 0.1) 0%, transparent 100%);
+    pointer-events: none;
+  }
+}
+
+.demo-content {
+  text-align: center;
+  color: #1F2937;
+  padding: vw(20);
+}
+
+.demo-title {
+  font-size: vw(18);
+  font-weight: 700;
+  margin-bottom: vw(12);
+}
+
+.demo-text {
+  font-size: vw(14);
+  margin-bottom: vw(8);
+  line-height: 1.4;
+}
+
+.demo-stats {
+  margin-top: vw(16);
+  font-size: vw(12);
+  font-weight: 600;
+  
+  div {
+    margin-bottom: vw(4);
+    background: rgba(255, 255, 255, 0.2);
+    padding: vw(4) vw(8);
+    border-radius: vw(4);
+  }
+}
+
+// 说明框
+.explanation-box {
+  background: white;
+  border-radius: vw(12);
+  padding: vw(24);
+  box-shadow: 0 vw(4) vw(16) rgba(0, 0, 0, 0.1);
+  max-width: vw(320);
+  width: 100%;
+}
+
+.explanation-title {
+  font-size: vw(18);
+  font-weight: 700;
+  color: #1F2937;
+  margin-bottom: vw(16);
+  text-align: center;
+}
+
+.explanation-content {
+  p {
+    font-size: vw(14);
+    color: #4B5563;
+    margin-bottom: vw(8);
+    line-height: 1.5;
+    
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+}
+
+// 演示网格
+.demo-grid {
+  display: flex;
+  gap: vw(16);
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: vw(24);
+}
+
+.demo-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  border-radius: vw(8);
+  box-shadow: 0 vw(2) vw(8) rgba(0, 0, 0, 0.1);
+  font-size: vw(12);
+  font-weight: 600;
+  color: #374151;
+  
+  span:first-child {
+    color: #C5FF33;
+    font-weight: 700;
+    margin-bottom: vw(4);
+  }
+}
+
+.demo-item-small {
+  width: vw(100);
+  height: vw(80);
+}
+
+.demo-item-medium {
+  width: vw(150);
+  height: vw(80);
+}
+
+.demo-item-large {
+  width: vw(250);
+  height: vw(80);
+}
+
+// 响应式处理
+@media (max-width: 768px) {
+  .demo-grid {
+    flex-direction: column;
+    align-items: center;
+  }
+}
+
+// 确保在大屏幕上不会过大
+@media (min-width: 1200px) {
+  .home-container {
+    .demo-box,
+    .explanation-box,
+    .demo-item {
+      // 在大屏幕上限制最大尺寸
+      max-width: 400px;
+    }
+    
+    .demo-box {
+      max-height: 600px;
+    }
+  }
+}

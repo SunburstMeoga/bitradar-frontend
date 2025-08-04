@@ -1,0 +1,23 @@
+{
+  "common": {
+    "loading": "加载中...",
+    "error": "错误",
+    "success": "成功",
+    "confirm": "确认",
+    "cancel": "取消",
+    "connect_wallet": "连接钱包",
+    "disconnect": "断开连接"
+  },
+  "home": {
+    "title": "你好 BitRadar",
+    "welcome": "欢迎来到 BitRadar DApp",
+    "description": "您的去中心化金融门户"
+  },
+  "wallet": {
+    "not_connected": "钱包未连接",
+    "connecting": "连接中...",
+    "connected": "已连接",
+    "install_metamask": "请安装 MetaMask",
+    "wrong_network": "网络错误，请切换到币安智能链"
+  }
+}

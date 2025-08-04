@@ -1,0 +1,157 @@
+.vw-demo {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  padding: 20px 0; // PostCSS 会自动转换为 vw
+
+  &__title {
+    font-size: 28px; // PostCSS 会自动转换为 vw
+    margin-bottom: 32px; // PostCSS 会自动转换为 vw
+    text-align: center;
+    font-weight: 700;
+    color: #2d3748;
+
+    @media (min-width: 768px) {
+      font-size: 36px;
+      margin-bottom: 48px;
+    }
+  }
+
+  &__section {
+    margin-bottom: 40px; // PostCSS 会自动转换为 vw
+    background: white;
+    border-radius: 12px; // PostCSS 会自动转换为 vw
+    padding: 24px 20px; // PostCSS 会自动转换为 vw
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+
+    @media (min-width: 768px) {
+      margin-bottom: 48px;
+      padding: 32px;
+    }
+  }
+
+  &__section-title {
+    font-size: 20px; // PostCSS 会自动转换为 vw
+    margin-bottom: 20px; // PostCSS 会自动转换为 vw
+    font-weight: 600;
+    color: #4a5568;
+    border-bottom: 2px solid #e2e8f0;
+    padding-bottom: 8px; // PostCSS 会自动转换为 vw
+
+    @media (min-width: 768px) {
+      font-size: 24px;
+      margin-bottom: 24px;
+    }
+  }
+}
+
+// SCSS PostCSS 自动转换演示样式
+.scss-vw-container {
+  padding: 16px 0; // PostCSS 会自动转换为 vw
+}
+
+.scss-vw-card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 12px; // PostCSS 会自动转换为 vw
+  padding: 24px 20px; // PostCSS 会自动转换为 vw
+  color: white;
+  text-align: center;
+
+  &__title {
+    font-size: 22px; // PostCSS 会自动转换为 vw
+    margin-bottom: 16px; // PostCSS 会自动转换为 vw
+    font-weight: 600;
+  }
+
+  &__content {
+    font-size: 14px; // PostCSS 会自动转换为 vw
+    margin-bottom: 24px; // PostCSS 会自动转换为 vw
+    line-height: 1.6;
+    opacity: 0.9;
+  }
+}
+
+// PostCSS 自动转换演示样式
+.postcss-demo {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 16px; // 这个会被 PostCSS 自动转换为 vw
+  
+  &__item {
+    background: linear-gradient(45deg, #ff6b6b, #feca57);
+    padding: 20px 16px; // 这些会被 PostCSS 自动转换为 vw
+    border-radius: 8px; // 这个会被 PostCSS 自动转换为 vw
+    text-align: center;
+    color: white;
+    font-weight: 500;
+    font-size: 14px; // 这个会被 PostCSS 自动转换为 vw
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease;
+    
+    &:hover {
+      transform: translateY(-2px);
+    }
+    
+    span {
+      display: block;
+      font-size: 12px; // 这个会被 PostCSS 自动转换为 vw
+      opacity: 0.9;
+    }
+  }
+}
+
+// 响应式工具类演示
+.mobile-only {
+  @media (min-width: 768px) {
+    display: none !important;
+  }
+}
+
+.tablet-up {
+  @media (max-width: 767px) {
+    display: none !important;
+  }
+}
+
+// 自定义动画
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.vw-demo__section {
+  animation: fadeInUp 0.6s ease-out;
+  
+  &:nth-child(2) { animation-delay: 0.1s; }
+  &:nth-child(3) { animation-delay: 0.2s; }
+  &:nth-child(4) { animation-delay: 0.3s; }
+  &:nth-child(5) { animation-delay: 0.4s; }
+  &:nth-child(6) { animation-delay: 0.5s; }
+  &:nth-child(7) { animation-delay: 0.6s; }
+}
+
+// 特殊效果
+.btn-vw {
+  position: relative;
+  overflow: hidden;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+  }
+  
+  &:hover::before {
+    left: 100%;
+  }
+}

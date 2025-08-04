@@ -1,0 +1,23 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "confirm": "Confirm",
+    "cancel": "Cancel",
+    "connect_wallet": "Connect Wallet",
+    "disconnect": "Disconnect"
+  },
+  "home": {
+    "title": "Hello BitRadar",
+    "welcome": "Welcome to BitRadar DApp",
+    "description": "Your gateway to decentralized finance"
+  },
+  "wallet": {
+    "not_connected": "Wallet not connected",
+    "connecting": "Connecting...",
+    "connected": "Connected",
+    "install_metamask": "Please install MetaMask",
+    "wrong_network": "Wrong network, please switch to BSC"
+  }
+}
