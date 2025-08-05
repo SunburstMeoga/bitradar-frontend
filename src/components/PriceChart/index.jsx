@@ -72,63 +72,40 @@ const customDrawPlugin = {
     ctx.stroke();
     ctx.setLineDash([]);
 
-    // 绘制闪烁的当前价格点（只在价格变化时闪烁）
-    if (shouldBlink) {
-      const time = Date.now();
-      const blinkCycle = Math.floor(time / 800) % 2; // 每800ms切换一次，更平滑
+    // 绘制闪烁的当前价格点
+    let opacity = 1; // 默认完全显示
 
-      if (blinkCycle === 1) {
-        // 显示状态：绘制带阴影的光点
-        ctx.save();
+    if (shouldBlink && chart.options.blinkStartTime) {
+      const currentTime = Date.now();
+      const elapsed = currentTime - chart.options.blinkStartTime;
 
-        // 最外层阴影（最大最透明）
-        ctx.globalAlpha = 0.2;
-        ctx.fillStyle = '#C5FF33';
-        ctx.beginPath();
-        ctx.arc(currentPriceX, currentPriceY, 10, 0, 2 * Math.PI); // 最外层阴影半径10px
-        ctx.fill();
-
-        // 外层阴影
-        ctx.globalAlpha = 0.3;
-        ctx.fillStyle = '#C5FF33';
-        ctx.beginPath();
-        ctx.arc(currentPriceX, currentPriceY, 8, 0, 2 * Math.PI); // 外层阴影半径8px
-        ctx.fill();
-
-        // 中层阴影
-        ctx.globalAlpha = 0.5;
-        ctx.fillStyle = '#C5FF33';
-        ctx.beginPath();
-        ctx.arc(currentPriceX, currentPriceY, 6, 0, 2 * Math.PI); // 中层阴影半径6px
-        ctx.fill();
-
-        // 内层阴影
-        ctx.globalAlpha = 0.7;
-        ctx.fillStyle = '#C5FF33';
-        ctx.beginPath();
-        ctx.arc(currentPriceX, currentPriceY, 4, 0, 2 * Math.PI); // 内层阴影半径4px
-        ctx.fill();
-
-        // 最后绘制主光点
-        ctx.globalAlpha = 1;
-        ctx.fillStyle = '#C5FF33';
-        ctx.beginPath();
-        ctx.arc(currentPriceX, currentPriceY, 3, 0, 2 * Math.PI); // 主光点半径3px
-        ctx.fill();
-
-        ctx.restore();
+      if (elapsed < 700) {
+        // 700ms内从0淡入到1
+        opacity = elapsed / 700;
+      } else {
+        // 700ms后保持完全显示
+        opacity = 1;
       }
-      // blinkCycle === 0 时不绘制任何东西（消失状态）
-    } else {
-      // 不闪烁时正常显示（无阴影）
-      ctx.save();
-      ctx.globalAlpha = 1;
-      ctx.fillStyle = '#C5FF33';
-      ctx.beginPath();
-      ctx.arc(currentPriceX, currentPriceY, 3, 0, 2 * Math.PI);
-      ctx.fill();
-      ctx.restore();
     }
+
+    // 绘制光点和阴影
+    ctx.save();
+
+    // 绘制单层阴影（透明度20%）
+    ctx.globalAlpha = opacity * 0.2;
+    ctx.fillStyle = '#C5FF33';
+    ctx.beginPath();
+    ctx.arc(currentPriceX, currentPriceY, 8, 0, 2 * Math.PI); // 阴影半径8px
+    ctx.fill();
+
+    // 绘制主光点
+    ctx.globalAlpha = opacity;
+    ctx.fillStyle = '#C5FF33';
+    ctx.beginPath();
+    ctx.arc(currentPriceX, currentPriceY, 3, 0, 2 * Math.PI); // 主光点半径3px
+    ctx.fill();
+
+
 
     // 绘制右侧价格标签
     const priceText = lastValidPrice.toFixed(1);
@@ -174,6 +151,7 @@ const PriceChart = ({ onPriceUpdate }) => {
   const [timeUpdate, setTimeUpdate] = useState(0); // 用于强制更新时间
   const animationRef = useRef(null);
   const previousPriceRef = useRef(null);
+  const blinkStartTimeRef = useRef(null); // 记录闪烁开始时间
 
   // WebSocket连接
   const { data: wsData, error } = useWebSocket('wss://crypto.nickwongon99.top');
@@ -314,12 +292,34 @@ const PriceChart = ({ onPriceUpdate }) => {
     return () => clearInterval(interval);
   }, []);
 
+  // 闪烁动画循环
+  useEffect(() => {
+    if (priceChanged) {
+      const animate = () => {
+        if (chartRef.current) {
+          chartRef.current.update('none'); // 强制重新渲染
+        }
+        if (priceChanged) {
+          animationRef.current = requestAnimationFrame(animate);
+        }
+      };
+      animationRef.current = requestAnimationFrame(animate);
+    }
+
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+    };
+  }, [priceChanged]);
+
   // Chart.js 配置
   const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
     currentPrice: currentPrice, // 传递当前价格给插件
     priceChanged: priceChanged, // 传递价格变化状态给插件
+    blinkStartTime: blinkStartTimeRef.current, // 传递闪烁开始时间给插件
     interaction: {
       intersect: false,
       mode: 'index',
@@ -432,13 +432,14 @@ const PriceChart = ({ onPriceUpdate }) => {
         })
       };
 
-      // 检测价格变化
-      const hasChanged = previousPriceRef.current !== null && previousPriceRef.current !== wsData.price;
-      if (hasChanged) {
-        setPriceChanged(true);
-        // 2秒后停止闪烁
-        setTimeout(() => setPriceChanged(false), 2000);
-      }
+      // 每次WebSocket推送都触发闪烁（无论价格是否变化）
+      setPriceChanged(true);
+      blinkStartTimeRef.current = Date.now(); // 记录闪烁开始时间
+
+      // 700ms后停止闪烁状态
+      setTimeout(() => {
+        setPriceChanged(false);
+      }, 700);
 
       previousPriceRef.current = wsData.price;
       setCurrentPrice(wsData.price);
