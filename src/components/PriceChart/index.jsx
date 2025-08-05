@@ -1,175 +1,454 @@
-import { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useMemo } from 'react';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler
+} from 'chart.js';
+import { Line } from 'react-chartjs-2';
 import useWebSocket from '../../hooks/useWebSocket';
 
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler
+);
+
+// 自定义插件：闪烁当前价格点和价格线
+const customDrawPlugin = {
+  id: 'customDraw',
+  afterDatasetsDraw: (chart) => {
+    const { ctx, scales, data } = chart;
+
+    if (!scales.y || !data.datasets[0]) return;
+
+    // 找到最后一个有效数据点
+    const dataset = data.datasets[0];
+    const dataArray = dataset.data;
+    let lastValidIndex = -1;
+    let lastValidPrice = null;
+
+    // 从后往前找最后一个非null值
+    for (let i = dataArray.length - 1; i >= 0; i--) {
+      if (dataArray[i] !== null && dataArray[i] !== undefined) {
+        lastValidIndex = i;
+        lastValidPrice = dataArray[i];
+        break;
+      }
+    }
+
+    if (lastValidIndex === -1 || !lastValidPrice) return;
+
+    const yScale = scales.y;
+    const xScale = scales.x;
+
+    // 计算当前价格点的位置
+    const currentPriceY = yScale.getPixelForValue(lastValidPrice);
+    const currentPriceX = xScale.getPixelForValue(lastValidIndex);
+
+    // 检查是否有价格变化来决定是否闪烁
+    const shouldBlink = chart.options.priceChanged || false;
+
+    ctx.save();
+
+    // 绘制水平虚线（从图表最左边到最右边）
+    ctx.setLineDash([5, 5]);
+    ctx.strokeStyle = '#C5FF33';
+    ctx.lineWidth = 1;
+    ctx.globalAlpha = 0.8;
+    ctx.beginPath();
+    ctx.moveTo(chart.chartArea.left, currentPriceY);
+    ctx.lineTo(chart.width, currentPriceY); // 延伸到canvas最右边
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // 绘制闪烁的当前价格点（只在价格变化时闪烁）
+    if (shouldBlink) {
+      const time = Date.now();
+      const blinkCycle = Math.floor(time / 800) % 2; // 每800ms切换一次，更平滑
+
+      if (blinkCycle === 1) {
+        // 显示状态：绘制带阴影的光点
+        ctx.save();
+
+        // 最外层阴影（最大最透明）
+        ctx.globalAlpha = 0.2;
+        ctx.fillStyle = '#C5FF33';
+        ctx.beginPath();
+        ctx.arc(currentPriceX, currentPriceY, 10, 0, 2 * Math.PI); // 最外层阴影半径10px
+        ctx.fill();
+
+        // 外层阴影
+        ctx.globalAlpha = 0.3;
+        ctx.fillStyle = '#C5FF33';
+        ctx.beginPath();
+        ctx.arc(currentPriceX, currentPriceY, 8, 0, 2 * Math.PI); // 外层阴影半径8px
+        ctx.fill();
+
+        // 中层阴影
+        ctx.globalAlpha = 0.5;
+        ctx.fillStyle = '#C5FF33';
+        ctx.beginPath();
+        ctx.arc(currentPriceX, currentPriceY, 6, 0, 2 * Math.PI); // 中层阴影半径6px
+        ctx.fill();
+
+        // 内层阴影
+        ctx.globalAlpha = 0.7;
+        ctx.fillStyle = '#C5FF33';
+        ctx.beginPath();
+        ctx.arc(currentPriceX, currentPriceY, 4, 0, 2 * Math.PI); // 内层阴影半径4px
+        ctx.fill();
+
+        // 最后绘制主光点
+        ctx.globalAlpha = 1;
+        ctx.fillStyle = '#C5FF33';
+        ctx.beginPath();
+        ctx.arc(currentPriceX, currentPriceY, 3, 0, 2 * Math.PI); // 主光点半径3px
+        ctx.fill();
+
+        ctx.restore();
+      }
+      // blinkCycle === 0 时不绘制任何东西（消失状态）
+    } else {
+      // 不闪烁时正常显示（无阴影）
+      ctx.save();
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = '#C5FF33';
+      ctx.beginPath();
+      ctx.arc(currentPriceX, currentPriceY, 3, 0, 2 * Math.PI);
+      ctx.fill();
+      ctx.restore();
+    }
+
+    // 绘制右侧价格标签
+    const priceText = lastValidPrice.toFixed(1);
+    ctx.font = '12px Arial';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+
+    // 测量文字尺寸
+    const textMetrics = ctx.measureText(priceText);
+    const textWidth = textMetrics.width;
+    const paddingH = 2; // 水平方向2px
+    const paddingV = 1; // 垂直方向1px
+    const labelWidth = textWidth + paddingH * 2;
+    const labelHeight = 12 + paddingV * 2;
+
+    // 绘制圆角矩形背景
+    const rightX = chart.width - labelWidth;
+    const cornerRadius = 3;
+
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = '#C5FF33';
+    ctx.beginPath();
+    ctx.roundRect(rightX, currentPriceY - labelHeight/2, labelWidth, labelHeight, cornerRadius);
+    ctx.fill();
+
+    // 绘制价格文字
+    ctx.fillStyle = '#000000';
+    ctx.textAlign = 'center';
+    ctx.fillText(priceText, rightX + labelWidth/2, currentPriceY);
+
+    ctx.restore();
+  }
+};
+
+ChartJS.register(customDrawPlugin);
+
 const PriceChart = ({ onPriceUpdate }) => {
-  const canvasRef = useRef();
-  const [priceData, setPriceData] = useState([]);
+  const chartRef = useRef(null);
+  const [chartData, setChartData] = useState([]);
+  const [mockData, setMockData] = useState([]);
   const [currentPrice, setCurrentPrice] = useState(null);
+  const [priceChanged, setPriceChanged] = useState(false);
+  const [timeUpdate, setTimeUpdate] = useState(0); // 用于强制更新时间
+  const animationRef = useRef(null);
+  const previousPriceRef = useRef(null);
 
   // WebSocket连接
-  const { data: wsData, connectionStatus, error } = useWebSocket('wss://crypto.nickwongon99.top');
+  const { data: wsData, error } = useWebSocket('wss://crypto.nickwongon99.top');
 
-  // 绘制图表
-  const drawChart = () => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const ctx = canvas.getContext('2d');
-    const width = canvas.width;
-    const height = canvas.height;
-
-    // 清空画布
-    ctx.fillStyle = '#1a1a1a';
-    ctx.fillRect(0, 0, width, height);
-
-    // 如果没有数据，显示占位文本
-    if (priceData.length === 0) {
-      ctx.fillStyle = '#8f8f8f';
-      ctx.font = '16px Arial';
-      ctx.textAlign = 'center';
-      ctx.fillText('等待价格数据...', width / 2, height / 2);
-      return;
-    }
-
-    // 绘制网格线
-    ctx.strokeStyle = '#2a2a2a';
-    ctx.lineWidth = 0.5;
-    ctx.setLineDash([3, 3]); // 虚线
-
-    // 垂直网格线 (时间轴)
-    for (let i = 1; i < 8; i++) {
-      const x = (width / 8) * i;
-      ctx.beginPath();
-      ctx.moveTo(x, 0);
-      ctx.lineTo(x, height);
-      ctx.stroke();
-    }
-
-    // 水平网格线 (价格轴)
-    for (let i = 1; i < 6; i++) {
-      const y = (height / 6) * i;
-      ctx.beginPath();
-      ctx.moveTo(0, y);
-      ctx.lineTo(width, y);
-      ctx.stroke();
-    }
-
-    // 计算价格范围
-    const prices = priceData.map(d => d.value);
-    const minPrice = Math.min(...prices);
-    const maxPrice = Math.max(...prices);
-    const priceRange = maxPrice - minPrice || 1;
-
-    // 添加一些边距
-    const padding = priceRange * 0.1;
-    const adjustedMin = minPrice - padding;
-    const adjustedMax = maxPrice + padding;
-    const adjustedRange = adjustedMax - adjustedMin;
-
-    // 绘制价格线
-    ctx.setLineDash([]); // 实线
-    ctx.strokeStyle = '#c5ff33';
-    ctx.lineWidth = 2;
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-    ctx.beginPath();
-
-    priceData.forEach((point, index) => {
-      const x = (width / Math.max(priceData.length - 1, 1)) * index;
-      const y = height - ((point.value - adjustedMin) / adjustedRange) * height;
-
-      if (index === 0) {
-        ctx.moveTo(x, y);
-      } else {
-        ctx.lineTo(x, y);
+  // 启动持续的动画循环来支持闪烁效果
+  useEffect(() => {
+    const animate = () => {
+      if (chartRef.current) {
+        chartRef.current.update('none'); // 不使用动画更新，只重绘
       }
-    });
-
-    ctx.stroke();
-
-    // 绘制最后一个点的圆点
-    if (priceData.length > 0) {
-      const lastPoint = priceData[priceData.length - 1];
-      const lastX = (width / Math.max(priceData.length - 1, 1)) * (priceData.length - 1);
-      const lastY = height - ((lastPoint.value - adjustedMin) / adjustedRange) * height;
-
-      ctx.fillStyle = '#c5ff33';
-      ctx.beginPath();
-      ctx.arc(lastX, lastY, 3, 0, 2 * Math.PI);
-      ctx.fill();
-    }
-
-    // 绘制Y轴价格标签
-    ctx.fillStyle = '#8f8f8f';
-    ctx.font = '10px Arial';
-    ctx.textAlign = 'right';
-    for (let i = 0; i <= 5; i++) {
-      const price = adjustedMin + (adjustedRange / 5) * (5 - i);
-      const y = (height / 5) * i + 3;
-      ctx.fillText(price.toFixed(2), width - 5, y);
-    }
-
-    // 绘制时间标签（简化版）
-    ctx.textAlign = 'center';
-    const now = new Date();
-    for (let i = 0; i < 4; i++) {
-      const time = new Date(now.getTime() - (3 - i) * 30000); // 每30秒一个标签
-      const x = (width / 4) * i + (width / 8);
-      const timeStr = time.toLocaleTimeString('en-US', {
-        hour12: false,
-        hour: '2-digit',
-        minute: '2-digit'
-      });
-      ctx.fillText(timeStr, x, height - 5);
-    }
-  };
-
-  // 初始化Canvas
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    // 设置Canvas尺寸
-    const rect = canvas.getBoundingClientRect();
-    canvas.width = rect.width || 375;
-    canvas.height = rect.height || 346;
-
-    drawChart();
-  }, [priceData, currentPrice]);
-
-  // 响应式处理
-  useEffect(() => {
-    const handleResize = () => {
-      const canvas = canvasRef.current;
-      if (!canvas) return;
-
-      const rect = canvas.getBoundingClientRect();
-      canvas.width = rect.width || 375;
-      canvas.height = rect.height || 346;
-      drawChart();
+      animationRef.current = requestAnimationFrame(animate);
     };
 
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, [priceData, currentPrice]);
+    animationRef.current = requestAnimationFrame(animate);
 
-  // 处理WebSocket数据
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+    };
+  }, []);
+
+  // 生成模拟历史数据（1分30秒，每秒一个数据点）
+  useEffect(() => {
+    const generateMockData = () => {
+      const now = Date.now();
+      const data = [];
+      const basePrice = currentPrice || 67234.56;
+
+      // 生成90个数据点（1分30秒）
+      for (let i = 90; i >= 0; i--) {
+        const timestamp = now - (i * 1000);
+        // 生成随机价格变化（±0.5%）
+        const randomChange = (Math.random() - 0.5) * 0.01; // ±0.5%
+        const price = basePrice * (1 + randomChange * (i / 90)); // 早期数据变化更大
+
+        data.push({
+          timestamp,
+          price: price + (Math.random() - 0.5) * 100, // 添加一些噪音
+          time: new Date(timestamp).toLocaleTimeString('en-US', {
+            hour12: false,
+            minute: '2-digit',
+            second: '2-digit'
+          })
+        });
+      }
+
+      return data;
+    };
+
+    setMockData(generateMockData());
+  }, [currentPrice]);
+
+  // 合并模拟数据和真实数据
+  const combinedData = useMemo(() => {
+    const now = Date.now();
+    const cutoffTime = now - 90000; // 1分30秒前
+
+    // 过滤掉过期的模拟数据
+    const validMockData = mockData.filter(item => item.timestamp > cutoffTime);
+
+    // 合并数据
+    const combined = [...validMockData, ...chartData];
+
+    // 按时间排序并去重
+    const sorted = combined
+      .sort((a, b) => a.timestamp - b.timestamp)
+      .filter((item, index, arr) =>
+        index === 0 || item.timestamp !== arr[index - 1].timestamp
+      );
+
+    return sorted;
+  }, [mockData, chartData]);
+
+  // 计算Y轴范围
+  const yAxisRange = useMemo(() => {
+    if (combinedData.length === 0) return { min: 0, max: 100000 };
+
+    const prices = combinedData.map(item => item.price);
+    const minPrice = Math.min(...prices);
+    const maxPrice = Math.max(...prices);
+    const range = maxPrice - minPrice;
+    const padding = range * 0.1; // 10% padding
+
+    return {
+      min: minPrice - padding,
+      max: maxPrice + padding
+    };
+  }, [combinedData]);
+
+  // 生成时间标签（6个时间点）- 实时更新
+  const timeLabels = useMemo(() => {
+    const now = Date.now();
+    const labels = [];
+
+    // 左侧3个时间点（往前1分30秒，等分）
+    for (let i = 2; i >= 0; i--) {
+      const time = new Date(now - (90000 / 3) * (i + 1));
+      labels.push(time.toLocaleTimeString('en-US', {
+        hour12: false,
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      }));
+    }
+
+    // 当前时间（在2/3位置）
+    labels.push(new Date(now).toLocaleTimeString('en-US', {
+      hour12: false,
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    }));
+
+    // 右侧2个时间点（未来时间，间隔约37秒）
+    labels.push(new Date(now + 37000).toLocaleTimeString('en-US', {
+      hour12: false,
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    }));
+    labels.push(new Date(now + 74000).toLocaleTimeString('en-US', {
+      hour12: false,
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    }));
+
+    return labels;
+  }, [timeUpdate]); // 依赖时间更新状态
+
+  // 定时更新时间标签
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTimeUpdate(prev => prev + 1);
+    }, 1000); // 每秒更新一次时间
+
+    return () => clearInterval(interval);
+  }, []);
+
+  // Chart.js 配置
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    currentPrice: currentPrice, // 传递当前价格给插件
+    priceChanged: priceChanged, // 传递价格变化状态给插件
+    interaction: {
+      intersect: false,
+      mode: 'index',
+    },
+    plugins: {
+      legend: {
+        display: false,
+      },
+      tooltip: {
+        enabled: false,
+      },
+    },
+    scales: {
+      x: {
+        type: 'category',
+        display: true,
+        position: 'bottom', // 明确指定位置
+        offset: false, // 关键：不偏移，贴边显示
+        grid: {
+          display: false, // 移除横线
+          drawBorder: false,
+          offset: false, // 网格也不偏移
+        },
+        ticks: {
+          display: true,
+          color: '#8f8f8f',
+          font: {
+            size: 10,
+          },
+          maxTicksLimit: 6,
+          autoSkip: false,
+          padding: 0, // 类似Y轴的padding控制
+          callback: function(_, index) {
+            // 显示6个时间点，均匀分布
+            // 总共90个点，6个时间点的位置：0, 18, 36, 54, 72, 89
+            const positions = [0, 18, 36, 54, 72, 89];
+
+            if (positions.includes(index)) {
+              const labelIndex = positions.indexOf(index);
+              return timeLabels[labelIndex] || '';
+            }
+            return '';
+          }
+        },
+        border: {
+          display: false,
+        },
+      },
+      y: {
+        type: 'linear',
+        display: true,
+        position: 'right',
+        min: yAxisRange.min,
+        max: yAxisRange.max,
+        grid: {
+          display: false, // 移除横线
+          drawBorder: false,
+        },
+        ticks: {
+          display: true,
+          color: '#8f8f8f',
+          font: {
+            size: 10,
+          },
+          count: 6,
+          padding: 4, // 4px距离右边
+          callback: function(value) {
+            return value.toFixed(1);
+          }
+        },
+        border: {
+          display: false,
+        },
+      },
+    },
+    elements: {
+      point: {
+        radius: 0,
+        hoverRadius: 0,
+      },
+      line: {
+        borderWidth: 1, // 调整为1px，视觉上看起来像2px
+        tension: 0.1,
+      },
+    },
+    layout: {
+      padding: {
+        left: 0, // 恢复正常padding
+        right: 0,
+        top: 0,
+        bottom: 0
+      }
+    },
+    animation: {
+      duration: 800, // 800ms的平滑滑动动画
+      easing: 'easeOutQuart', // 缓出动画，更自然的滑动效果
+    },
+  };
+
+  // 处理新的价格数据
   useEffect(() => {
     if (wsData && wsData.price && wsData.timestamp) {
       const newDataPoint = {
-        time: wsData.timestamp,
-        value: wsData.price,
+        timestamp: wsData.timestamp,
+        price: wsData.price,
+        time: new Date(wsData.timestamp).toLocaleTimeString('en-US', {
+          hour12: false,
+          minute: '2-digit',
+          second: '2-digit'
+        })
       };
 
+      // 检测价格变化
+      const hasChanged = previousPriceRef.current !== null && previousPriceRef.current !== wsData.price;
+      if (hasChanged) {
+        setPriceChanged(true);
+        // 2秒后停止闪烁
+        setTimeout(() => setPriceChanged(false), 2000);
+      }
+
+      previousPriceRef.current = wsData.price;
       setCurrentPrice(wsData.price);
 
-      setPriceData(prev => {
-        const newData = [...prev, newDataPoint];
-        // 保持最近100个数据点
-        if (newData.length > 100) {
-          return newData.slice(-100);
-        }
-        return newData;
+      // 实现向左滑动效果：新数据推入，所有数据向左移动
+      setChartData(prev => {
+        const updated = [...prev, newDataPoint];
+        // 保持固定数量的数据点，新数据从右边推入，老数据从左边移出
+        const maxPoints = 60; // 左侧2/3区域的数据点数
+        return updated.slice(-maxPoints);
       });
 
       // 通知父组件价格更新
@@ -183,43 +462,89 @@ const PriceChart = ({ onPriceUpdate }) => {
     }
   }, [wsData, onPriceUpdate]);
 
+  // 准备图表数据，实现向左滑动效果
+  const displayData = useMemo(() => {
+    const totalLength = 90; // 总共90个点
+    const leftSideLength = 60; // 左侧60个点（2/3）
+
+    // 创建完整的数据数组，右侧1/3为空
+    const fullData = new Array(totalLength).fill(null);
+
+    // 填充左侧数据，实现向左滑动
+    if (combinedData.length > 0) {
+      // 取最新的数据填充到左侧区域的最右边（第60个位置）
+      const recentData = combinedData.slice(-leftSideLength);
+
+      // 从左侧区域的右边开始填充，新数据在最右边
+      recentData.forEach((item, index) => {
+        if (item && item.price) {
+          const position = leftSideLength - recentData.length + index;
+          if (position >= 0 && position < leftSideLength) {
+            fullData[position] = item.price;
+          }
+        }
+      });
+    }
+
+    return fullData;
+  }, [combinedData]);
+
+  const data = {
+    labels: new Array(90).fill(''),
+    datasets: [
+      {
+        label: 'BTC Price',
+        data: displayData,
+        borderColor: '#C5FF33', // rgb(197, 255, 51) 转换为16进制
+        backgroundColor: (context) => {
+          const chart = context.chart;
+          const { ctx, chartArea } = chart;
+
+          if (!chartArea) return null;
+
+          const gradient = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+          gradient.addColorStop(0, 'rgba(204, 255, 51, 0.44)');
+          gradient.addColorStop(1, 'rgba(204, 255, 51, 0)');
+
+          return gradient;
+        },
+        fill: true,
+        pointRadius: 0, // 所有点都不显示，通过插件绘制闪烁点
+        pointBackgroundColor: 'transparent',
+        pointBorderColor: 'transparent',
+        pointBorderWidth: 0,
+        spanGaps: false, // 不连接空数据点
+        stepped: false,
+        cubicInterpolationMode: 'default',
+      },
+    ],
+  };
+
+  // 检查是否有足够的数据来显示图表
+  const hasEnoughData = combinedData.length > 10;
+
   return (
-    <div className="w-[375vw] h-[346vw] relative">
-      {/* Canvas图表 */}
-      <canvas
-        ref={canvasRef}
-        className="w-full h-full"
-        style={{ backgroundColor: '#1a1a1a' }}
-      />
-
-      {/* 连接状态指示器 */}
-      <div className="absolute top-[8vw] left-[8vw] flex items-center gap-[4vw]">
-        <div
-          className={`w-[8vw] h-[8vw] rounded-full ${
-            connectionStatus === 'Connected' ? 'bg-[#c5ff33]' :
-            connectionStatus === 'Connecting' ? 'bg-yellow-500' :
-            'bg-red-500'
-          }`}
-        />
-        <span className="text-white text-size-[10vw]">
-          {connectionStatus === 'Connected' ? '实时' :
-           connectionStatus === 'Connecting' ? '连接中' :
-           '断开'}
-        </span>
-      </div>
-
-      {/* 错误提示 */}
-      {error && (
-        <div className="absolute top-[24vw] left-[8vw] right-[8vw] bg-red-500 bg-opacity-80 text-white text-size-[12vw] p-[8vw] rounded-[4vw]">
-          {error}
+    <div className="w-[375vw] h-[346vw] relative" style={{ backgroundColor: '#121212' }}>
+      {!hasEnoughData ? (
+        // Loading状态
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="text-white text-size-[16vw]">Loading...</div>
         </div>
-      )}
+      ) : (
+        // 图表内容
+        <>
+          {/* Chart.js 图表 */}
+          <div className="w-full h-full">
+            <Line ref={chartRef} data={data} options={chartOptions} />
+          </div>
 
-      {/* 当前价格显示 */}
-      {currentPrice && (
-        <div className="absolute top-[8vw] right-[8vw] bg-[#c5ff33] text-black px-[8vw] py-[4vw] rounded-[4vw] text-size-[12vw] font-semibold">
-          ${currentPrice.toFixed(2)}
-        </div>
+          {/* 错误提示 */}
+          {error && (
+            <div className="absolute top-[24vw] left-[8vw] right-[8vw] bg-red-500 bg-opacity-80 text-white text-size-[12vw] p-[8vw] rounded-[4vw] z-20">
+              {error}
+            </div>
+          )}
+        </>
       )}
     </div>
   );

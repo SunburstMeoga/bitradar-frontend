@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import PriceChart from '../../components/PriceChart';
 import pUSDIcon from '../../assets/icons/pUSD.png';
 import upDownIcon from '../../assets/icons/up-down.png';
 import buyUpIcon from '../../assets/icons/buy-up.png';
@@ -11,6 +12,7 @@ const Trade = () => {
   const [sliderValue, setSliderValue] = useState(1);
   const [currentPrice, setCurrentPrice] = useState(67234.56);
   const [priceChange, setPriceChange] = useState(2.34);
+  const [previousPrice, setPreviousPrice] = useState(67234.56);
 
   const balance = 654.3;
   const isUp = priceChange > 0;
@@ -18,15 +20,17 @@ const Trade = () => {
 
   // 处理价格更新
   const handlePriceUpdate = useCallback((priceData) => {
-    setCurrentPrice(prevPrice => {
+    if (priceData && priceData.price) {
+      setPreviousPrice(currentPrice);
+      setCurrentPrice(priceData.price);
+
       // 计算价格变化百分比
-      if (prevPrice > 0) {
-        const change = ((priceData.price - prevPrice) / prevPrice) * 100;
+      if (previousPrice > 0) {
+        const change = ((priceData.price - previousPrice) / previousPrice) * 100;
         setPriceChange(change);
       }
-      return priceData.price;
-    });
-  }, []);
+    }
+  }, [currentPrice, previousPrice]);
 
   // 处理滑块变化
   const handleSliderChange = (e) => {7
@@ -88,8 +92,9 @@ const Trade = () => {
         </div>
       </div>
 
-      <div className='w-full h-[346vw] mb-[10vw] flex justify-center items-center' >
-        图表
+      {/* 价格图表 */}
+      <div className='w-full h-[346vw] mb-[10vw]'>
+        <PriceChart onPriceUpdate={handlePriceUpdate} />
       </div>
 
       {/* 交易卡片 */}
