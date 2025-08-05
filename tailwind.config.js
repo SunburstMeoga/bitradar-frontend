@@ -87,47 +87,5 @@ export default {
   plugins: [
     require('./tailwind-vw-plugin.js')
   ],
-  safelist: [
-    // 保护动态生成的vw类名（支持负值）
-    {
-      pattern: /^w-\[\d+(\.\d+)?vw\]$/,
-      variants: ['sm', 'md', 'lg', 'xl', '2xl'],
-    },
-    {
-      pattern: /^h-\[\d+(\.\d+)?vw\]$/,
-      variants: ['sm', 'md', 'lg', 'xl', '2xl'],
-    },
-    {
-      pattern: /^text-size-\[\d+(\.\d+)?vw\]$/,
-      variants: ['sm', 'md', 'lg', 'xl', '2xl'],
-    },
-    {
-      pattern: /^font-size-\[\d+(\.\d+)?vw\]$/,
-      variants: ['sm', 'md', 'lg', 'xl', '2xl'],
-    },
-    {
-      pattern: /^p[trblxy]?-\[\d+(\.\d+)?vw\]$/,
-      variants: ['sm', 'md', 'lg', 'xl', '2xl'],
-    },
-    {
-      pattern: /^m[trblxy]?-\[\d+(\.\d+)?vw\]$/,
-      variants: ['sm', 'md', 'lg', 'xl', '2xl'],
-    },
-    {
-      pattern: /^-m[trblxy]?-\[\d+(\.\d+)?vw\]$/,
-      variants: ['sm', 'md', 'lg', 'xl', '2xl'],
-    },
-    {
-      pattern: /^gap-\[\d+(\.\d+)?vw\]$/,
-      variants: ['sm', 'md', 'lg', 'xl', '2xl'],
-    },
-    {
-      pattern: /^rounded-\[\d+(\.\d+)?vw\]$/,
-      variants: ['sm', 'md', 'lg', 'xl', '2xl'],
-    },
-    {
-      pattern: /^border-\[\d+(\.\d+)?vw\]$/,
-      variants: ['sm', 'md', 'lg', 'xl', '2xl'],
-    },
-  ],
+  // safelist 已移除，因为 tailwind-vw-plugin.js 通过 matchUtilities 已经正确处理了动态 vw 类名
 }
