@@ -18,6 +18,10 @@
     "connecting": "连接中...",
     "connected": "已连接",
     "install_metamask": "请安装 MetaMask",
-    "wrong_network": "网络错误，请切换到币安智能链"
+    "wrong_network": "网络错误，请切换到币安智能链",
+    "send": "发送",
+    "activity": "活动",
+    "language": "语言",
+    "disconnect": "断开连接"
   }
 }

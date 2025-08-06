@@ -18,6 +18,10 @@
     "connecting": "Connecting...",
     "connected": "Connected",
     "install_metamask": "Please install MetaMask",
-    "wrong_network": "Wrong network, please switch to BSC"
+    "wrong_network": "Wrong network, please switch to BSC",
+    "send": "Send",
+    "activity": "Activity",
+    "language": "Language",
+    "disconnect": "Disconnect"
   }
 }

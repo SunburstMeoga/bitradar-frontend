@@ -50,9 +50,10 @@ export const connectWallet = async () => {
     }
 
     // 4. 返回连接结果
+    const finalChainId = await web3.eth.getChainId(); // 重新获取最新的chainId
     return {
       account: accounts[0],
-      chainId: currentChainId.toString(),
+      chainId: finalChainId.toString(), // 确保返回字符串，避免BigInt序列化问题
       web3,
       provider: window.ethereum,
     };
@@ -113,11 +114,18 @@ export const isCorrectNetwork = (chainId) => {
   return chainId === config.chainId;
 };
 
-// 格式化地址（按照需求：前后各3位）
-export const formatAddress = (address, start = 3, end = 3) => {
+// 格式化地址
+export const formatAddress = (address, start = 4, end = 4) => {
   if (!address) return '';
-  if (address.length <= start + end) return address;
-  return `${address.slice(0, start)}...${address.slice(-end)}`;
+  if (address.length <= start + end + 2) return address; // +2 for 0x prefix
+
+  if (start === 3 && end === 3) {
+    // 顶部栏显示：0x1..abc（0x + 1位 + .. + 3位）
+    return `${address.slice(0, 3)}..${address.slice(-3)}`; // 0x1..abc
+  } else {
+    // 弹窗显示：前后各4位，中间用....
+    return `${address.slice(0, 6)}....${address.slice(-4)}`; // 0x1234....abcd
+  }
 };
 
 // 监听账户变化
@@ -139,5 +147,52 @@ export const removeListeners = () => {
   if (isMetaMaskInstalled()) {
     window.ethereum.removeAllListeners('accountsChanged');
     window.ethereum.removeAllListeners('chainChanged');
+  }
+};
+
+// 获取BNB余额
+export const getBNBBalance = async (address) => {
+  if (!address || !isMetaMaskInstalled()) return '0.000';
+
+  try {
+    const web3 = new Web3(window.ethereum);
+    const balance = await web3.eth.getBalance(address);
+    const balanceInBNB = web3.utils.fromWei(balance, 'ether');
+    return parseFloat(balanceInBNB).toFixed(3);
+  } catch (error) {
+    console.error('获取BNB余额失败:', error);
+    return '0.000';
+  }
+};
+
+// 自动重连钱包（页面刷新时调用）
+export const autoReconnectWallet = async () => {
+  if (!isMetaMaskInstalled()) {
+    return null;
+  }
+
+  try {
+    // 检查是否已经连接
+    const accounts = await window.ethereum.request({
+      method: 'eth_accounts',
+    });
+
+    if (accounts && accounts.length > 0) {
+      // 获取当前网络
+      const web3 = new Web3(window.ethereum);
+      const currentChainId = await web3.eth.getChainId();
+
+      return {
+        account: accounts[0],
+        chainId: currentChainId.toString(), // 确保返回字符串，避免BigInt序列化问题
+        web3,
+        provider: window.ethereum,
+      };
+    }
+
+    return null;
+  } catch (error) {
+    console.error('自动重连失败:', error);
+    return null;
   }
 };
