@@ -19,19 +19,25 @@ const WalletModal = ({ isOpen, onClose }) => {
     setCurrentCardIndex(0);
   };
 
+  // 处理关闭弹窗
+  const handleClose = () => {
+    setCurrentCardIndex(0); // 重置到第一个卡片
+    onClose();
+  };
+
   if (!account) return null;
 
   return (
     <SlideModal
       isOpen={isOpen}
-      onClose={onClose}
+      onClose={handleClose}
       currentIndex={currentCardIndex}
       onIndexChange={handleCardChange}
       totalCards={3}
     >
       {/* 钱包卡片 */}
       <WalletCard
-        onClose={onClose}
+        onClose={handleClose}
         onSendClick={() => setCurrentCardIndex(1)}
         onActivityClick={() => setCurrentCardIndex(2)}
       />
@@ -39,13 +45,13 @@ const WalletModal = ({ isOpen, onClose }) => {
       {/* Send卡片 */}
       <SendCard
         onBack={handleBackToWallet}
-        onClose={onClose}
+        onClose={handleClose}
       />
 
       {/* Activity卡片 */}
       <ActivityCard
         onBack={handleBackToWallet}
-        onClose={onClose}
+        onClose={handleClose}
       />
     </SlideModal>
   );
