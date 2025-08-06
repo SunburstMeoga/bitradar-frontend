@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 
 const SlideModal = ({
   isOpen,
@@ -7,13 +7,9 @@ const SlideModal = ({
   className = '',
   currentIndex = 0,
   onIndexChange,
-  totalCards = 1,
-  cardRefs
+  totalCards = 1
 }) => {
   const [translateX, setTranslateX] = useState(0);
-  const [containerHeight, setContainerHeight] = useState('auto');
-  const internalCardRefs = useRef([]);
-  const activeCardRefs = cardRefs || internalCardRefs;
 
   // 监听ESC键关闭弹窗
   useEffect(() => {
@@ -35,24 +31,10 @@ const SlideModal = ({
     };
   }, [isOpen, onClose]);
 
-  // 根据当前索引更新translateX和高度
+  // 根据当前索引更新translateX
   useEffect(() => {
     setTranslateX(-currentIndex * 100);
-
-    // 更新容器高度以适应当前卡片
-    if (activeCardRefs.current[currentIndex]) {
-      const currentCardHeight = activeCardRefs.current[currentIndex].scrollHeight;
-      setContainerHeight(currentCardHeight);
-    }
-  }, [currentIndex, activeCardRefs]);
-
-  // 初始化时设置第一个卡片的高度
-  useEffect(() => {
-    if (isOpen && activeCardRefs.current[0]) {
-      const firstCardHeight = activeCardRefs.current[0].scrollHeight;
-      setContainerHeight(firstCardHeight);
-    }
-  }, [isOpen, activeCardRefs]);
+  }, [currentIndex]);
 
   // 滑动到指定卡片
   const slideTo = (index) => {
@@ -88,8 +70,7 @@ const SlideModal = ({
       
       {/* 弹窗卡片容器 */}
       <div
-        className={`relative bg-[#1f1f1f] rounded-[12px] w-[330px] overflow-hidden box-border transition-all duration-300 ease-in-out ${className}`}
-        style={{ height: containerHeight }}
+        className={`relative bg-[#1f1f1f] rounded-[12px] w-[330px] max-h-[90vh] overflow-hidden box-border ${className}`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* 滑动容器 */}
