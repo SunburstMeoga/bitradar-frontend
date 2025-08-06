@@ -26,8 +26,9 @@ const Modal = ({ isOpen, onClose, children, className = '' }) => {
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center">
       {/* 遮罩层 */}
-      <div 
-        className="absolute inset-0 bg-black bg-opacity-68"
+      <div
+        className="absolute inset-0"
+        style={{ backgroundColor: 'rgba(20, 20, 20, 0.8)' }}
         onClick={onClose}
       />
       
