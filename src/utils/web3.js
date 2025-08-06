@@ -123,8 +123,8 @@ export const formatAddress = (address, start = 4, end = 4) => {
     // 顶部栏显示：0x1..abc（0x + 1位 + .. + 3位）
     return `${address.slice(0, 3)}..${address.slice(-3)}`; // 0x1..abc
   } else {
-    // 弹窗显示：前后各4位，中间用....
-    return `${address.slice(0, 6)}....${address.slice(-4)}`; // 0x1234....abcd
+    // 弹窗显示：0x + 前4位 + .... + 后4位
+    return `${address.slice(0, 2)}${address.slice(2, 6)}....${address.slice(-4)}`; // 0x1234....abcd
   }
 };
 

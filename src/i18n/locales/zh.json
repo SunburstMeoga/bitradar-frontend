@@ -22,6 +22,21 @@
     "send": "发送",
     "activity": "活动",
     "language": "语言",
-    "disconnect": "断开连接"
+    "disconnect": "断开连接",
+    "referrer": "推荐人",
+    "add_referrer": "添加推荐地址",
+    "generate_referral_link": "生成推荐链接",
+    "join_community": "加入BitRadar社区",
+    "referrer_description": "填写推荐地址连接BitRadar网络并解锁额外奖励",
+    "referrer_address": "推荐地址",
+    "rewards_title": "额外获得",
+    "staking_rewards": "质押奖励",
+    "fee_rewards": "手续费奖励",
+    "skip_for_now": "暂时跳过",
+    "confirm": "确认",
+    "address_copied": "地址已复制",
+    "referrer_address_copied": "推荐人地址已复制",
+    "referral_link_copied": "推荐链接已复制",
+    "copy_failed": "复制失败"
   }
 }

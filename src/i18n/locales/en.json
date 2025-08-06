@@ -22,6 +22,21 @@
     "send": "Send",
     "activity": "Activity",
     "language": "Language",
-    "disconnect": "Disconnect"
+    "disconnect": "Disconnect",
+    "referrer": "Referrer",
+    "add_referrer": "Add Referrer Address",
+    "generate_referral_link": "Generate Referral Link",
+    "join_community": "Join BitRadar Community",
+    "referrer_description": "Fill in referrer address to connect BitRadar network and unlock additional rewards",
+    "referrer_address": "Referrer Address",
+    "rewards_title": "Additional Rewards",
+    "staking_rewards": "Staking Rewards",
+    "fee_rewards": "Fee Rewards",
+    "skip_for_now": "Skip for Now",
+    "confirm": "Confirm",
+    "address_copied": "Address Copied",
+    "referrer_address_copied": "Referrer Address Copied",
+    "referral_link_copied": "Referral Link Copied",
+    "copy_failed": "Copy Failed"
   }
 }

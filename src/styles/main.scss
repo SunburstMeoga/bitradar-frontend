@@ -31,7 +31,12 @@ body {
 // 自定义滑块样式已移至组件内实现
 
 // 响应式混合宏
-@mixin responsive($property, $mobile-value, $tablet-value: null, $desktop-value: null) {
+@mixin responsive(
+  $property,
+  $mobile-value,
+  $tablet-value: null,
+  $desktop-value: null
+) {
   // 移动端（默认）
   #{$property}: $mobile-value;
 
@@ -56,18 +61,18 @@ body {
     // 防止根字体大小被 postcss-px-to-viewport 转换
     font-size: 16px !important;
   }
-  
+
   body {
     margin: 0;
     padding: 0;
     min-height: 100vh;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-      'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-      sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
+      "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans",
+      "Helvetica Neue", sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
-  
+
   * {
     box-sizing: border-box;
   }
@@ -124,7 +129,7 @@ body {
     transition: all 0.2s ease;
 
     &--primary {
-      background: #C5FF33;
+      background: #c5ff33;
       color: #000;
 
       &:hover {
@@ -145,20 +150,55 @@ body {
 
 // 工具类样式层
 @layer utilities {
+  // 隐藏滚动条
+  .scrollbar-hide {
+    /* Firefox */
+    scrollbar-width: none;
+    /* IE and Edge */
+    -ms-overflow-style: none;
+
+    /* Chrome, Safari, Opera */
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+
   // vw 间距工具类（PostCSS 会自动转换）
-  .space-vw-1 { margin: 4px; }
-  .space-vw-2 { margin: 8px; }
-  .space-vw-3 { margin: 12px; }
-  .space-vw-4 { margin: 16px; }
-  .space-vw-5 { margin: 20px; }
+  .space-vw-1 {
+    margin: 4px;
+  }
+  .space-vw-2 {
+    margin: 8px;
+  }
+  .space-vw-3 {
+    margin: 12px;
+  }
+  .space-vw-4 {
+    margin: 16px;
+  }
+  .space-vw-5 {
+    margin: 20px;
+  }
 
   // vw 字体大小工具类（PostCSS 会自动转换）
-  .text-vw-xs { font-size: 12px; }
-  .text-vw-sm { font-size: 14px; }
-  .text-vw-base { font-size: 16px; }
-  .text-vw-lg { font-size: 18px; }
-  .text-vw-xl { font-size: 20px; }
-  .text-vw-2xl { font-size: 24px; }
+  .text-vw-xs {
+    font-size: 12px;
+  }
+  .text-vw-sm {
+    font-size: 14px;
+  }
+  .text-vw-base {
+    font-size: 16px;
+  }
+  .text-vw-lg {
+    font-size: 18px;
+  }
+  .text-vw-xl {
+    font-size: 20px;
+  }
+  .text-vw-2xl {
+    font-size: 24px;
+  }
 
   // 响应式隐藏/显示
   .mobile-only {

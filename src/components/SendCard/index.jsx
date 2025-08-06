@@ -98,32 +98,8 @@ const SendCard = ({ onBack, onClose, onSelectToken }) => {
 
   return (
     <div className="w-full flex flex-col">
-      {/* 顶部导航栏 */}
-      <div className="h-[64px] flex items-center justify-between px-[20px] flex-shrink-0">
-        {/* 左侧返回按钮 */}
-        <button
-          onClick={onBack}
-          className="w-[16px] h-[16px] flex items-center justify-center"
-        >
-          <BackIcon />
-        </button>
-        
-        {/* 中间标题 */}
-        <span className="text-white text-[16px] font-medium">
-          {t('wallet.send')}
-        </span>
-        
-        {/* 右侧关闭按钮 */}
-        <button
-          onClick={onClose}
-          className="w-[16px] h-[16px] flex items-center justify-center"
-        >
-          <CloseIcon />
-        </button>
-      </div>
-      
-      {/* 内容区域 */}
-      <div className="p-[20px]">
+      {/* 内容区域 - 移除顶部导航栏，因为现在由SlideModal统一管理 */}
+      <div className="flex-1">
         {/* 第一部分：金额输入卡片 */}
         <div
           className="w-[290px] h-[102px] bg-[#1B1C1C] border border-[#171818] rounded-[20px] flex items-center justify-between"
