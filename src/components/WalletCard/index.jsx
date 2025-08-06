@@ -2,12 +2,31 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useWeb3Store } from '../../store';
 import { formatAddress, getBNBBalance } from '../../utils/web3';
+import toast from 'react-hot-toast';
+
 
 // 导入图片
 import sendImg from '../../assets/images/send.png';
 import activityImg from '../../assets/images/activity.png';
 import languageImg from '../../assets/images/language.png';
 import disconnectImg from '../../assets/images/disconnect.png';
+
+// 推荐人图标SVG组件
+const ReferrerIcon = () => (
+  <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+    <circle cx="16" cy="10" r="4" stroke="#9D9D9D" strokeWidth="2" fill="none"/>
+    <path d="M8 24c0-4.418 3.582-8 8-8s8 3.582 8 8" stroke="#9D9D9D" strokeWidth="2" fill="none"/>
+  </svg>
+);
+
+// 推荐链接图标SVG组件
+const LinkIcon = () => (
+  <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+    <path d="M13.5 18.5L18.5 13.5" stroke="#9D9D9D" strokeWidth="2" strokeLinecap="round"/>
+    <path d="M15 11H11C9.343 11 8 12.343 8 14V18C8 19.657 9.343 21 11 21H15" stroke="#9D9D9D" strokeWidth="2" strokeLinecap="round"/>
+    <path d="M17 21H21C22.657 21 24 19.657 24 18V14C24 12.343 22.657 11 21 11H17" stroke="#9D9D9D" strokeWidth="2" strokeLinecap="round"/>
+  </svg>
+);
 
 // 右箭头SVG组件
 const ArrowRightIcon = ({ isRotated = false }) => (
@@ -31,32 +50,19 @@ const ArrowRightIcon = ({ isRotated = false }) => (
   </svg>
 );
 
-// 关闭按钮SVG组件
-const CloseIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-    <path 
-      d="M12 4L4 12M4 4L12 12" 
-      stroke="white" 
-      strokeWidth="1.5" 
-      strokeLinecap="round" 
-      strokeLinejoin="round"
-    />
-  </svg>
-);
-
 // 复制按钮SVG组件
-const CopyIcon = () => (
+const CopyIcon = ({ color = "#e4e7e7" }) => (
   <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
     <path 
       d="M13.333 6h-6c-.736 0-1.333.597-1.333 1.333v6c0 .736.597 1.333 1.333 1.333h6c.736 0 1.333-.597 1.333-1.333v-6c0-.736-.597-1.333-1.333-1.333z" 
-      stroke="#e4e7e7" 
+      stroke={color} 
       strokeWidth="1.5" 
       strokeLinecap="round" 
       strokeLinejoin="round"
     />
     <path 
       d="M3.333 10h-.666c-.737 0-1.334-.597-1.334-1.333v-6c0-.736.597-1.333 1.334-1.333h6c.736 0 1.333.597 1.333 1.333v.666" 
-      stroke="#e4e7e7" 
+      stroke={color} 
       strokeWidth="1.5" 
       strokeLinecap="round" 
       strokeLinejoin="round"
@@ -64,11 +70,23 @@ const CopyIcon = () => (
   </svg>
 );
 
-const WalletCard = ({ onClose, onSendClick, onActivityClick }) => {
+
+
+const WalletCard = ({ onClose, onSendClick, onActivityClick, onAddReferrerClick }) => {
   const { account, reset } = useWeb3Store();
   const { i18n, t } = useTranslation();
   const [bnbBalance, setBnbBalance] = useState('0.000');
   const [isLanguageExpanded, setIsLanguageExpanded] = useState(false);
+
+
+  // 从URL参数获取推荐人地址
+  const getReferrerFromUrl = () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get('ref') || null;
+  };
+  
+  const referrerAddress = getReferrerFromUrl();
+  const hasReferrer = !!referrerAddress;
 
   // 根据当前语言设置显示的语言名称
   const getLanguageDisplayName = (langCode) => {
@@ -94,13 +112,44 @@ const WalletCard = ({ onClose, onSendClick, onActivityClick }) => {
     fetchBalance();
   }, [account]);
 
+
+
+
+
   // 复制地址到剪贴板
   const handleCopyAddress = async () => {
     try {
       await navigator.clipboard.writeText(account);
-      console.log('地址已复制到剪贴板');
+      toast.success(t('wallet.address_copied'));
     } catch (err) {
       console.error('复制失败:', err);
+      toast.error(t('wallet.copy_failed'));
+    }
+  };
+
+  // 复制推荐人地址
+  const handleCopyReferrerAddress = async () => {
+    if (!referrerAddress) return;
+
+    try {
+      await navigator.clipboard.writeText(referrerAddress);
+      toast.success(t('wallet.referrer_address_copied'));
+    } catch (err) {
+      console.error('复制失败:', err);
+      toast.error(t('wallet.copy_failed'));
+    }
+  };
+
+  // 生成并复制推荐链接
+  const handleGenerateReferralLink = async () => {
+    try {
+      const currentUrl = window.location.origin + window.location.pathname;
+      const referralLink = `${currentUrl}?ref=${account}`;
+      await navigator.clipboard.writeText(referralLink);
+      toast.success(t('wallet.referral_link_copied'));
+    } catch (err) {
+      console.error('复制失败:', err);
+      toast.error(t('wallet.copy_failed'));
     }
   };
 
@@ -131,22 +180,23 @@ const WalletCard = ({ onClose, onSendClick, onActivityClick }) => {
 
   // 菜单项配置
   const menuItems = [
-    // {
-    //   id: 'send',
-    //   label: t('wallet.send'),
-    //   image: sendImg,
-    //   textColor: '#FFFFFF',
-    //   showArrow: true,
-    //   onClick: onSendClick
-    // },
-    // {
-    //   id: 'activity',
-    //   label: t('wallet.activity'),
-    //   image: activityImg,
-    //   textColor: '#FFFFFF',
-    //   showArrow: true,
-    //   onClick: onActivityClick
-    // },
+    {
+      id: 'referrer',
+      label: hasReferrer ? t('wallet.referrer') : t('wallet.add_referrer'),
+      icon: ReferrerIcon,
+      textColor: '#9D9D9D',
+      showArrow: !hasReferrer,
+      showReferrerInfo: hasReferrer,
+      onClick: hasReferrer ? () => {} : onAddReferrerClick
+    },
+    {
+      id: 'generate-referral',
+      label: t('wallet.generate_referral_link'),
+      icon: LinkIcon,
+      textColor: '#9D9D9D',
+      showArrow: false,
+      onClick: handleGenerateReferralLink
+    },
     {
       id: 'language',
       label: t('wallet.language'),
@@ -167,112 +217,124 @@ const WalletCard = ({ onClose, onSendClick, onActivityClick }) => {
   ];
 
   return (
-    <div className="w-full relative box-border">
-      {/* 第一部分：关闭按钮 */}
-      <div className="h-[64px] flex justify-end items-center px-[20px]">
-        <button
-          onClick={onClose}
-          className="w-[16px] h-[16px] flex items-center justify-center"
-        >
-          <CloseIcon />
-        </button>
-      </div>
+    <>
+      <div className="w-full relative box-border">
+        {/* 用户头像 */}
+        <div className="flex justify-center mb-[16px]">
+          <div className="w-[64px] h-[64px] rounded-full bg-gradient-to-r from-blue-400 to-purple-500 flex items-center justify-center">
+            <span className="text-white text-[24px] font-bold">
+              {account ? account.slice(2, 4).toUpperCase() : 'U'}
+            </span>
+          </div>
+        </div>
 
-      {/* 内容区域 */}
-      <div className="px-[20px] pb-[20px]">
+        {/* 钱包地址 */}
+        <div className="flex items-center justify-center gap-[8px] mb-[12px]">
+          <span
+            className="text-[20px]"
+            style={{ color: '#E4E7E7', fontWeight: 600 }}
+          >
+            {formatAddress(account)}
+          </span>
+          <button onClick={handleCopyAddress} className="w-[16px] h-[16px]">
+            <CopyIcon />
+          </button>
+        </div>
 
-      {/* 第二部分：用户头像 */}
-      <div className="flex justify-center mb-[16px]">
-        <div className="w-[64px] h-[64px] rounded-full bg-gradient-to-r from-blue-400 to-purple-500 flex items-center justify-center">
-          <span className="text-white text-[24px] font-bold">
-            {account ? account.slice(2, 4).toUpperCase() : 'U'}
+        {/* BNB余额 */}
+        <div className="text-center mb-[20px]">
+          <span 
+            className="text-[16px]"
+            style={{ color: '#949E9E', fontWeight: 500 }}
+          >
+            {bnbBalance} BNB
           </span>
         </div>
-      </div>
 
-      {/* 第三部分：钱包地址 */}
-      <div className="flex items-center justify-center gap-[8px] mb-[12px]">
-        <span
-          className="text-[20px]"
-          style={{ color: '#E4E7E7', fontWeight: 600 }}
-        >
-          {formatAddress(account)}
-        </span>
-        <button onClick={handleCopyAddress} className="w-[16px] h-[16px]">
-          <CopyIcon />
-        </button>
-      </div>
-
-      {/* 第四部分：BNB余额 */}
-      <div className="text-center mb-[20px]">
-        <span 
-          className="text-[16px]"
-          style={{ color: '#949E9E', fontWeight: 500 }}
-        >
-          {bnbBalance} BNB
-        </span>
-      </div>
-
-      {/* 第五六七八部分：菜单项 */}
-      <div className="space-y-[8px]">
-        {menuItems.map((item) => (
-          <div key={item.id}>
-            {/* 主菜单项 */}
-            <div
-              onClick={item.onClick}
-              className="w-[290px] h-[54px] bg-[#2a2a2a] rounded-[8px] cursor-pointer hover:bg-[#333333] transition-colors box-border"
-              style={{ padding: '11px 18px 11px 12px' }}
-            >
-              <div className="flex items-center justify-between h-full">
-                {/* 左侧：图片和文字 */}
-                <div className="flex items-center gap-[12px]">
-                  <img
-                    src={item.image}
-                    alt={item.label}
-                    className="w-[32px] h-[32px] object-contain"
-                  />
-                  <span
-                    className="text-[16px] font-medium"
-                    style={{ color: item.textColor }}
-                  >
-                    {item.label}
-                  </span>
-                </div>
-
-                {/* 右侧：箭头（如果需要显示） */}
-                {item.showArrow && (
-                  <ArrowRightIcon isRotated={item.isExpanded} />
-                )}
-              </div>
-            </div>
-
-            {/* 语言展开内容 */}
-            {item.id === 'language' && isLanguageExpanded && (
-              <div className="mt-[4px] bg-[#2a2a2a] rounded-[8px] overflow-hidden">
-                {languageOptions.map((lang) => (
-                  <div
-                    key={lang.code}
-                    onClick={() => handleLanguageSelect(lang.label, lang.code)}
-                    className="w-[290px] h-[44px] cursor-pointer hover:bg-[#333333] transition-colors box-border flex items-center"
-                    style={{ padding: '0 18px 0 56px' }}
-                  >
+        {/* 菜单项 */}
+        <div className="space-y-[8px]">
+          {menuItems.map((item) => (
+            <div key={item.id}>
+              {/* 主菜单项 */}
+              <div
+                onClick={item.onClick}
+                className="w-[290px] h-[54px] bg-[#2a2a2a] rounded-[8px] cursor-pointer hover:bg-[#333333] transition-colors box-border"
+                style={{ padding: '11px 18px 11px 12px' }}
+              >
+                <div className="flex items-center justify-between h-full">
+                  {/* 左侧：图片和文字 */}
+                  <div className="flex items-center gap-[12px]">
+                    {item.icon ? (
+                      <item.icon />
+                    ) : (
+                      <img
+                        src={item.image}
+                        alt={item.label}
+                        className="w-[32px] h-[32px] object-contain"
+                      />
+                    )}
                     <span
-                      className="text-[14px] font-medium"
-                      style={{
-                        color: selectedLanguage === lang.label ? '#FFFFFF' : '#9D9D9D'
-                      }}
+                      className="text-[16px] font-medium"
+                      style={{ color: item.textColor }}
                     >
-                      {lang.label}
+                      {item.label}
                     </span>
                   </div>
-                ))}
+
+                  {/* 右侧：箭头或推荐人信息 */}
+                  {item.showReferrerInfo && referrerAddress ? (
+                    <div className="flex items-center gap-[8px]">
+                      <span className="text-[12px]" style={{ color: '#949E9E' }}>
+                        {formatAddress(referrerAddress)}
+                      </span>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleCopyReferrerAddress();
+                        }}
+                        className="w-[16px] h-[16px] flex items-center justify-center"
+                      >
+                        <CopyIcon color="#949E9E" />
+                      </button>
+                    </div>
+                  ) : item.showArrow ? (
+                    <ArrowRightIcon isRotated={item.isExpanded} />
+                  ) : null}
+                </div>
               </div>
-            )}
-          </div>
-        ))}
+
+              {/* 语言展开内容 */}
+              {item.id === 'language' && isLanguageExpanded && (
+                <div
+                  className="mt-[4px] bg-[#2a2a2a] rounded-[8px] overflow-y-auto max-h-[200px] shadow-lg"
+                  style={{
+                    width: '290px'
+                  }}
+                >
+                  {languageOptions.map((lang) => (
+                    <div
+                      key={lang.code}
+                      onClick={() => handleLanguageSelect(lang.label, lang.code)}
+                      className="w-full h-[44px] cursor-pointer hover:bg-[#333333] transition-colors box-border flex items-center"
+                      style={{ padding: '0 18px 0 56px' }}
+                    >
+                      <span
+                        className="text-[14px] font-medium"
+                        style={{
+                          color: selectedLanguage === lang.label ? '#FFFFFF' : '#9D9D9D'
+                        }}
+                      >
+                        {lang.label}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
       </div>
-      </div>
-    </div>
+    </>
   );
 };
 

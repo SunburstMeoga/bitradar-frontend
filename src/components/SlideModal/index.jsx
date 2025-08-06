@@ -1,4 +1,31 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+
+// 返回按钮SVG组件
+const BackIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+    <path
+      d="M10 12L6 8L10 4"
+      stroke="white"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
+// 关闭按钮SVG组件
+const CloseIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+    <path
+      d="M12 4L4 12M4 4L12 12"
+      stroke="white"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
 
 const SlideModal = ({
   isOpen,
@@ -7,9 +34,14 @@ const SlideModal = ({
   className = '',
   currentIndex = 0,
   onIndexChange,
-  totalCards = 1
+  totalCards = 1,
+  titles = [],
+  showBackButton = [],
+  onBack
 }) => {
   const [translateX, setTranslateX] = useState(0);
+  const [modalHeight, setModalHeight] = useState('auto');
+  const { t } = useTranslation();
 
   // 监听ESC键关闭弹窗
   useEffect(() => {
@@ -38,6 +70,41 @@ const SlideModal = ({
     setTranslateX(-currentIndex * (100 / totalCards));
   }, [currentIndex, totalCards]);
 
+  // 计算弹窗高度
+  useEffect(() => {
+    if (!isOpen) return;
+
+    // 延迟计算，确保DOM已渲染
+    const timer = setTimeout(() => {
+      const contentElement = document.querySelector(`[data-card-index="${currentIndex}"] .modal-content`);
+      if (contentElement) {
+        // 临时移除最大高度限制来获取真实内容高度
+        const originalMaxHeight = contentElement.style.maxHeight;
+        contentElement.style.maxHeight = 'none';
+
+        const contentHeight = contentElement.scrollHeight;
+        const titleHeight = 64; // 标题栏高度
+        // 计算20vw对应的px值（基于375px设计稿）
+        const bottomPaddingVw = (20 / 375) * window.innerWidth; // 20vw转px
+        const totalModalHeight = titleHeight + contentHeight + bottomPaddingVw;
+        const maxViewportHeight = window.innerHeight * 0.7; // 70vh
+
+        // 恢复原始样式
+        contentElement.style.maxHeight = originalMaxHeight;
+
+        if (totalModalHeight <= maxViewportHeight) {
+          // 弹窗总高度 ≤ 70vh：按内容撑开
+          setModalHeight(`${totalModalHeight}px`);
+        } else {
+          // 弹窗总高度 > 70vh：使用70vh，内容区域滚动
+          setModalHeight('70vh');
+        }
+      }
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, [isOpen, currentIndex, children]);
+
   // 滑动到指定卡片
   const slideTo = (index) => {
     if (index >= 0 && index < totalCards && onIndexChange) {
@@ -62,7 +129,7 @@ const SlideModal = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center">
+    <div className="fixed inset-0 z-[9999] flex justify-center" style={{ paddingTop: '15vh' }}>
       {/* 遮罩层 */}
       <div 
         className="absolute inset-0"
@@ -72,31 +139,89 @@ const SlideModal = ({
       
       {/* 弹窗卡片容器 */}
       <div
-        className={`relative bg-[#1f1f1f] rounded-[12px] w-[330px] box-border ${className}`}
+        className={`relative bg-[#1f1f1f] rounded-[12px] w-[330px] box-border pb-[20vw]  ${className}`}
+        style={{
+          height: modalHeight,
+          maxHeight: '70vh',
+          display: 'flex',
+          flexDirection: 'column'
+        }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* 滑动容器 */}
+        {/* 固定顶部标题栏 */}
+        <div className="h-[64px] flex items-center justify-between px-[20px] flex-shrink-0">
+          {/* 左侧返回按钮 */}
+          {showBackButton[currentIndex] ? (
+            <button
+              onClick={onBack}
+              className="w-[16px] h-[16px] flex items-center justify-center"
+            >
+              <BackIcon />
+            </button>
+          ) : (
+            <div className="w-[16px] h-[16px]"></div>
+          )}
+
+          {/* 中间标题 */}
+          <span className="text-white text-[16px] font-medium">
+            {titles[currentIndex] || ''}
+          </span>
+
+          {/* 右侧关闭按钮 */}
+          <button
+            onClick={onClose}
+            className="w-[16px] h-[16px] flex items-center justify-center"
+          >
+            <CloseIcon />
+          </button>
+        </div>
+
+        {/* 内容滑动容器 */}
         <div
           className="flex transition-transform duration-300 ease-in-out"
           style={{
             transform: `translateX(${translateX}%)`,
-            width: `${totalCards * 100}%`
+            width: `${totalCards * 100}%`,
+            overflowX: 'hidden',
+            overflowY: 'visible'
           }}
         >
           {Array.isArray(children) ? children.map((child, index) => (
             <div
               key={index}
+              data-card-index={index}
               className="flex-shrink-0"
-              style={{ width: `${100 / totalCards}%` }}
+              style={{
+                width: `${100 / totalCards}%`
+              }}
             >
-              {child}
+              <div
+                className="modal-content overflow-y-auto scrollbar-hide px-[20vw]"
+                style={{
+                  scrollbarWidth: 'none', /* Firefox */
+                  msOverflowStyle: 'none' /* IE and Edge */
+                }}
+              >
+                {child}
+              </div>
             </div>
           )) : (
             <div
+              data-card-index={0}
               className="flex-shrink-0"
-              style={{ width: `${100 / totalCards}%` }}
+              style={{
+                width: `${100 / totalCards}%`
+              }}
             >
-              {children}
+              <div
+                className="modal-content overflow-y-auto scrollbar-hide px-[20vw]"
+                style={{
+                  scrollbarWidth: 'none', /* Firefox */
+                  msOverflowStyle: 'none' /* IE and Edge */
+                }}
+              >
+                {children}
+              </div>
             </div>
           )}
         </div>
