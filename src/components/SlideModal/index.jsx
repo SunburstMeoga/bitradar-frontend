@@ -7,11 +7,13 @@ const SlideModal = ({
   className = '',
   currentIndex = 0,
   onIndexChange,
-  totalCards = 1
+  totalCards = 1,
+  cardRefs
 }) => {
   const [translateX, setTranslateX] = useState(0);
   const [containerHeight, setContainerHeight] = useState('auto');
-  const cardRefs = useRef([]);
+  const internalCardRefs = useRef([]);
+  const activeCardRefs = cardRefs || internalCardRefs;
 
   // 监听ESC键关闭弹窗
   useEffect(() => {
@@ -38,19 +40,19 @@ const SlideModal = ({
     setTranslateX(-currentIndex * 100);
 
     // 更新容器高度以适应当前卡片
-    if (cardRefs.current[currentIndex]) {
-      const currentCardHeight = cardRefs.current[currentIndex].scrollHeight;
+    if (activeCardRefs.current[currentIndex]) {
+      const currentCardHeight = activeCardRefs.current[currentIndex].scrollHeight;
       setContainerHeight(currentCardHeight);
     }
-  }, [currentIndex]);
+  }, [currentIndex, activeCardRefs]);
 
   // 初始化时设置第一个卡片的高度
   useEffect(() => {
-    if (isOpen && cardRefs.current[0]) {
-      const firstCardHeight = cardRefs.current[0].scrollHeight;
+    if (isOpen && activeCardRefs.current[0]) {
+      const firstCardHeight = activeCardRefs.current[0].scrollHeight;
       setContainerHeight(firstCardHeight);
     }
-  }, [isOpen]);
+  }, [isOpen, activeCardRefs]);
 
   // 滑动到指定卡片
   const slideTo = (index) => {
@@ -98,22 +100,7 @@ const SlideModal = ({
             width: `${totalCards * 100}%`
           }}
         >
-          {Array.isArray(children) ? children.map((child, index) => (
-            <div
-              key={index}
-              ref={el => cardRefs.current[index] = el}
-              className="w-full flex-shrink-0"
-            >
-              {child}
-            </div>
-          )) : (
-            <div
-              ref={el => cardRefs.current[0] = el}
-              className="w-full flex-shrink-0"
-            >
-              {children}
-            </div>
-          )}
+          {children}
         </div>
       </div>
     </div>
