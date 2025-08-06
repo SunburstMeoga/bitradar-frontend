@@ -4,10 +4,11 @@ import SlideModal from '../SlideModal';
 import SendCard from '../SendCard';
 import ActivityCard from '../ActivityCard';
 import WalletCard from '../WalletCard';
+import SelectTokenCard from '../SelectTokenCard';
 
 const WalletModal = ({ isOpen, onClose }) => {
   const { account } = useWeb3Store();
-  const [currentCardIndex, setCurrentCardIndex] = useState(0); // 0: 钱包卡片, 1: Send卡片, 2: Activity卡片
+  const [currentCardIndex, setCurrentCardIndex] = useState(0); // 0: 钱包卡片, 1: Send卡片, 2: Activity卡片, 3: SelectToken卡片
 
   // 处理卡片切换
   const handleCardChange = (index) => {
@@ -17,6 +18,16 @@ const WalletModal = ({ isOpen, onClose }) => {
   // 返回到钱包卡片
   const handleBackToWallet = () => {
     setCurrentCardIndex(0);
+  };
+
+  // 跳转到SelectToken卡片
+  const handleSelectToken = () => {
+    setCurrentCardIndex(3);
+  };
+
+  // 从SelectToken返回到Send卡片
+  const handleBackToSend = () => {
+    setCurrentCardIndex(1);
   };
 
   // 处理关闭弹窗
@@ -33,7 +44,7 @@ const WalletModal = ({ isOpen, onClose }) => {
       onClose={handleClose}
       currentIndex={currentCardIndex}
       onIndexChange={handleCardChange}
-      totalCards={3}
+      totalCards={4}
     >
       {/* 钱包卡片 */}
       <WalletCard
@@ -46,11 +57,18 @@ const WalletModal = ({ isOpen, onClose }) => {
       <SendCard
         onBack={handleBackToWallet}
         onClose={handleClose}
+        onSelectToken={handleSelectToken}
       />
 
       {/* Activity卡片 */}
       <ActivityCard
         onBack={handleBackToWallet}
+        onClose={handleClose}
+      />
+
+      {/* SelectToken卡片 */}
+      <SelectTokenCard
+        onBack={handleBackToSend}
         onClose={handleClose}
       />
     </SlideModal>
