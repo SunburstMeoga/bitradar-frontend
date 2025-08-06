@@ -40,7 +40,17 @@ const SlideModal = ({
   onBack
 }) => {
   const [translateX, setTranslateX] = useState(0);
-  const [modalHeight, setModalHeight] = useState('auto');
+  const [modalHeight, setModalHeight] = useState(() => {
+    // 根据当前卡片索引预估初始高度，避免闪烁
+    const estimatedHeights = {
+      0: '500px', // 钱包卡片 - 较高
+      1: '400px', // AddReferrer卡片 - 中等
+      2: '450px', // Send卡片 - 中等偏高
+      3: '600px', // Activity卡片 - 很高
+      4: '350px'  // SelectToken卡片 - 较低
+    };
+    return estimatedHeights[currentIndex] || '70vh';
+  });
   const { t } = useTranslation();
 
   // 监听ESC键关闭弹窗
@@ -63,18 +73,33 @@ const SlideModal = ({
     };
   }, [isOpen, onClose]);
 
-  // 根据当前索引更新translateX
+  // 根据当前索引更新translateX和预估高度
   useEffect(() => {
     // 计算正确的滑动距离：每个卡片占用滑动容器的 (100/totalCards)%
     // 所以移动到第n个卡片需要移动 n * (100/totalCards)%
     setTranslateX(-currentIndex * (100 / totalCards));
+
+    // 当切换卡片时，先设置预估高度，减少闪烁
+    const estimatedHeights = {
+      0: '500px', // 钱包卡片 - 较高
+      1: '400px', // AddReferrer卡片 - 中等
+      2: '450px', // Send卡片 - 中等偏高
+      3: '600px', // Activity卡片 - 很高
+      4: '350px'  // SelectToken卡片 - 较低
+    };
+    const estimatedHeight = estimatedHeights[currentIndex] || '70vh';
+    setModalHeight(estimatedHeight);
   }, [currentIndex, totalCards]);
 
   // 计算弹窗高度
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen) {
+      // 弹窗关闭时重置高度为默认值，为下次打开做准备
+      setModalHeight('70vh');
+      return;
+    }
 
-    // 延迟计算，确保DOM已渲染
+    // 延迟计算，确保DOM已渲染，减少延迟时间
     const timer = setTimeout(() => {
       const contentElement = document.querySelector(`[data-card-index="${currentIndex}"] .modal-content`);
       if (contentElement) {
@@ -100,7 +125,7 @@ const SlideModal = ({
           setModalHeight('70vh');
         }
       }
-    }, 100);
+    }, 50); // 减少延迟时间从100ms到50ms
 
     return () => clearTimeout(timer);
   }, [isOpen, currentIndex, children]);
