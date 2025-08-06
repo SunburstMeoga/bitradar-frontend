@@ -33,8 +33,10 @@ const SlideModal = ({
 
   // 根据当前索引更新translateX
   useEffect(() => {
-    setTranslateX(-currentIndex * 100);
-  }, [currentIndex]);
+    // 计算正确的滑动距离：每个卡片占用滑动容器的 (100/totalCards)%
+    // 所以移动到第n个卡片需要移动 n * (100/totalCards)%
+    setTranslateX(-currentIndex * (100 / totalCards));
+  }, [currentIndex, totalCards]);
 
   // 滑动到指定卡片
   const slideTo = (index) => {
