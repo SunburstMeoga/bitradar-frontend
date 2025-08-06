@@ -123,7 +123,7 @@ const SendCard = ({ onBack, onClose, onSelectToken }) => {
       </div>
       
       {/* 内容区域 */}
-      <div className="p-[20px] space-y-[10px]">
+      <div className="p-[20px]">
         {/* 第一部分：金额输入卡片 */}
         <div
           className="w-[290px] h-[102px] bg-[#1B1C1C] border border-[#171818] rounded-[20px] flex items-center justify-between"
@@ -157,9 +157,9 @@ const SendCard = ({ onBack, onClose, onSelectToken }) => {
           </div>
         </div>
 
-        {/* 向下箭头 */}
-        <div className="relative flex justify-center">
-          <div className="w-[50px] h-[50px] bg-[#222525] rounded-[16px] flex items-center justify-center">
+        {/* 向下箭头 - 使用绝对定位实现重叠效果 */}
+        <div className="relative flex justify-center" style={{ marginTop: '10px', marginBottom: '10px' }}>
+          <div className="w-[50px] h-[50px] bg-[#222525] rounded-[16px] flex items-center justify-center relative z-10">
             <ArrowDownIcon />
           </div>
         </div>
@@ -207,7 +207,7 @@ const SendCard = ({ onBack, onClose, onSelectToken }) => {
         </div>
 
         {/* 第三部分：Select Token按钮 */}
-        <div className="pt-[10px]">
+        <div className="pt-[20px]">
           <button
             onClick={onSelectToken}
             className="w-[290px] h-[48px] rounded-[8px] text-[14px] cursor-pointer"

@@ -72,7 +72,7 @@ const SlideModal = ({
       
       {/* 弹窗卡片容器 */}
       <div
-        className={`relative bg-[#1f1f1f] rounded-[12px] w-[330px] max-h-[90vh] overflow-hidden box-border ${className}`}
+        className={`relative bg-[#1f1f1f] rounded-[12px] w-[330px] box-border ${className}`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* 滑动容器 */}
