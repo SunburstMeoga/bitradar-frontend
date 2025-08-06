@@ -131,22 +131,22 @@ const WalletCard = ({ onClose, onSendClick, onActivityClick }) => {
 
   // 菜单项配置
   const menuItems = [
-    {
-      id: 'send',
-      label: t('wallet.send'),
-      image: sendImg,
-      textColor: '#FFFFFF',
-      showArrow: true,
-      onClick: onSendClick
-    },
-    {
-      id: 'activity',
-      label: t('wallet.activity'),
-      image: activityImg,
-      textColor: '#FFFFFF',
-      showArrow: true,
-      onClick: onActivityClick
-    },
+    // {
+    //   id: 'send',
+    //   label: t('wallet.send'),
+    //   image: sendImg,
+    //   textColor: '#FFFFFF',
+    //   showArrow: true,
+    //   onClick: onSendClick
+    // },
+    // {
+    //   id: 'activity',
+    //   label: t('wallet.activity'),
+    //   image: activityImg,
+    //   textColor: '#FFFFFF',
+    //   showArrow: true,
+    //   onClick: onActivityClick
+    // },
     {
       id: 'language',
       label: t('wallet.language'),
