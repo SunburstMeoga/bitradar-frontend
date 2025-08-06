@@ -70,13 +70,13 @@ const SlideModal = ({
       
       {/* 弹窗卡片容器 */}
       <div
-        className={`relative bg-[#1f1f1f] rounded-[12px] w-[330px] max-h-[90vh] overflow-hidden box-border ${className}`}
+        className={`relative bg-[#1f1f1f] rounded-[12px] w-[330px] h-[80vh] overflow-hidden box-border ${className}`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* 滑动容器 */}
-        <div 
-          className="flex transition-transform duration-300 ease-in-out"
-          style={{ 
+        <div
+          className="flex h-full transition-transform duration-300 ease-in-out"
+          style={{
             transform: `translateX(${translateX}%)`,
             width: `${totalCards * 100}%`
           }}

@@ -32,7 +32,7 @@ const WalletModal = ({ isOpen, onClose }) => {
       totalCards={3}
     >
       {/* 钱包卡片 */}
-      <div className="w-full flex-shrink-0">
+      <div className="w-full h-full flex-shrink-0">
         <WalletCard
           onClose={onClose}
           onSendClick={() => setCurrentCardIndex(1)}
@@ -41,7 +41,7 @@ const WalletModal = ({ isOpen, onClose }) => {
       </div>
 
       {/* Send卡片 */}
-      <div className="w-full flex-shrink-0">
+      <div className="w-full h-full flex-shrink-0">
         <SendCard
           onBack={handleBackToWallet}
           onClose={onClose}
@@ -49,7 +49,7 @@ const WalletModal = ({ isOpen, onClose }) => {
       </div>
 
       {/* Activity卡片 */}
-      <div className="w-full flex-shrink-0">
+      <div className="w-full h-full flex-shrink-0">
         <ActivityCard
           onBack={handleBackToWallet}
           onClose={onClose}
