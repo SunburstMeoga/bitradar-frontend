@@ -1,15 +1,17 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 
-const SlideModal = ({ 
-  isOpen, 
-  onClose, 
-  children, 
+const SlideModal = ({
+  isOpen,
+  onClose,
+  children,
   className = '',
   currentIndex = 0,
   onIndexChange,
   totalCards = 1
 }) => {
   const [translateX, setTranslateX] = useState(0);
+  const [containerHeight, setContainerHeight] = useState('auto');
+  const cardRefs = useRef([]);
 
   // 监听ESC键关闭弹窗
   useEffect(() => {
@@ -31,10 +33,24 @@ const SlideModal = ({
     };
   }, [isOpen, onClose]);
 
-  // 根据当前索引更新translateX
+  // 根据当前索引更新translateX和高度
   useEffect(() => {
     setTranslateX(-currentIndex * 100);
+
+    // 更新容器高度以适应当前卡片
+    if (cardRefs.current[currentIndex]) {
+      const currentCardHeight = cardRefs.current[currentIndex].scrollHeight;
+      setContainerHeight(currentCardHeight);
+    }
   }, [currentIndex]);
+
+  // 初始化时设置第一个卡片的高度
+  useEffect(() => {
+    if (isOpen && cardRefs.current[0]) {
+      const firstCardHeight = cardRefs.current[0].scrollHeight;
+      setContainerHeight(firstCardHeight);
+    }
+  }, [isOpen]);
 
   // 滑动到指定卡片
   const slideTo = (index) => {
@@ -70,18 +86,34 @@ const SlideModal = ({
       
       {/* 弹窗卡片容器 */}
       <div
-        className={`relative bg-[#1f1f1f] rounded-[12px] w-[330px] h-[80vh] overflow-hidden box-border ${className}`}
+        className={`relative bg-[#1f1f1f] rounded-[12px] w-[330px] overflow-hidden box-border transition-all duration-300 ease-in-out ${className}`}
+        style={{ height: containerHeight }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* 滑动容器 */}
         <div
-          className="flex h-full transition-transform duration-300 ease-in-out"
+          className="flex transition-transform duration-300 ease-in-out"
           style={{
             transform: `translateX(${translateX}%)`,
             width: `${totalCards * 100}%`
           }}
         >
-          {children}
+          {Array.isArray(children) ? children.map((child, index) => (
+            <div
+              key={index}
+              ref={el => cardRefs.current[index] = el}
+              className="w-full flex-shrink-0"
+            >
+              {child}
+            </div>
+          )) : (
+            <div
+              ref={el => cardRefs.current[0] = el}
+              className="w-full flex-shrink-0"
+            >
+              {children}
+            </div>
+          )}
         </div>
       </div>
     </div>

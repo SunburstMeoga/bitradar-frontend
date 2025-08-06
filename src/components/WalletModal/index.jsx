@@ -32,29 +32,23 @@ const WalletModal = ({ isOpen, onClose }) => {
       totalCards={3}
     >
       {/* 钱包卡片 */}
-      <div className="w-full h-full flex-shrink-0">
-        <WalletCard
-          onClose={onClose}
-          onSendClick={() => setCurrentCardIndex(1)}
-          onActivityClick={() => setCurrentCardIndex(2)}
-        />
-      </div>
+      <WalletCard
+        onClose={onClose}
+        onSendClick={() => setCurrentCardIndex(1)}
+        onActivityClick={() => setCurrentCardIndex(2)}
+      />
 
       {/* Send卡片 */}
-      <div className="w-full h-full flex-shrink-0">
-        <SendCard
-          onBack={handleBackToWallet}
-          onClose={onClose}
-        />
-      </div>
+      <SendCard
+        onBack={handleBackToWallet}
+        onClose={onClose}
+      />
 
       {/* Activity卡片 */}
-      <div className="w-full h-full flex-shrink-0">
-        <ActivityCard
-          onBack={handleBackToWallet}
-          onClose={onClose}
-        />
-      </div>
+      <ActivityCard
+        onBack={handleBackToWallet}
+        onClose={onClose}
+      />
     </SlideModal>
   );
 };

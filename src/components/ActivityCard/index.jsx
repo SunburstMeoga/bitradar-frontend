@@ -30,7 +30,7 @@ const ActivityCard = ({ onBack, onClose }) => {
   const { t } = useTranslation();
 
   return (
-    <div className="w-full h-full flex flex-col">
+    <div className="w-full flex flex-col">
       {/* 顶部导航栏 */}
       <div className="h-[64px] flex items-center justify-between px-[20px] flex-shrink-0">
         {/* 左侧返回按钮 */}
@@ -56,8 +56,11 @@ const ActivityCard = ({ onBack, onClose }) => {
       </div>
       
       {/* 内容区域 - 暂时为空 */}
-      <div className="flex-1 p-[20px]">
+      <div className="p-[20px]">
         {/* 这里将来添加Activity功能的具体内容 */}
+        <div className="h-[300px] flex items-center justify-center text-white text-[14px]">
+          Activity功能内容区域
+        </div>
       </div>
     </div>
   );

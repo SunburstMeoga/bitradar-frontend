@@ -167,7 +167,7 @@ const WalletCard = ({ onClose, onSendClick, onActivityClick }) => {
   ];
 
   return (
-    <div className="w-full h-full p-[20px] relative box-border overflow-y-auto">
+    <div className="w-full p-[20px] relative box-border">
       {/* 第一部分：关闭按钮 */}
       <div className="h-[64px] flex justify-end items-center">
         <button
