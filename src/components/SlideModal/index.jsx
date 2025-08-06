@@ -81,7 +81,22 @@ const SlideModal = ({
             width: `${totalCards * 100}%`
           }}
         >
-          {children}
+          {Array.isArray(children) ? children.map((child, index) => (
+            <div
+              key={index}
+              className="flex-shrink-0"
+              style={{ width: `${100 / totalCards}%` }}
+            >
+              {child}
+            </div>
+          )) : (
+            <div
+              className="flex-shrink-0"
+              style={{ width: `${100 / totalCards}%` }}
+            >
+              {children}
+            </div>
+          )}
         </div>
       </div>
     </div>
