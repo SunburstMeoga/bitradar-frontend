@@ -167,9 +167,9 @@ const WalletCard = ({ onClose, onSendClick, onActivityClick }) => {
   ];
 
   return (
-    <div className="w-full p-[20px] relative box-border">
+    <div className="w-full relative box-border">
       {/* 第一部分：关闭按钮 */}
-      <div className="h-[64px] flex justify-end items-center">
+      <div className="h-[64px] flex justify-end items-center px-[20px]">
         <button
           onClick={onClose}
           className="w-[16px] h-[16px] flex items-center justify-center"
@@ -177,6 +177,9 @@ const WalletCard = ({ onClose, onSendClick, onActivityClick }) => {
           <CloseIcon />
         </button>
       </div>
+
+      {/* 内容区域 */}
+      <div className="px-[20px] pb-[20px]">
 
       {/* 第二部分：用户头像 */}
       <div className="flex justify-center mb-[16px]">
@@ -267,6 +270,7 @@ const WalletCard = ({ onClose, onSendClick, onActivityClick }) => {
             )}
           </div>
         ))}
+      </div>
       </div>
     </div>
   );
