@@ -171,6 +171,18 @@ const WalletCard = ({ onClose, onSendClick, onActivityClick, onAddReferrerClick 
     i18n.changeLanguage(langCode);
   };
 
+  // 处理添加推荐人点击（先关闭语言选项）
+  const handleAddReferrerClick = () => {
+    // 如果语言选项展开，先关闭它
+    if (isLanguageExpanded) {
+      setIsLanguageExpanded(false);
+    }
+    // 然后调用原始的回调
+    if (onAddReferrerClick) {
+      onAddReferrerClick();
+    }
+  };
+
   // 语言选项
   const languageOptions = [
     { code: 'zh', label: '简体中文' },
@@ -187,7 +199,7 @@ const WalletCard = ({ onClose, onSendClick, onActivityClick, onAddReferrerClick 
       textColor: '#9D9D9D',
       showArrow: !hasReferrer,
       showReferrerInfo: hasReferrer,
-      onClick: hasReferrer ? () => {} : onAddReferrerClick
+      onClick: hasReferrer ? () => {} : handleAddReferrerClick
     },
     {
       id: 'generate-referral',

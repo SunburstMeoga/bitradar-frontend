@@ -144,7 +144,8 @@ const SlideModal = ({
           height: modalHeight,
           maxHeight: '70vh',
           display: 'flex',
-          flexDirection: 'column'
+          flexDirection: 'column',
+          overflow: 'hidden'
         }}
         onClick={(e) => e.stopPropagation()}
       >
