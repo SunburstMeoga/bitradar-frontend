@@ -1,4 +1,5 @@
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 // 导入图标
 import tradeIcon from '../../assets/icons/trade.png';
@@ -9,6 +10,7 @@ import accountIcon from '../../assets/icons/account.png';
 import accountActiveIcon from '../../assets/icons/account-active.png';
 
 const Footer = () => {
+  const { t } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -16,21 +18,21 @@ const Footer = () => {
   const navItems = [
     {
       key: 'trade',
-      label: 'Trade',
+      label: t('navigation.trade'),
       path: '/',
       icon: tradeIcon,
       activeIcon: tradeActiveIcon,
     },
     {
       key: 'history',
-      label: 'History',
+      label: t('navigation.history'),
       path: '/history',
       icon: historyIcon,
       activeIcon: historyActiveIcon,
     },
     {
       key: 'account',
-      label: 'Account',
+      label: t('navigation.account'),
       path: '/account',
       icon: accountIcon,
       activeIcon: accountActiveIcon,

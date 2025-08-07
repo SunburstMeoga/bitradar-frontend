@@ -38,5 +38,61 @@
     "referrer_address_copied": "Referrer Address Copied",
     "referral_link_copied": "Referral Link Copied",
     "copy_failed": "Copy Failed"
+  },
+  "navigation": {
+    "trade": "Trade",
+    "history": "History",
+    "account": "Account"
+  },
+  "history": {
+    "title": "Trade History",
+    "loading": "Loading...",
+    "no_more_data": "No more data",
+    "no_data": "No trading records",
+    "duration_1m": "1m",
+    "duration_5m": "5m",
+    "duration_15m": "15m",
+    "duration_30m": "30m",
+    "duration_1h": "1h",
+    "up": "Up",
+    "down": "Down",
+    "win": "Win",
+    "lose": "Lose"
+  },
+  "account": {
+    "wallet_not_connected": "Wallet not connected",
+    "network_details": "Network Details",
+    "next_distribution": "Next Distribution",
+    "transactions": "Transactions",
+    "loading": "Loading...",
+    "no_more_data": "No more data",
+    "transaction_types": {
+      "check_in": "Check-in",
+      "reward": "Reward",
+      "transfer": "Transfer",
+      "mining": "Mining",
+      "bonus": "Bonus"
+    },
+    "time_ago": {
+      "seconds": "seconds ago",
+      "minutes": "minutes ago",
+      "hours": "hours ago",
+      "days": "days ago"
+    }
+  },
+  "network_details": {
+    "title": "Network Details",
+    "referral_overview": "Referral Overview",
+    "team_members": "Team Members",
+    "total_deposit": "Total Deposit",
+    "total_withdrawal": "Total Withdrawal",
+    "referral_system": "Referral System",
+    "level_1": "Level 1: 6 People",
+    "level_2": "Level 2: 6 People",
+    "level_3": "Level 3: 6 People",
+    "level_4": "Level 4: 6 People",
+    "trading_amount": "Trading Amount",
+    "fee_amount": "Fee Amount",
+    "withdrawal_amount": "Withdrawal Amount"
   }
 }

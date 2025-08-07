@@ -38,5 +38,61 @@
     "referrer_address_copied": "推荐人地址已复制",
     "referral_link_copied": "推荐链接已复制",
     "copy_failed": "复制失败"
+  },
+  "navigation": {
+    "trade": "交易",
+    "history": "历史",
+    "account": "账户"
+  },
+  "history": {
+    "title": "交易历史",
+    "loading": "加载中...",
+    "no_more_data": "没有更多数据了",
+    "no_data": "暂无交易记录",
+    "duration_1m": "1分钟",
+    "duration_5m": "5分钟",
+    "duration_15m": "15分钟",
+    "duration_30m": "30分钟",
+    "duration_1h": "1小时",
+    "up": "涨",
+    "down": "跌",
+    "win": "盈利",
+    "lose": "亏损"
+  },
+  "account": {
+    "wallet_not_connected": "未连接钱包",
+    "network_details": "网体详情",
+    "next_distribution": "下次发放",
+    "transactions": "交易记录",
+    "loading": "加载中...",
+    "no_more_data": "没有更多数据了",
+    "transaction_types": {
+      "check_in": "签到",
+      "reward": "奖励",
+      "transfer": "转账",
+      "mining": "挖矿",
+      "bonus": "红利"
+    },
+    "time_ago": {
+      "seconds": "秒前",
+      "minutes": "分钟前",
+      "hours": "小时前",
+      "days": "天前"
+    }
+  },
+  "network_details": {
+    "title": "网体详情",
+    "referral_overview": "推荐总览",
+    "team_members": "团队总人数",
+    "total_deposit": "总质押金额",
+    "total_withdrawal": "总提现金额",
+    "referral_system": "推荐关系",
+    "level_1": "第一层: 6人",
+    "level_2": "第二层: 6人",
+    "level_3": "第三层: 6人",
+    "level_4": "第四层: 6人",
+    "trading_amount": "交易金额",
+    "fee_amount": "质押金额",
+    "withdrawal_amount": "提现金额"
   }
 }

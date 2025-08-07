@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import historyUpIcon from '../../assets/icons/history-up.png';
 import historyDownIcon from '../../assets/icons/history-down.png';
 
@@ -44,10 +45,15 @@ const generateMockData = (page = 1, pageSize = 10) => {
     const openPrice = 115000 + Math.random() * 1000;
     const closePrice = openPrice + (Math.random() - 0.5) * 500;
 
+    // 随机选择交易时长
+    const durations = ['1m', '5m', '15m', '30m', '1h'];
+    const duration = durations[Math.floor(Math.random() * durations.length)];
+    const durationMinutes = duration === '1m' ? 1 : duration === '5m' ? 5 : duration === '15m' ? 15 : duration === '30m' ? 30 : 60;
+
     // 生成时间
     const now = new Date();
     const openTime = new Date(now.getTime() - (index + 1) * 60000 * Math.random() * 10);
-    const closeTime = new Date(openTime.getTime() + 60000); // 1分钟后
+    const closeTime = new Date(openTime.getTime() + durationMinutes * 60000);
 
     data.push({
       id: `trade_${index}`,
@@ -59,7 +65,7 @@ const generateMockData = (page = 1, pageSize = 10) => {
       closePrice,
       openTime: openTime.toISOString(),
       closeTime: closeTime.toISOString(),
-      duration: '1m'
+      duration: duration
     });
   }
 
@@ -67,6 +73,7 @@ const generateMockData = (page = 1, pageSize = 10) => {
 };
 
 const History = () => {
+  const { t, i18n } = useTranslation();
   const [historyData, setHistoryData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
@@ -75,7 +82,8 @@ const History = () => {
   // 格式化时间
   const formatTime = (isoString) => {
     const date = new Date(isoString);
-    return date.toLocaleString('zh-CN', {
+    const locale = i18n.language === 'zh' ? 'zh-CN' : i18n.language === 'ko' ? 'ko-KR' : 'en-US';
+    return date.toLocaleString(locale, {
       year: 'numeric',
       month: '2-digit',
       day: '2-digit',
@@ -146,7 +154,7 @@ const History = () => {
       {/* 标题 */}
       <div className="px-[16vw] pt-[20vw] pb-[16vw]">
         <h1 className="text-white font-size-[28vw] font-semibold" style={{ fontWeight: 600 }}>
-          Trade History
+          {t('history.title')}
         </h1>
       </div>
 
@@ -190,7 +198,7 @@ const History = () => {
 
                   {/* 时间文案 */}
                   <span className="text-[rgb(143,143,143)] font-size-[13vw]" style={{ fontWeight: 400 }}>
-                    · {item.duration}
+                    · {t(`history.duration_${item.duration}`)}
                   </span>
                 </div>
               </div>
@@ -249,21 +257,21 @@ const History = () => {
         {/* 加载状态 */}
         {loading && (
           <div className="text-center py-[20vw]">
-            <span className="text-[#8f8f8f] font-size-[14vw]">加载中...</span>
+            <span className="text-[#8f8f8f] font-size-[14vw]">{t('history.loading')}</span>
           </div>
         )}
 
         {/* 没有更多数据 */}
         {!hasMore && historyData.length > 0 && (
           <div className="text-center py-[20vw]">
-            <span className="text-[#8f8f8f] font-size-[14vw]">没有更多数据了</span>
+            <span className="text-[#8f8f8f] font-size-[14vw]">{t('history.no_more_data')}</span>
           </div>
         )}
 
         {/* 空状态 */}
         {!loading && historyData.length === 0 && (
           <div className="text-center py-[40vw]">
-            <span className="text-[#8f8f8f] font-size-[16vw]">暂无交易记录</span>
+            <span className="text-[#8f8f8f] font-size-[16vw]">{t('history.no_data')}</span>
           </div>
         )}
       </div>

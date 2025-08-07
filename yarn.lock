@@ -1318,6 +1318,7 @@ __metadata:
     postcss-px-to-viewport: "npm:^1.1.1"
     react: "npm:^19.1.0"
     react-chartjs-2: "npm:^5.3.0"
+    react-countup: "npm:^6.5.3"
     react-dom: "npm:^19.1.0"
     react-hot-toast: "npm:^2.5.2"
     react-i18next: "npm:^15.6.1"
@@ -1549,6 +1550,13 @@ __metadata:
   version: 1.0.2
   resolution: "cookie@npm:1.0.2"
   checksum: 10c0/fd25fe79e8fbcfcaf6aa61cd081c55d144eeeba755206c058682257cb38c4bd6795c6620de3f064c740695bb65b7949ebb1db7a95e4636efb8357a335ad3f54b
+  languageName: node
+  linkType: hard
+
+"countup.js@npm:^2.8.0":
+  version: 2.9.0
+  resolution: "countup.js@npm:2.9.0"
+  checksum: 10c0/41ca03df2dd9f088a949353eb28f4bc6b0b15e5e5b6c93674b72d0e454b8ba4bbe1ce18441ab088e1446221c9197aebc26100812263ff213d62cc811ba0d7952
   languageName: node
   linkType: hard
 
@@ -3316,6 +3324,17 @@ __metadata:
     chart.js: ^4.1.1
     react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
   checksum: 10c0/4415d40217c084a49f9a936fbd30f67e0e705148e6f8359bec65601033d1076f31085c45793839fc29ec833e6c427b0bf9861a0c54c432c08d35bc9590ffa41a
+  languageName: node
+  linkType: hard
+
+"react-countup@npm:^6.5.3":
+  version: 6.5.3
+  resolution: "react-countup@npm:6.5.3"
+  dependencies:
+    countup.js: "npm:^2.8.0"
+  peerDependencies:
+    react: ">= 16.3.0"
+  checksum: 10c0/d18beba2a7dc5f2dce346d47c90e76570f862a7f49acb7ad73028acfd584f691c84dde3b1c8743181d158636a20a7b9201ad8c6c8b4d310ff02ca68eaccf997f
   languageName: node
   linkType: hard
 

@@ -38,5 +38,61 @@
     "referrer_address_copied": "추천인 주소가 복사되었습니다",
     "referral_link_copied": "추천 링크가 복사되었습니다",
     "copy_failed": "복사 실패"
+  },
+  "navigation": {
+    "trade": "거래",
+    "history": "기록",
+    "account": "계정"
+  },
+  "history": {
+    "title": "거래 기록",
+    "loading": "로딩 중...",
+    "no_more_data": "더 이상 데이터가 없습니다",
+    "no_data": "거래 기록이 없습니다",
+    "duration_1m": "1분",
+    "duration_5m": "5분",
+    "duration_15m": "15분",
+    "duration_30m": "30분",
+    "duration_1h": "1시간",
+    "up": "상승",
+    "down": "하락",
+    "win": "수익",
+    "lose": "손실"
+  },
+  "account": {
+    "wallet_not_connected": "지갑이 연결되지 않음",
+    "network_details": "네트워크 세부정보",
+    "next_distribution": "다음 배포",
+    "transactions": "거래 내역",
+    "loading": "로딩 중...",
+    "no_more_data": "더 이상 데이터가 없습니다",
+    "transaction_types": {
+      "check_in": "체크인",
+      "reward": "보상",
+      "transfer": "전송",
+      "mining": "마이닝",
+      "bonus": "보너스"
+    },
+    "time_ago": {
+      "seconds": "초 전",
+      "minutes": "분 전",
+      "hours": "시간 전",
+      "days": "일 전"
+    }
+  },
+  "network_details": {
+    "title": "네트워크 세부정보",
+    "referral_overview": "추천 개요",
+    "team_members": "팀 구성원",
+    "total_deposit": "총 예치금",
+    "total_withdrawal": "총 출금액",
+    "referral_system": "추천 시스템",
+    "level_1": "1단계: 6명",
+    "level_2": "2단계: 6명",
+    "level_3": "3단계: 6명",
+    "level_4": "4단계: 6명",
+    "trading_amount": "거래 금액",
+    "fee_amount": "수수료 금액",
+    "withdrawal_amount": "출금 금액"
   }
 }
