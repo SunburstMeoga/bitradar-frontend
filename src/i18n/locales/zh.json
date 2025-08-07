@@ -62,6 +62,7 @@
   "account": {
     "wallet_not_connected": "未连接钱包",
     "network_details": "网体详情",
+    "exchange": "兑换",
     "next_distribution": "下次发放",
     "transactions": "交易记录",
     "loading": "加载中...",
@@ -94,5 +95,51 @@
     "trading_amount": "交易金额",
     "fee_amount": "质押金额",
     "withdrawal_amount": "提现金额"
+  },
+  "exchange": {
+    "title": "兑换",
+    "wallet_address": "钱包地址",
+    "from": "支付",
+    "to": "接收",
+    "balance": "余额",
+    "max": "最大",
+    "exchange_rate": "兑换汇率",
+    "enter_amount": "请输入金额",
+    "insufficient_balance": "余额不足",
+    "confirm_exchange": "确认兑换",
+    "success_message": "兑换成功！",
+    "exchange_usdr": "兑换USDR",
+    "exchange_usdt": "兑换USDT",
+    "exchange_usdr_title": "兑换USDR",
+    "exchange_usdt_title": "兑换USDT",
+    "usdt_to_usdr": "USDT兑换USDR",
+    "fiat_to_usdr": "法币兑换USDR",
+    "usdr_to_usdt": "USDR兑换USDT",
+    "fiat_to_usdt": "法币兑换USDT",
+    "confirm_swap": "确认兑换",
+    "withdraw_usdr": "提现USDR"
+  },
+  "transaction_history": {
+    "title": "交易记录",
+    "loading": "加载中...",
+    "no_more_data": "没有更多数据了",
+    "filters": {
+      "all": "全部",
+      "deposit": "充值",
+      "withdraw": "提现",
+      "trade": "交易",
+      "reward": "奖励"
+    },
+    "transaction_types": {
+      "check_in": "签到",
+      "reward": "奖励",
+      "transfer": "转账",
+      "mining": "挖矿",
+      "bonus": "红利",
+      "exchange": "兑换",
+      "deposit": "充值",
+      "distribution": "发放",
+      "withdraw": "提现"
+    }
   }
 }

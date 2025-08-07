@@ -199,30 +199,30 @@ const NetworkDetails = () => {
 
                 {/* 展开的用户列表 */}
                 {expandedLevel === level.level && (
-                  <div className="mt-[2vw] space-y-[1vw]">
+                  <div className="mt-[2vw] md:mt-1 space-y-[1vw] md:space-y-1">
                     {mockUsers.map((user, index) => (
                       <div
                         key={index}
-                        className="px-[16vw] py-[12vw] rounded-[8vw]"
+                        className="px-[16vw] md:px-4 py-[12vw] md:py-3 rounded-[8vw] md:rounded-lg"
                         style={{ backgroundColor: 'rgb(31, 31, 31)' }}
                       >
                         {/* 用户地址 */}
-                        <div className="text-white text-size-[14vw] font-medium mb-[8vw]">
+                        <div className="text-white text-size-[14vw] md:text-sm font-medium mb-[8vw] md:mb-2">
                           {formatAddress(user.address)}
                         </div>
 
                         {/* 用户数据 */}
-                        <div className="flex justify-between text-size-[12vw]">
+                        <div className="flex justify-between text-size-[12vw] md:text-xs">
                           <div className="flex flex-col items-center">
-                            <span className="text-[#8f8f8f] mb-[4vw]">{t('network_details.trading_amount')}</span>
+                            <span className="text-[#8f8f8f] mb-[4vw] md:mb-1">{t('network_details.trading_amount')}</span>
                             {formatAmount(user.tradingAmount, '12vw', 'text-white')}
                           </div>
                           <div className="flex flex-col items-center">
-                            <span className="text-[#8f8f8f] mb-[4vw]">{t('network_details.fee_amount')}</span>
+                            <span className="text-[#8f8f8f] mb-[4vw] md:mb-1">{t('network_details.fee_amount')}</span>
                             {formatAmount(user.feeAmount, '12vw', 'text-white')}
                           </div>
                           <div className="flex flex-col items-center">
-                            <span className="text-[#8f8f8f] mb-[4vw]">{t('network_details.withdrawal_amount')}</span>
+                            <span className="text-[#8f8f8f] mb-[4vw] md:mb-1">{t('network_details.withdrawal_amount')}</span>
                             {formatAmount(user.withdrawalAmount, '12vw', 'text-white')}
                           </div>
                         </div>

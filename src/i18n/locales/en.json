@@ -62,6 +62,7 @@
   "account": {
     "wallet_not_connected": "Wallet not connected",
     "network_details": "Network Details",
+    "exchange": "Exchange",
     "next_distribution": "Next Distribution",
     "transactions": "Transactions",
     "loading": "Loading...",
@@ -94,5 +95,51 @@
     "trading_amount": "Trading Amount",
     "fee_amount": "Fee Amount",
     "withdrawal_amount": "Withdrawal Amount"
+  },
+  "exchange": {
+    "title": "Exchange",
+    "wallet_address": "Wallet Address",
+    "from": "From",
+    "to": "To",
+    "balance": "Balance",
+    "max": "Max",
+    "exchange_rate": "Exchange Rate",
+    "enter_amount": "Enter Amount",
+    "insufficient_balance": "Insufficient Balance",
+    "confirm_exchange": "Confirm Exchange",
+    "success_message": "Exchange Successful!",
+    "exchange_usdr": "Exchange USDR",
+    "exchange_usdt": "Exchange USDT",
+    "exchange_usdr_title": "Exchange USDR",
+    "exchange_usdt_title": "Exchange USDT",
+    "usdt_to_usdr": "USDT to USDR",
+    "fiat_to_usdr": "Fiat to USDR",
+    "usdr_to_usdt": "USDR to USDT",
+    "fiat_to_usdt": "Fiat to USDT",
+    "confirm_swap": "Confirm Swap",
+    "withdraw_usdr": "Withdraw USDR"
+  },
+  "transaction_history": {
+    "title": "Transaction History",
+    "loading": "Loading...",
+    "no_more_data": "No more data",
+    "filters": {
+      "all": "All",
+      "deposit": "Deposit",
+      "withdraw": "Withdraw",
+      "trade": "Trade",
+      "reward": "Reward"
+    },
+    "transaction_types": {
+      "check_in": "Check-in",
+      "reward": "Reward",
+      "transfer": "Transfer",
+      "mining": "Mining",
+      "bonus": "Bonus",
+      "exchange": "Exchange",
+      "deposit": "Deposit",
+      "distribution": "Distribution",
+      "withdraw": "Withdraw"
+    }
   }
 }

@@ -126,7 +126,8 @@ const SecondaryHeader = ({ title, onBack }) => {
 
   return (
     <header className="w-full sticky top-0 z-[100]" style={{ backgroundColor: '#121212' }}>
-      <div className="flex justify-between items-center pl-[8vw] pr-[16vw] py-[11vw]">
+      {/* 移动端：使用vw单位 */}
+      <div className="flex justify-between items-center pl-[8vw] pr-[16vw] py-[11vw] md:hidden">
         {/* 左侧返回按钮和标题 */}
         <div className="flex items-center gap-[8vw]">
           <button
@@ -154,6 +155,42 @@ const SecondaryHeader = ({ title, onBack }) => {
               onClick={handleWalletClick}
               disabled={isConnecting}
               className="w-[130vw] h-[34vw] bg-white text-black text-size-[15vw] font-semibold rounded-[34vw] flex items-center justify-center hover:bg-gray-100 disabled:opacity-60 disabled:cursor-not-allowed transition-all"
+            >
+              {isConnecting ? t('wallet.connecting') : t('common.connect_wallet')}
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* 平板端和PC端：使用固定px单位 */}
+      <div className="hidden md:flex md:justify-between md:items-center md:pl-2 md:pr-4 md:py-3">
+        {/* 左侧返回按钮和标题 */}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleBackClick}
+            className="w-8 h-8 flex items-center justify-center"
+          >
+            <BackIcon />
+          </button>
+          <span className="text-white text-base font-medium">{title}</span>
+        </div>
+
+        {/* 右侧钱包连接按钮 */}
+        <div>
+          {isConnected ? (
+            <button
+              onClick={handleWalletClick}
+              className="w-28 h-9 flex items-center gap-1 bg-transparent border border-[#3D3D3D] rounded-full px-2 hover:border-[#3D3D3D] transition-all"
+            >
+              <img src={binanceIcon} alt="BSC" className="w-4 h-4 object-contain" />
+              <span className="text-white text-sm font-medium">{formatAddress(account, 3, 3)}</span>
+              <img src={downIcon} alt="Down" className="w-4 h-4 object-contain" />
+            </button>
+          ) : (
+            <button
+              onClick={handleWalletClick}
+              disabled={isConnecting}
+              className="w-32 h-8 bg-white text-black text-sm font-semibold rounded-full flex items-center justify-center hover:bg-gray-100 disabled:opacity-60 disabled:cursor-not-allowed transition-all"
             >
               {isConnecting ? t('wallet.connecting') : t('common.connect_wallet')}
             </button>

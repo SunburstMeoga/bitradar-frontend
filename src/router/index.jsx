@@ -7,6 +7,8 @@ import Home from '../pages/Home';
 import History from '../pages/History';
 import Account from '../pages/Account';
 import NetworkDetails from '../pages/NetworkDetails';
+import Exchange from '../pages/Exchange';
+import TransactionHistory from '../pages/TransactionHistory';
 import NotFound from '../pages/NotFound';
 
 // 创建一个包装组件来提供标题
@@ -15,6 +17,26 @@ const NetworkDetailsWrapper = () => {
   return (
     <SecondaryLayout title={t('network_details.title')}>
       <NetworkDetails />
+    </SecondaryLayout>
+  );
+};
+
+// 兑换页面包装组件
+const ExchangeWrapper = () => {
+  const { t } = useTranslation();
+  return (
+    <SecondaryLayout title={t('exchange.title')}>
+      <Exchange />
+    </SecondaryLayout>
+  );
+};
+
+// 交易记录页面包装组件
+const TransactionHistoryWrapper = () => {
+  const { t } = useTranslation();
+  return (
+    <SecondaryLayout title={t('transaction_history.title')}>
+      <TransactionHistory />
     </SecondaryLayout>
   );
 };
@@ -45,6 +67,14 @@ export const router = createBrowserRouter([
   {
     path: '/network-details',
     element: <NetworkDetailsWrapper />,
+  },
+  {
+    path: '/exchange',
+    element: <ExchangeWrapper />,
+  },
+  {
+    path: '/transaction-history',
+    element: <TransactionHistoryWrapper />,
   },
   {
     path: '*',
