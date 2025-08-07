@@ -179,22 +179,22 @@ const Account = () => {
   const { integerPart, decimalPart } = formatBalance(currentBalance);
 
   return (
-    <div className="min-h-screen pb-[86vw]" style={{ backgroundColor: '#121212' }}>
+    <div className="min-h-screen pb-[86vw] md:pb-20" style={{ backgroundColor: '#121212' }}>
       {/* 第一部分：钱包地址 */}
-      <div className="px-[16vw] pt-[20vw] pb-[24vw]">
-        <div className="text-white text-size-[28vw] font-semibold" style={{ fontWeight: 600 }}>
+      <div className="px-[16vw] md:px-4 pt-[20vw] md:pt-5 pb-[24vw] md:pb-6">
+        <div className="text-white text-size-[28vw] md:text-2xl font-semibold" style={{ fontWeight: 600 }}>
           {isConnected && account ? formatAddress(account, 4, 4) : t('account.wallet_not_connected')}
         </div>
       </div>
 
       {/* 第二部分：Tabs */}
-      <div className="px-[16vw] pb-[24vw]">
-        <div className="flex gap-[12vw]">
+      <div className="px-[16vw] md:px-4 pb-[24vw] md:pb-6">
+        <div className="flex gap-[12vw] md:gap-3">
           {['USDT', 'LuckyUSD'].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`flex items-center gap-[8vw] px-[20vw] py-[16vw] rounded-[34vw] text-size-[16vw] transition-all ${
+              className={`flex items-center gap-[8vw] md:gap-2 px-[20vw] md:px-5 py-[16vw] md:py-4 rounded-[34vw] md:rounded-full text-size-[16vw] md:text-lg transition-all ${
                 activeTab === tab
                   ? 'text-black'
                   : 'text-white'
@@ -204,7 +204,7 @@ const Account = () => {
                 backgroundImage: activeTab === tab ? 'linear-gradient(rgb(143, 143, 143), rgb(217, 217, 217))' : 'none',
               }}
             >
-              <img src={btcIcon} alt={tab} className="w-[24vw] h-[24vw]" />
+              <img src={btcIcon} alt={tab} className="w-[24vw] md:w-6 h-[24vw] md:h-6" />
               <span>{tab}</span>
             </button>
           ))}
@@ -212,83 +212,83 @@ const Account = () => {
       </div>
 
       {/* 第三部分：网体详情入口 */}
-      <div className="px-[16vw] pb-[24vw]">
+      <div className="px-[16vw] md:px-4 pb-[24vw] md:pb-6">
         <div
           onClick={handleNetworkDetailsClick}
-          className="w-[343vw] h-[50vw] flex items-center justify-between px-[16vw] rounded-[8vw] cursor-pointer hover:opacity-80 transition-opacity"
+          className="w-[343vw] md:w-full h-[50vw] md:h-12 flex items-center justify-between px-[16vw] md:px-4 rounded-[8vw] md:rounded-lg cursor-pointer hover:opacity-80 transition-opacity"
           style={{ backgroundColor: 'rgb(41, 41, 41)' }}
         >
-          <span className="text-white text-size-[16vw]">{t('account.network_details')}</span>
-          <svg className="w-[16vw] h-[16vw] text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <span className="text-white text-size-[16vw] md:text-lg">{t('account.network_details')}</span>
+          <svg className="w-[16vw] md:w-4 h-[16vw] md:h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
           </svg>
         </div>
       </div>
 
       {/* 第四部分：余额显示 */}
-      <div className="px-[16vw] pb-[24vw]">
+      <div className="px-[16vw] md:px-4 pb-[24vw] md:pb-6">
         <div className="flex items-baseline">
-          <span className="text-white text-size-[44vw] font-semibold" style={{ fontWeight: 600 }}>
+          <span className="text-white text-size-[44vw] md:text-4xl font-semibold" style={{ fontWeight: 600 }}>
             {integerPart}
           </span>
-          <span className="text-[rgb(87,87,87)] text-size-[28vw] font-semibold" style={{ fontWeight: 600 }}>
+          <span className="text-[rgb(87,87,87)] text-size-[28vw] md:text-2xl font-semibold" style={{ fontWeight: 600 }}>
             .{decimalPart} {activeTab}
           </span>
         </div>
       </div>
 
       {/* 第五部分：倒计时 */}
-      <div className="px-[16vw] pb-[24vw]">
+      <div className="px-[16vw] md:px-4 pb-[24vw] md:pb-6">
         <div
-          className="w-[343vw] h-[50vw] flex items-center justify-center rounded-[8vw]"
+          className="w-[343vw] md:w-full h-[50vw] md:h-12 flex items-center justify-center rounded-[8vw] md:rounded-lg"
           style={{ backgroundColor: '#c5ff33' }}
         >
-          <span className="text-white text-size-[18vw] font-medium">
+          <span className="text-white text-size-[18vw] md:text-lg font-medium">
             {t('account.next_distribution')}: {formatCountdown(countdown)}
           </span>
         </div>
       </div>
 
       {/* 分割线 */}
-      <div className="px-[16vw] pb-[24vw]">
-        <div className="w-full h-[1vw]" style={{ backgroundColor: 'rgb(41, 41, 41)' }}></div>
+      <div className="px-[16vw] md:px-4 pb-[24vw] md:pb-6">
+        <div className="w-full h-[1vw] md:h-px" style={{ backgroundColor: 'rgb(41, 41, 41)' }}></div>
       </div>
 
       {/* 第六部分：Transactions列表 */}
-      <div className="px-[16vw]">
+      <div className="px-[16vw] md:px-4">
         {/* 标题 */}
-        <div className="pb-[16vw]">
-          <h2 className="text-[#8f8f8f] text-size-[15vw] font-semibold" style={{ fontWeight: 600 }}>
+        <div className="pb-[16vw] md:pb-4">
+          <h2 className="text-[#8f8f8f] text-size-[15vw] md:text-base font-semibold" style={{ fontWeight: 600 }}>
             {t('account.transactions')}
           </h2>
         </div>
 
         {/* 交易列表 */}
-        <div className="space-y-[2vw]">
+        <div className="space-y-[2vw] md:space-y-1">
           {transactions.map((transaction) => (
             <div
               key={transaction.id}
-              className="flex items-center justify-between p-[16vw] rounded-[8vw]"
+              className="flex items-center justify-between p-[16vw] md:p-4 rounded-[8vw] md:rounded-lg"
               style={{ backgroundColor: 'rgb(31, 31, 31)' }}
             >
               {/* 左侧内容 */}
-              <div className="flex items-center gap-[12vw]">
+              <div className="flex items-center gap-[12vw] md:gap-3">
                 {/* 交易图标 */}
-                <img src={transactionIcon} alt="Transaction" className="w-[48vw] h-[48vw]" />
+                <img src={transactionIcon} alt="Transaction" className="w-[48vw] md:w-12 h-[48vw] md:h-12" />
 
                 {/* 交易信息 */}
-                <div className="flex flex-col gap-[4vw]">
-                  <span className="text-white text-size-[17vw]">
+                <div className="flex flex-col gap-[4vw] md:gap-1">
+                  <span className="text-white text-size-[17vw] md:text-lg">
                     {getTransactionTypeText(transaction.type)}
                   </span>
-                  <span className="text-[#8f8f8f] text-size-[13vw]">
+                  <span className="text-[#8f8f8f] text-size-[13vw] md:text-sm">
                     {formatTime(transaction.timestamp)}
                   </span>
                 </div>
               </div>
 
               {/* 右侧金额 */}
-              <div className="text-white text-size-[17vw] font-semibold" style={{ fontWeight: 600 }}>
+              <div className="text-white text-size-[17vw] md:text-lg font-semibold" style={{ fontWeight: 600 }}>
                 {transaction.amount}
               </div>
             </div>
@@ -296,14 +296,14 @@ const Account = () => {
         </div>
 
         {/* 加载更多指示器 */}
-        <div ref={loadMoreRef} className="pt-[24vw] pb-[24vw] flex justify-center">
+        <div ref={loadMoreRef} className="pt-[24vw] md:pt-6 pb-[24vw] md:pb-6 flex justify-center">
           {loading && (
-            <div className="text-[#8f8f8f] text-size-[14vw]">
+            <div className="text-[#8f8f8f] text-size-[14vw] md:text-sm">
               {t('account.loading')}
             </div>
           )}
           {!hasMore && !loading && (
-            <div className="text-[#8f8f8f] text-size-[14vw]">
+            <div className="text-[#8f8f8f] text-size-[14vw] md:text-sm">
               {t('account.no_more_data')}
             </div>
           )}

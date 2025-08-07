@@ -2,15 +2,18 @@ import { Outlet } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import Header from './Header';
 import Footer from './Footer';
+import ResponsiveContainer from './ResponsiveContainer';
 
 const Layout = () => {
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#121212' }}>
-      <Header />
-      <main className="flex-1">
-        <Outlet />
-      </main>
-      <Footer />
+      <ResponsiveContainer>
+        <Header />
+        <main className="flex-1">
+          <Outlet />
+        </main>
+        <Footer />
+      </ResponsiveContainer>
       <Toaster
         position="top-center"
         toastOptions={{

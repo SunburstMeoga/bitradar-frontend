@@ -150,27 +150,27 @@ const History = () => {
   }, [handleScroll]);
 
   return (
-    <div className="min-h-screen pb-[86vw]" style={{ backgroundColor: 'rgb(18,18,18)' }}>
+    <div className="min-h-screen pb-[86vw] md:pb-20" style={{ backgroundColor: 'rgb(18,18,18)' }}>
       {/* 标题 */}
-      <div className="px-[16vw] pt-[20vw] pb-[16vw]">
-        <h1 className="text-white font-size-[28vw] font-semibold" style={{ fontWeight: 600 }}>
+      <div className="px-[16vw] md:px-4 pt-[20vw] md:pt-5 pb-[16vw] md:pb-4">
+        <h1 className="text-white font-size-[28vw] md:text-2xl font-semibold" style={{ fontWeight: 600 }}>
           {t('history.title')}
         </h1>
       </div>
 
       {/* 历史记录列表 */}
-      <div className="px-[16vw]">
+      <div className="px-[16vw] md:px-4">
         {historyData.map((item) => (
           <div
             key={item.id}
-            className="w-[342vw] h-[150vw] mb-[12vw] rounded-[12vw] p-[16vw]"
+            className="w-[342vw] md:w-full h-[150vw] md:h-auto mb-[12vw] md:mb-3 rounded-[12vw] md:rounded-lg p-[16vw] md:p-4"
             style={{
               backgroundColor: '#1f1f1f'
             }}
           >
             {/* 上半部分 */}
             <div
-              className="w-[312vw] h-[26vw] flex justify-between items-center border-b pb-[12vw]"
+              className="w-[312vw] md:w-full h-[26vw] md:h-auto flex justify-between items-center border-b pb-[12vw] md:pb-3"
               style={{
                 borderBottomColor: '#3d3d3d'
               }}
@@ -181,23 +181,23 @@ const History = () => {
                 <img
                   src="https://s2.coinmarketcap.com/static/img/coins/64x64/1.png"
                   alt="BTC"
-                  className="w-[24vw] h-[24vw] object-contain"
+                  className="w-[24vw] md:w-6 h-[24vw] md:h-6 object-contain"
                 />
                 {/* 涨跌标志 - 用负margin实现重叠 */}
                 <img
                   src={item.direction === 'up' ? historyUpIcon : historyDownIcon}
                   alt={item.direction === 'up' ? 'Up' : 'Down'}
-                  className="w-[24vw] h-[24vw] object-contain -ml-[8vw]"
+                  className="w-[24vw] md:w-6 h-[24vw] md:h-6 object-contain -ml-[8vw] md:-ml-2"
                 />
                 {/* 交易对和时间文案 */}
-                <div className="ml-[8vw] flex items-center gap-[8vw]">
+                <div className="ml-[8vw] md:ml-2 flex items-center gap-[8vw] md:gap-2">
                   {/* 交易对文案 */}
-                  <span className="text-white font-size-[13vw] font-semibold" style={{ fontWeight: 600 }}>
+                  <span className="text-white font-size-[13vw] md:text-sm font-semibold" style={{ fontWeight: 600 }}>
                     BTC-USD
                   </span>
 
                   {/* 时间文案 */}
-                  <span className="text-[rgb(143,143,143)] font-size-[13vw]" style={{ fontWeight: 400 }}>
+                  <span className="text-[rgb(143,143,143)] font-size-[13vw] md:text-sm" style={{ fontWeight: 400 }}>
                     · {t(`history.duration_${item.duration}`)}
                   </span>
                 </div>
@@ -214,14 +214,14 @@ const History = () => {
             </div>
 
             {/* 下半部分 - 三行数据 */}
-            <div className="mt-[12vw] space-y-[3vw]">
+            <div className="mt-[12vw] md:mt-3 space-y-[3vw] md:space-y-1">
               {/* 第一行：投注金额和盈亏 */}
               <div className="flex justify-between items-center">
-                <span className="text-white font-size-[16vw] font-semibold" style={{ fontWeight: 600 }}>
+                <span className="text-white font-size-[16vw] md:text-lg font-semibold" style={{ fontWeight: 600 }}>
                   {item.amount} pUSD
                 </span>
                 <span
-                  className="font-size-[16vw] font-semibold"
+                  className="font-size-[16vw] md:text-lg font-semibold"
                   style={{
                     fontWeight: 600,
                     color: item.profit > 0 ? 'rgb(197, 255, 51)' : '#f5384e'
@@ -233,20 +233,20 @@ const History = () => {
 
               {/* 第二行：开盘价和收盘价 */}
               <div className="flex justify-between items-center">
-                <span className="text-[#8f8f8f] font-size-[13vw]">
+                <span className="text-[#8f8f8f] font-size-[13vw] md:text-sm">
                   {formatPrice(item.openPrice)}
                 </span>
-                <span className="text-[#8f8f8f] font-size-[13vw]">
+                <span className="text-[#8f8f8f] font-size-[13vw] md:text-sm">
                   {formatPrice(item.closePrice)}
                 </span>
               </div>
 
               {/* 第三行：开盘时间和封盘时间 */}
               <div className="flex justify-between items-center">
-                <span className="text-[#8f8f8f] font-size-[13vw]">
+                <span className="text-[#8f8f8f] font-size-[13vw] md:text-sm">
                   {formatTime(item.openTime)}
                 </span>
-                <span className="text-[#8f8f8f] font-size-[13vw]">
+                <span className="text-[#8f8f8f] font-size-[13vw] md:text-sm">
                   {formatTime(item.closeTime)}
                 </span>
               </div>
@@ -256,22 +256,22 @@ const History = () => {
 
         {/* 加载状态 */}
         {loading && (
-          <div className="text-center py-[20vw]">
-            <span className="text-[#8f8f8f] font-size-[14vw]">{t('history.loading')}</span>
+          <div className="text-center py-[20vw] md:py-5">
+            <span className="text-[#8f8f8f] font-size-[14vw] md:text-sm">{t('history.loading')}</span>
           </div>
         )}
 
         {/* 没有更多数据 */}
         {!hasMore && historyData.length > 0 && (
-          <div className="text-center py-[20vw]">
-            <span className="text-[#8f8f8f] font-size-[14vw]">{t('history.no_more_data')}</span>
+          <div className="text-center py-[20vw] md:py-5">
+            <span className="text-[#8f8f8f] font-size-[14vw] md:text-sm">{t('history.no_more_data')}</span>
           </div>
         )}
 
         {/* 空状态 */}
         {!loading && historyData.length === 0 && (
-          <div className="text-center py-[40vw]">
-            <span className="text-[#8f8f8f] font-size-[16vw]">{t('history.no_data')}</span>
+          <div className="text-center py-[40vw] md:py-10">
+            <span className="text-[#8f8f8f] font-size-[16vw] md:text-lg">{t('history.no_data')}</span>
           </div>
         )}
       </div>

@@ -5,13 +5,13 @@ export default {
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
-    // 保留默认响应式断点，但优化为移动优先
+    // 响应式断点配置 - 针对BitRadar项目优化
     screens: {
-      'sm': '640px',
-      'md': '768px',
-      'lg': '1024px',
-      'xl': '1280px',
-      '2xl': '1536px',
+      'sm': '640px',   // 小屏设备
+      'md': '768px',   // 平板端开始 - 这是我们切换到428px容器的断点
+      'lg': '1024px',  // 大屏平板和小屏PC
+      'xl': '1280px',  // 标准PC屏幕
+      '2xl': '1536px', // 大屏PC
     },
     extend: {
       colors: {
@@ -66,9 +66,13 @@ export default {
       },
       maxWidth: {
         'screen-vw': '100vw',
+        'container-mobile': '375px',  // 移动端容器最大宽度
+        'container-desktop': '428px', // 平板和PC端容器最大宽度
       },
       minWidth: {
         'screen-vw': '100vw',
+        'container-mobile': '320px',  // 移动端容器最小宽度
+        'container-desktop': '428px', // 平板和PC端容器最小宽度
       },
       height: {
         'screen-vw': '100vh',

@@ -1,13 +1,16 @@
 import { Toaster } from 'react-hot-toast';
 import SecondaryHeader from './SecondaryHeader';
+import ResponsiveContainer from './ResponsiveContainer';
 
 const SecondaryLayout = ({ title, onBack, children }) => {
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#121212' }}>
-      <SecondaryHeader title={title} onBack={onBack} />
-      <main className="flex-1">
-        {children}
-      </main>
+      <ResponsiveContainer>
+        <SecondaryHeader title={title} onBack={onBack} />
+        <main className="flex-1">
+          {children}
+        </main>
+      </ResponsiveContainer>
       <Toaster
         position="top-center"
         toastOptions={{

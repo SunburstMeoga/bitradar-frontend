@@ -54,7 +54,8 @@ const Footer = () => {
 
   return (
     <footer className="fixed bottom-0 left-0 w-full z-[99]" style={{ backgroundColor: '#1f1f1f' }}>
-      <div className="flex px-[8vw] py-[12vw]">
+      {/* 移动端：全宽度显示 */}
+      <div className="flex px-[8vw] py-[12vw] md:hidden">
         {navItems.map((item) => {
           const active = isActive(item.path);
           return (
@@ -80,6 +81,43 @@ const Footer = () => {
             </div>
           );
         })}
+      </div>
+
+      {/* 平板端和PC端：限制宽度并居中 */}
+      <div className="hidden md:flex md:justify-center md:w-full" style={{ backgroundColor: '#1f1f1f' }}>
+        <div
+          className="flex px-2 py-3"
+          style={{
+            maxWidth: '428px',
+            width: '100%'
+          }}
+        >
+          {navItems.map((item) => {
+            const active = isActive(item.path);
+            return (
+              <div
+                key={item.key}
+                className="flex-1 h-10 flex flex-col justify-between items-center cursor-pointer hover:opacity-80 transition-all"
+                onClick={() => handleNavClick(item.path)}
+              >
+                <div className="flex items-center justify-center">
+                  <img
+                    src={active ? item.activeIcon : item.icon}
+                    alt={item.label}
+                    className="w-6 h-6 object-contain"
+                  />
+                </div>
+                <div
+                  className={`text-xs font-medium text-center leading-none ${
+                    active ? 'text-[#c5ff33]' : 'text-[#8f8f8f]'
+                  }`}
+                >
+                  {item.label}
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
     </footer>
   );
