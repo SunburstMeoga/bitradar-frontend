@@ -126,9 +126,9 @@ const SecondaryHeader = ({ title, onBack }) => {
 
   return (
     <header className="w-full sticky top-0 z-[100]" style={{ backgroundColor: '#121212' }}>
-      <div className="flex justify-between items-center px-[16vw] py-[11vw]">
+      <div className="flex justify-between items-center pl-[8vw] pr-[16vw] py-[11vw]">
         {/* 左侧返回按钮和标题 */}
-        <div className="flex items-center gap-[12vw]">
+        <div className="flex items-center gap-[8vw]">
           <button
             onClick={handleBackClick}
             className="w-[32vw] h-[32vw] flex items-center justify-center"

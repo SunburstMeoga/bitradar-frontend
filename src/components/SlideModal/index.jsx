@@ -154,9 +154,9 @@ const SlideModal = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[9999] flex justify-center" style={{ paddingTop: '15vh' }}>
+    <div className="fixed inset-0 z-[100] flex justify-center" style={{ paddingTop: '15vh' }}>
       {/* 遮罩层 */}
-      <div 
+      <div
         className="absolute inset-0"
         style={{ backgroundColor: 'rgba(20, 20, 20, 0.8)' }}
         onClick={onClose}

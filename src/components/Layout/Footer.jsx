@@ -53,7 +53,7 @@ const Footer = () => {
   };
 
   return (
-    <footer className="fixed bottom-0 left-0 w-full z-[100]" style={{ backgroundColor: '#1f1f1f' }}>
+    <footer className="fixed bottom-0 left-0 w-full z-[99]" style={{ backgroundColor: '#1f1f1f' }}>
       <div className="flex px-[8vw] py-[12vw]">
         {navItems.map((item) => {
           const active = isActive(item.path);

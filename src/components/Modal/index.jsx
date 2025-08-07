@@ -24,14 +24,14 @@ const Modal = ({ isOpen, onClose, children, className = '' }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center">
       {/* 遮罩层 */}
       <div
         className="absolute inset-0"
         style={{ backgroundColor: 'rgba(20, 20, 20, 0.8)' }}
         onClick={onClose}
       />
-      
+
       {/* 弹窗卡片内容 */}
       <div
         className={`relative bg-[#1f1f1f] rounded-[12px] w-[330px] max-h-[90vh] overflow-y-auto box-border ${className}`}
