@@ -121,7 +121,7 @@ const Trade = () => {
             />
             <div className="w-[116vw] h-[34vw] bg-[#3d3d3d] rounded-[34vw] px-[16vw] py-[8vw] flex items-center justify-between">
               <img src={pUSDIcon} alt="pUSD" className="w-[16vw] h-[16vw]" />
-              <span className="text-white font-semibold text-size-[15vw]">pUSD</span>
+              <span className="text-white font-semibold text-size-[15vw]">LuckyUSD</span>
               <img src={upDownIcon} alt="up-down" className="w-[16vw] h-[16vw]" />
             </div>
           </div>
