@@ -96,17 +96,17 @@ const customDrawPlugin = {
     ctx.save();
 
     // 绘制单层阴影（透明度20%）
-    ctx.globalAlpha = opacity * 0.2;
+    ctx.globalAlpha = opacity * 0.17;
     ctx.fillStyle = '#C5FF33';
     ctx.beginPath();
-    ctx.arc(currentPriceX, currentPriceY, 8, 0, 2 * Math.PI); // 阴影半径8px
+    ctx.arc(currentPriceX, currentPriceY, 10, 0, 2 * Math.PI); // 阴影半径8px
     ctx.fill();
 
     // 绘制主光点
     ctx.globalAlpha = opacity;
     ctx.fillStyle = '#C5FF33';
     ctx.beginPath();
-    ctx.arc(currentPriceX, currentPriceY, 3, 0, 2 * Math.PI); // 主光点半径3px
+    ctx.arc(currentPriceX, currentPriceY, 4, 0, 2 * Math.PI); // 主光点半径4px
     ctx.fill();
 
 
@@ -540,7 +540,7 @@ const PriceChart = ({ onPriceUpdate }) => {
         hoverRadius: 0,
       },
       line: {
-        borderWidth: 1, // 调整为1px，视觉上看起来像2px
+        borderWidth: 1, // 线条宽度1px
         tension: 0.1,
       },
     },
@@ -612,7 +612,7 @@ const PriceChart = ({ onPriceUpdate }) => {
         cubicInterpolationMode: 'default',
         // 线条动画配置
         tension: 0.4, // 增加线条平滑度
-        borderWidth: 2, // 线条宽度
+        borderWidth: 1, // 线条宽度1px
       },
     ],
   };
