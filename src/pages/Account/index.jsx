@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import usePageTitle from '../../hooks/usePageTitle';
 import { useWeb3Store } from '../../store';
 import { formatAddress } from '../../utils/web3';
 import btcIcon from '../../assets/images/account-btc.png';
@@ -9,6 +10,9 @@ const Account = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { account, isConnected } = useWeb3Store();
+
+  // 设置页面标题
+  usePageTitle('account');
   const [activeTab, setActiveTab] = useState('USDT');
   const [countdown, setCountdown] = useState(86400); // 24小时倒计时（秒）
 

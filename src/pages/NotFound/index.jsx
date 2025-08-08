@@ -1,6 +1,10 @@
 import { Link } from 'react-router-dom';
+import usePageTitle from '../../hooks/usePageTitle';
 
 const NotFound = () => {
+  // 设置页面标题
+  usePageTitle('not_found');
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="text-center">

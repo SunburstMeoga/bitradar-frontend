@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import usePageTitle from '../../hooks/usePageTitle';
 import CountUp from 'react-countup';
 
 // 向下箭头SVG组件
@@ -61,6 +62,9 @@ const AnimatedAmount = ({ amount, fontSize = '14vw', mdFontSize = 'text-sm', cla
 
 const NetworkDetails = () => {
   const { t } = useTranslation();
+
+  // 设置页面标题
+  usePageTitle('network_details');
   const [expandedLevel, setExpandedLevel] = useState(null);
 
   // 模拟数据

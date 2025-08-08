@@ -6,7 +6,18 @@
     "confirm": "Confirm",
     "cancel": "Cancel",
     "connect_wallet": "Connect Wallet",
-    "disconnect": "Disconnect"
+    "disconnect": "Disconnect",
+    "app_name": "BitRadar"
+  },
+  "page_titles": {
+    "trade": "Trade",
+    "home": "Home",
+    "history": "History",
+    "account": "Account",
+    "network_details": "Network Details",
+    "exchange": "Exchange",
+    "transaction_history": "Transaction History",
+    "not_found": "Page Not Found"
   },
   "home": {
     "title": "Hello BitRadar",

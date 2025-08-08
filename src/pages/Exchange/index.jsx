@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import usePageTitle from '../../hooks/usePageTitle';
 import toast from 'react-hot-toast';
 
 // 自定义动画金额组件（借鉴网体详情页面）
@@ -183,6 +184,9 @@ const ExchangeCard = ({
 
 const Exchange = () => {
   const { t } = useTranslation();
+
+  // 设置页面标题
+  usePageTitle('exchange');
 
   // 验证余额是否足够的辅助函数
   const validateBalance = (fromToken, requiredAmount, balances, showToast = true) => {

@@ -6,7 +6,18 @@
     "confirm": "确认",
     "cancel": "取消",
     "connect_wallet": "连接钱包",
-    "disconnect": "断开连接"
+    "disconnect": "断开连接",
+    "app_name": "BitRadar"
+  },
+  "page_titles": {
+    "trade": "交易",
+    "home": "首页",
+    "history": "历史记录",
+    "account": "账户",
+    "network_details": "网体详情",
+    "exchange": "兑换",
+    "transaction_history": "交易记录",
+    "not_found": "页面未找到"
   },
   "home": {
     "title": "你好 BitRadar",

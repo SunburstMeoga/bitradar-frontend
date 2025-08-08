@@ -1,9 +1,13 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
+import usePageTitle from '../../hooks/usePageTitle';
 import transactionIcon from '../../assets/images/account-transation.png';
 
 const TransactionHistory = () => {
   const { t } = useTranslation();
+
+  // 设置页面标题
+  usePageTitle('transaction_history');
   const [activeTab, setActiveTab] = useState('USDR');
   const [activeFilter, setActiveFilter] = useState('all');
   const [transactions, setTransactions] = useState([]);

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
+import usePageTitle from '../../hooks/usePageTitle';
 import historyUpIcon from '../../assets/icons/history-up.png';
 import historyDownIcon from '../../assets/icons/history-down.png';
 
@@ -74,6 +75,9 @@ const generateMockData = (page = 1, pageSize = 10) => {
 
 const History = () => {
   const { t, i18n } = useTranslation();
+
+  // 设置页面标题
+  usePageTitle('history');
   const [historyData, setHistoryData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);

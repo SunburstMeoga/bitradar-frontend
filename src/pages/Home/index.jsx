@@ -1,9 +1,13 @@
 import { useTranslation } from 'react-i18next';
+import usePageTitle from '../../hooks/usePageTitle';
 import VwTest from '../../components/VwTest';
 import VwPluginTest from '../../components/VwPluginTest';
 
 const Home = () => {
   const { t } = useTranslation();
+
+  // 设置页面标题
+  usePageTitle('home');
 
   return (
     <div className="min-h-screen p-[20vw] pb-[86vw]" style={{ backgroundColor: '#121212' }}>

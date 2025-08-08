@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import usePageTitle from '../../hooks/usePageTitle';
 import pUSDIcon from '../../assets/icons/pUSD.png';
 import upDownIcon from '../../assets/icons/up-down.png';
 import buyUpIcon from '../../assets/icons/buy-up.png';
@@ -7,6 +8,9 @@ import timeIcon from '../../assets/icons/time.png';
 import sliderIcon from '../../assets/icons/slider.png';
 
 const Trade = () => {
+  // 设置页面标题
+  usePageTitle('trade');
+
   const [tradeAmount, setTradeAmount] = useState(1);
   const [sliderValue, setSliderValue] = useState(1);
   const [currentPrice, setCurrentPrice] = useState(67234.56);
