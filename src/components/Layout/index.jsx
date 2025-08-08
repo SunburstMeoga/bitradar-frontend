@@ -3,10 +3,12 @@ import { Toaster } from 'react-hot-toast';
 import Header from './Header';
 import Footer from './Footer';
 import ResponsiveContainer from './ResponsiveContainer';
+import ScrollToTop from '../ScrollToTop';
 
 const Layout = () => {
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#121212' }}>
+      <ScrollToTop />
       <ResponsiveContainer>
         <Header />
         <main className="flex-1">

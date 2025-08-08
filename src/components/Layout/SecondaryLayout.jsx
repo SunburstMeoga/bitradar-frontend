@@ -1,10 +1,12 @@
 import { Toaster } from 'react-hot-toast';
 import SecondaryHeader from './SecondaryHeader';
 import ResponsiveContainer from './ResponsiveContainer';
+import ScrollToTop from '../ScrollToTop';
 
 const SecondaryLayout = ({ title, onBack, children }) => {
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#121212' }}>
+      <ScrollToTop />
       <ResponsiveContainer>
         <SecondaryHeader title={title} onBack={onBack} />
         <main className="flex-1">

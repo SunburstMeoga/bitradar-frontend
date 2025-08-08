@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import usePageTitle from '../../hooks/usePageTitle';
 import Modal from '../../components/Modal';
+import PriceChart from '../../components/PriceChart';
 import pUSDIcon from '../../assets/icons/pUSD.png';
 import upDownIcon from '../../assets/icons/up-down.png';
 import buyUpIcon from '../../assets/icons/buy-up.png';
@@ -21,6 +22,7 @@ const Trade = () => {
   const [priceChange, setPriceChange] = useState(2.34);
   const [selectedToken, setSelectedToken] = useState('LuckyUSD');
   const [isTokenModalOpen, setIsTokenModalOpen] = useState(false);
+  const [userBets, setUserBets] = useState([]); // 用户下注记录
 
   const balance = 654.3;
   const isUp = priceChange > 0;
@@ -61,6 +63,36 @@ const Trade = () => {
   const handleCloseTokenModal = () => {
     setIsTokenModalOpen(false);
   };
+
+  // 处理用户下注
+  const handlePlaceBet = (direction) => {
+    if (tradeAmount === 0 || !currentPrice) return;
+
+    const newBet = {
+      id: Date.now(), // 简单的ID生成
+      direction, // 'up' 或 'down'
+      amount: tradeAmount,
+      price: currentPrice,
+      timestamp: Date.now(),
+      settlementTime: Date.now() + 60000, // 60秒后结算
+      status: 'active' // active, settled
+    };
+
+    setUserBets(prev => [...prev, newBet]);
+    console.log('🎯 用户下注:', newBet);
+  };
+
+  // 清理过期的下注记录
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const now = Date.now();
+      setUserBets(prev => prev.filter(bet =>
+        now - bet.timestamp < 180000 // 保留3分钟内的下注记录
+      ));
+    }, 30000); // 每30秒清理一次
+
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <div className="min-h-screen pb-[86vw] md:pb-20" style={{ backgroundColor: '#121212' }}>
@@ -108,9 +140,17 @@ const Trade = () => {
         </div>
       </div>
 
-      {/* 价格图表占位 */}
-      <div className='w-full h-[346vw] md:h-80 mb-[10vw] md:mb-3 flex items-center justify-center' style={{ backgroundColor: '#1a1a1a' }}>
-        <p className="text-[#8f8f8f] text-size-[14vw] md:text-sm">{t('trade.price_chart_area')}</p>
+      {/* 价格图表 */}
+      <div className='w-full h-[346vw] md:h-80 mb-[10vw] md:mb-3'>
+        <PriceChart
+          userBets={userBets}
+          onPriceUpdate={(priceData) => {
+            setCurrentPrice(priceData.price);
+            // 计算价格变化百分比（这里简化处理，实际应该基于前一个价格）
+            const changePercent = ((priceData.price - currentPrice) / currentPrice) * 100;
+            setPriceChange(changePercent);
+          }}
+        />
       </div>
 
       {/* 交易卡片 */}
@@ -193,7 +233,7 @@ const Trade = () => {
           className="w-[343vw] md:w-full h-[50vw] md:h-12 -mt-[17vw] md:-mt-4 border rounded-[12vw] md:rounded-lg flex items-center justify-center"
           style={{ borderColor: '#1f1f1f' }}
         >
-          <span className="text-[#8f8f8f] text-size-[13vw] md:text-sm"> <br /> {t('trade.payout')}: 456.45</span>
+          <span className="text-[#8f8f8f] text-size-[13vw] md:text-sm pb-[2vw]"> <br /> {t('trade.payout')}: 456.45</span>
         </div>
 
         {/* 第三部分：按钮和时间 */}
@@ -205,6 +245,7 @@ const Trade = () => {
               backgroundColor: '#00bc4b',
               filter: isButtonsDisabled ? 'brightness(0.3)' : 'brightness(1)'
             }}
+            onClick={() => !isButtonsDisabled && handlePlaceBet('up')}
           >
             <img src={buyUpIcon} alt="Up" className="w-[24vw] md:w-6 h-[24vw] md:h-6" />
             <span className="text-white text-size-[17vw] md:text-lg font-semibold">{t('trade.up')}</span>
@@ -223,6 +264,7 @@ const Trade = () => {
               backgroundColor: '#f5384e',
               filter: isButtonsDisabled ? 'brightness(0.3)' : 'brightness(1)'
             }}
+            onClick={() => !isButtonsDisabled && handlePlaceBet('down')}
           >
             <img src={buyDownIcon} alt="Down" className="w-[24vw] md:w-6 h-[24vw] md:h-6" />
             <span className="text-white text-size-[17vw] md:text-lg font-semibold">{t('trade.down')}</span>

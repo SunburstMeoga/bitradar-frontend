@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useMemo } from 'react';
+import { useEffect, useRef, useState, useMemo } from 'react';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -11,7 +11,7 @@ import {
   Filler
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
-import useWebSocket from '../../hooks/useWebSocket';
+
 
 ChartJS.register(
   CategoryScale,
@@ -32,29 +32,33 @@ const customDrawPlugin = {
 
     if (!scales.y || !data.datasets[0]) return;
 
-    // 找到最后一个有效数据点
+    // 找到第120个数据点（索引119）作为当前价格点
     const dataset = data.datasets[0];
     const dataArray = dataset.data;
-    let lastValidIndex = -1;
-    let lastValidPrice = null;
+    const targetIndex = 119; // 第120个数据点（索引119）
+    let currentPrice = null;
 
-    // 从后往前找最后一个非null值
-    for (let i = dataArray.length - 1; i >= 0; i--) {
-      if (dataArray[i] !== null && dataArray[i] !== undefined) {
-        lastValidIndex = i;
-        lastValidPrice = dataArray[i];
-        break;
+    // 检查第120个数据点是否存在且有效
+    if (targetIndex < dataArray.length && dataArray[targetIndex] !== null && dataArray[targetIndex] !== undefined) {
+      currentPrice = dataArray[targetIndex];
+    } else {
+      // 如果第120个数据点不存在，找最后一个有效数据点
+      for (let i = Math.min(targetIndex, dataArray.length - 1); i >= 0; i--) {
+        if (dataArray[i] !== null && dataArray[i] !== undefined) {
+          currentPrice = dataArray[i];
+          break;
+        }
       }
     }
 
-    if (lastValidIndex === -1 || !lastValidPrice) return;
+    if (!currentPrice) return;
 
     const yScale = scales.y;
     const xScale = scales.x;
 
-    // 计算当前价格点的位置
-    const currentPriceY = yScale.getPixelForValue(lastValidPrice);
-    const currentPriceX = xScale.getPixelForValue(lastValidIndex);
+    // 计算当前价格点的位置（固定在第120个数据点位置）
+    const currentPriceY = yScale.getPixelForValue(currentPrice);
+    const currentPriceX = xScale.getPixelForValue(targetIndex);
 
     // 检查是否有价格变化来决定是否闪烁
     const shouldBlink = chart.options.priceChanged || false;
@@ -108,18 +112,19 @@ const customDrawPlugin = {
 
 
     // 绘制右侧价格标签
-    const priceText = lastValidPrice.toFixed(1);
-    ctx.font = '12px Arial';
+    const priceText = currentPrice.toFixed(1);
+    const fontSize = window.innerWidth >= 768 ? 14 : 12; // PC端14px，移动端12px
+    ctx.font = `${fontSize}px Arial`;
     ctx.textAlign = 'left';
     ctx.textBaseline = 'middle';
 
     // 测量文字尺寸
     const textMetrics = ctx.measureText(priceText);
     const textWidth = textMetrics.width;
-    const paddingH = 2; // 水平方向2px
-    const paddingV = 1; // 垂直方向1px
+    const paddingH = window.innerWidth >= 768 ? 3 : 2; // PC端3px，移动端2px水平方向
+    const paddingV = window.innerWidth >= 768 ? 2 : 1; // PC端2px，移动端1px垂直方向
     const labelWidth = textWidth + paddingH * 2;
-    const labelHeight = 12 + paddingV * 2;
+    const labelHeight = fontSize + paddingV * 2;
 
     // 绘制圆角矩形背景
     const rightX = chart.width - labelWidth;
@@ -144,7 +149,7 @@ ChartJS.register(customDrawPlugin);
 
 const PriceChart = ({ onPriceUpdate }) => {
   const chartRef = useRef(null);
-  const [chartData, setChartData] = useState([]);
+
   const [mockData, setMockData] = useState([]);
   const [currentPrice, setCurrentPrice] = useState(null);
   const [priceChanged, setPriceChanged] = useState(false);
@@ -153,8 +158,7 @@ const PriceChart = ({ onPriceUpdate }) => {
   const previousPriceRef = useRef(null);
   const blinkStartTimeRef = useRef(null); // 记录闪烁开始时间
 
-  // WebSocket连接
-  const { data: wsData, error } = useWebSocket('wss://crypto.nickwongon99.top');
+
 
   // 启动持续的动画循环来支持闪烁效果
   useEffect(() => {
@@ -174,57 +178,106 @@ const PriceChart = ({ onPriceUpdate }) => {
     };
   }, []);
 
-  // 生成模拟历史数据（1分30秒，每秒一个数据点）
+  // 生成模拟历史数据（2分钟，每秒一个数据点）
   useEffect(() => {
     const generateMockData = () => {
       const now = Date.now();
       const data = [];
       const basePrice = currentPrice || 67234.56;
 
-      // 生成90个数据点（1分30秒）
-      for (let i = 90; i >= 0; i--) {
+      // 生成120个数据点（2分钟）
+      for (let i = 119; i >= 0; i--) {
         const timestamp = now - (i * 1000);
-        // 生成随机价格变化（±0.5%）
-        const randomChange = (Math.random() - 0.5) * 0.01; // ±0.5%
-        const price = basePrice * (1 + randomChange * (i / 90)); // 早期数据变化更大
+        // 生成随机价格变化（±0.3%）
+        const randomChange = (Math.random() - 0.5) * 0.006; // ±0.3%
+        const price = basePrice * (1 + randomChange * (i / 120)); // 早期数据变化更大
 
-        data.push({
+        data.push([
           timestamp,
-          price: price + (Math.random() - 0.5) * 100, // 添加一些噪音
-          time: new Date(timestamp).toLocaleTimeString('en-US', {
-            hour12: false,
-            minute: '2-digit',
-            second: '2-digit'
-          })
-        });
+          price + (Math.random() - 0.5) * 50 // 添加一些噪音
+        ]);
       }
 
-      return data;
+      // 返回新的数据格式
+      return { data };
     };
 
     setMockData(generateMockData());
   }, [currentPrice]);
 
-  // 合并模拟数据和真实数据
+  // 模拟WebSocket数据推送（每秒更新）- 滑动窗口
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (mockData && mockData.data && mockData.data.length > 0) {
+        // 模拟新的价格数据
+        const lastDataPoint = mockData.data[mockData.data.length - 1];
+        const lastPrice = lastDataPoint ? lastDataPoint[1] : 67234.56;
+        const priceChange = (Math.random() - 0.5) * 0.002; // ±0.1%
+        const newPrice = lastPrice * (1 + priceChange);
+
+        const newTimestamp = Date.now();
+        const newDataPoint = [newTimestamp, newPrice];
+
+        // 更新mock数据 - 滑动窗口：新数据进来，最老数据移出
+        setMockData(prevMockData => {
+          const newData = [...prevMockData.data, newDataPoint];
+          // 保持120个数据点
+          const updatedData = newData.slice(-120);
+          return { data: updatedData };
+        });
+
+        // 检查价格是否变化来决定是否闪烁
+        if (previousPriceRef.current !== null && previousPriceRef.current !== newPrice) {
+          setPriceChanged(true);
+          blinkStartTimeRef.current = Date.now(); // 记录闪烁开始时间
+
+          // 700ms后停止闪烁状态
+          setTimeout(() => {
+            setPriceChanged(false);
+          }, 700);
+        }
+
+        previousPriceRef.current = newPrice;
+        setCurrentPrice(newPrice);
+
+        // 触发时间更新
+        setTimeUpdate(prev => prev + 1);
+
+        // 通知父组件价格更新
+        if (onPriceUpdate) {
+          onPriceUpdate({
+            timestamp: newTimestamp,
+            price: newPrice,
+            time: new Date(newTimestamp).toLocaleTimeString('en-US', {
+              hour12: false,
+              minute: '2-digit',
+              second: '2-digit'
+            })
+          });
+        }
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [mockData, onPriceUpdate]);
+
+  // 处理模拟数据（新格式）
   const combinedData = useMemo(() => {
-    const now = Date.now();
-    const cutoffTime = now - 90000; // 1分30秒前
+    if (!mockData || !mockData.data || mockData.data.length === 0) {
+      return [];
+    }
 
-    // 过滤掉过期的模拟数据
-    const validMockData = mockData.filter(item => item.timestamp > cutoffTime);
-
-    // 合并数据
-    const combined = [...validMockData, ...chartData];
-
-    // 按时间排序并去重
-    const sorted = combined
-      .sort((a, b) => a.timestamp - b.timestamp)
-      .filter((item, index, arr) =>
-        index === 0 || item.timestamp !== arr[index - 1].timestamp
-      );
-
-    return sorted;
-  }, [mockData, chartData]);
+    // 将新格式的数据转换为组件内部使用的格式
+    return mockData.data.map(([timestamp, price]) => ({
+      timestamp,
+      price,
+      time: new Date(timestamp).toLocaleTimeString('en-US', {
+        hour12: false,
+        minute: '2-digit',
+        second: '2-digit'
+      })
+    }));
+  }, [mockData]);
 
   // 计算Y轴范围
   const yAxisRange = useMemo(() => {
@@ -242,38 +295,85 @@ const PriceChart = ({ onPriceUpdate }) => {
     };
   }, [combinedData]);
 
-  // 生成时间标签（6个时间点）- 实时更新
+  // 生成时间标签（6个时间点）- 基于120个数据点
   const timeLabels = useMemo(() => {
-    const now = Date.now();
-    const labels = [];
+    if (!combinedData || combinedData.length === 0) {
+      // 如果没有数据，使用当前时间生成默认标签
+      const now = Date.now();
+      const labels = [];
 
-    // 左侧3个时间点（往前1分30秒，等分）
-    for (let i = 2; i >= 0; i--) {
-      const time = new Date(now - (90000 / 3) * (i + 1));
-      labels.push(time.toLocaleTimeString('en-US', {
+      // 前4个标签：模拟120个数据点中的索引[0,39,79,119]
+      for (let i = 0; i < 4; i++) {
+        const timeOffset = (119 - [0, 39, 79, 119][i]) * 1000; // 往前推的时间
+        const time = new Date(now - timeOffset);
+        labels.push(time.toLocaleTimeString('en-US', {
+          hour12: false,
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit'
+        }));
+      }
+
+      // 后2个标签：预测时间（+30秒，+60秒）
+      labels.push(new Date(now + 30000).toLocaleTimeString('en-US', {
         hour12: false,
         hour: '2-digit',
         minute: '2-digit',
         second: '2-digit'
       }));
+      labels.push(new Date(now + 60000).toLocaleTimeString('en-US', {
+        hour12: false,
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      }));
+
+      return labels;
     }
 
-    // 当前时间（在2/3位置）
-    labels.push(new Date(now).toLocaleTimeString('en-US', {
-      hour12: false,
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit'
-    }));
+    const labels = [];
+    const dataLength = combinedData.length;
 
-    // 右侧2个时间点（未来时间，间隔约37秒）
-    labels.push(new Date(now + 37000).toLocaleTimeString('en-US', {
+    // 前4个标签：基于视觉平均分布，对应数据区域的时间点
+    // 视觉位置对应的数据索引：36->27, 72->54, 107->81, 143->108 (按比例映射到120个数据点)
+    const visualToDataIndices = [
+      0,                                    // 第1个标签：数据索引0
+      Math.round(36 * 120 / 180),         // 第2个标签：视觉位置36对应数据索引24
+      Math.round(72 * 120 / 180),         // 第3个标签：视觉位置72对应数据索引48
+      Math.round(107 * 120 / 180)         // 第4个标签：视觉位置107对应数据索引71
+    ];
+
+    for (let i = 0; i < 4; i++) {
+      const index = visualToDataIndices[i];
+      if (index < dataLength) {
+        const timestamp = combinedData[index].timestamp;
+        labels.push(new Date(timestamp).toLocaleTimeString('en-US', {
+          hour12: false,
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit'
+        }));
+      } else {
+        // 如果数据不足，使用最后一个数据的时间
+        const lastTimestamp = combinedData[dataLength - 1].timestamp;
+        labels.push(new Date(lastTimestamp).toLocaleTimeString('en-US', {
+          hour12: false,
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit'
+        }));
+      }
+    }
+
+    // 后2个标签：预测时间（基于最后一个数据点的时间+30秒，+60秒）
+    const lastTimestamp = combinedData[dataLength - 1].timestamp;
+    labels.push(new Date(lastTimestamp + 30000).toLocaleTimeString('en-US', {
       hour12: false,
       hour: '2-digit',
       minute: '2-digit',
       second: '2-digit'
     }));
-    labels.push(new Date(now + 74000).toLocaleTimeString('en-US', {
+    labels.push(new Date(lastTimestamp + 60000).toLocaleTimeString('en-US', {
       hour12: false,
       hour: '2-digit',
       minute: '2-digit',
@@ -281,7 +381,7 @@ const PriceChart = ({ onPriceUpdate }) => {
     }));
 
     return labels;
-  }, [timeUpdate]); // 依赖时间更新状态
+  }, [combinedData, timeUpdate]); // 依赖数据和时间更新状态
 
   // 定时更新时间标签
   useEffect(() => {
@@ -297,7 +397,7 @@ const PriceChart = ({ onPriceUpdate }) => {
     if (priceChanged) {
       const animate = () => {
         if (chartRef.current) {
-          chartRef.current.update('none'); // 强制重新渲染
+          chartRef.current.update('none'); // 闪烁效果不使用动画，只重新渲染
         }
         if (priceChanged) {
           animationRef.current = requestAnimationFrame(animate);
@@ -313,6 +413,18 @@ const PriceChart = ({ onPriceUpdate }) => {
     };
   }, [priceChanged]);
 
+  // 数据更新时触发滑动动画
+  useEffect(() => {
+    if (chartRef.current && combinedData.length > 0) {
+      // 使用默认动画模式更新图表，实现滑动效果
+      setTimeout(() => {
+        if (chartRef.current) {
+          chartRef.current.update('active');
+        }
+      }, 50); // 延迟50ms确保数据已经更新
+    }
+  }, [combinedData]);
+
   // Chart.js 配置
   const chartOptions = {
     responsive: true,
@@ -320,6 +432,20 @@ const PriceChart = ({ onPriceUpdate }) => {
     currentPrice: currentPrice, // 传递当前价格给插件
     priceChanged: priceChanged, // 传递价格变化状态给插件
     blinkStartTime: blinkStartTimeRef.current, // 传递闪烁开始时间给插件
+    // 动画配置 - 滑动窗口平滑动画
+    animation: {
+      duration: 800, // 800ms动画时长
+      easing: 'easeInOutQuart', // 平滑的缓动函数
+    },
+    // 数据更新时的动画
+    transitions: {
+      active: {
+        animation: {
+          duration: 800, // 数据更新时使用800ms动画
+          easing: 'easeInOutQuart',
+        }
+      }
+    },
     interaction: {
       intersect: false,
       mode: 'index',
@@ -347,15 +473,28 @@ const PriceChart = ({ onPriceUpdate }) => {
           display: true,
           color: '#8f8f8f',
           font: {
-            size: 10,
+            size: window.innerWidth >= 768 ? 12 : 10, // PC端12px，移动端10px
           },
           maxTicksLimit: 6,
           autoSkip: false,
           padding: 0, // 类似Y轴的padding控制
           callback: function(_, index) {
-            // 显示6个时间点，均匀分布
-            // 总共90个点，6个时间点的位置：0, 18, 36, 54, 72, 89
-            const positions = [0, 18, 36, 54, 72, 89];
+            // 显示6个时间点，基于120个数据点的新布局
+            // 前4个标签对应数据索引[0,39,79,119]，后2个标签在预测区域
+            // 图表总宽度需要容纳120个数据点 + 预测区域
+            // 假设总宽度为180个位置（120个数据 + 60个预测区域）
+            const totalPositions = 180;
+
+            // 计算6个标签的位置 - 视觉上平均分布
+            // 总共180个位置，6个标签平均分布
+            const positions = [
+              0,                                    // 第1个位置
+              Math.round((totalPositions - 1) * 1 / 5), // 第2个位置 (1/5)
+              Math.round((totalPositions - 1) * 2 / 5), // 第3个位置 (2/5)
+              Math.round((totalPositions - 1) * 3 / 5), // 第4个位置 (3/5)
+              Math.round((totalPositions - 1) * 4 / 5), // 第5个位置 (4/5)
+              totalPositions - 1                    // 第6个位置 (最右端)
+            ];
 
             if (positions.includes(index)) {
               const labelIndex = positions.indexOf(index);
@@ -382,10 +521,10 @@ const PriceChart = ({ onPriceUpdate }) => {
           display: true,
           color: '#8f8f8f',
           font: {
-            size: 10,
+            size: window.innerWidth >= 768 ? 12 : 10, // PC端12px，移动端10px
           },
           count: 6,
-          padding: 4, // 4px距离右边
+          padding: window.innerWidth >= 768 ? 6 : 4, // PC端6px，移动端4px距离右边
           callback: function(value) {
             return value.toFixed(1);
           }
@@ -419,70 +558,24 @@ const PriceChart = ({ onPriceUpdate }) => {
     },
   };
 
-  // 处理新的价格数据
-  useEffect(() => {
-    if (wsData && wsData.price && wsData.timestamp) {
-      const newDataPoint = {
-        timestamp: wsData.timestamp,
-        price: wsData.price,
-        time: new Date(wsData.timestamp).toLocaleTimeString('en-US', {
-          hour12: false,
-          minute: '2-digit',
-          second: '2-digit'
-        })
-      };
 
-      // 每次WebSocket推送都触发闪烁（无论价格是否变化）
-      setPriceChanged(true);
-      blinkStartTimeRef.current = Date.now(); // 记录闪烁开始时间
 
-      // 700ms后停止闪烁状态
-      setTimeout(() => {
-        setPriceChanged(false);
-      }, 700);
-
-      previousPriceRef.current = wsData.price;
-      setCurrentPrice(wsData.price);
-
-      // 实现向左滑动效果：新数据推入，所有数据向左移动
-      setChartData(prev => {
-        const updated = [...prev, newDataPoint];
-        // 保持固定数量的数据点，新数据从右边推入，老数据从左边移出
-        const maxPoints = 60; // 左侧2/3区域的数据点数
-        return updated.slice(-maxPoints);
-      });
-
-      // 通知父组件价格更新
-      if (onPriceUpdate) {
-        onPriceUpdate({
-          price: wsData.price,
-          timestamp: wsData.timestamp,
-          symbol: wsData.symbol
-        });
-      }
-    }
-  }, [wsData, onPriceUpdate]);
-
-  // 准备图表数据，实现向左滑动效果
+  // 准备图表数据，120个数据点显示在左侧2/3区域
   const displayData = useMemo(() => {
-    const totalLength = 90; // 总共90个点
-    const leftSideLength = 60; // 左侧60个点（2/3）
+    const totalLength = 180; // 总图表宽度（120个数据位置 + 60个预测区域位置）
 
     // 创建完整的数据数组，右侧1/3为空
     const fullData = new Array(totalLength).fill(null);
 
-    // 填充左侧数据，实现向左滑动
+    // 填充左侧数据区域
     if (combinedData.length > 0) {
-      // 取最新的数据填充到左侧区域的最右边（第60个位置）
-      const recentData = combinedData.slice(-leftSideLength);
+      // 确保我们有120个数据点
+      const dataToShow = combinedData.slice(-120); // 取最新的120个数据点
 
-      // 从左侧区域的右边开始填充，新数据在最右边
-      recentData.forEach((item, index) => {
-        if (item && item.price) {
-          const position = leftSideLength - recentData.length + index;
-          if (position >= 0 && position < leftSideLength) {
-            fullData[position] = item.price;
-          }
+      // 将120个数据点填充到前120个位置
+      dataToShow.forEach((item, index) => {
+        if (item && item.price !== undefined) {
+          fullData[index] = item.price;
         }
       });
     }
@@ -491,7 +584,7 @@ const PriceChart = ({ onPriceUpdate }) => {
   }, [combinedData]);
 
   const data = {
-    labels: new Array(90).fill(''),
+    labels: new Array(180).fill(''), // 总共180个标签位置
     datasets: [
       {
         label: 'BTC Price',
@@ -517,6 +610,9 @@ const PriceChart = ({ onPriceUpdate }) => {
         spanGaps: false, // 不连接空数据点
         stepped: false,
         cubicInterpolationMode: 'default',
+        // 线条动画配置
+        tension: 0.4, // 增加线条平滑度
+        borderWidth: 2, // 线条宽度
       },
     ],
   };
@@ -525,26 +621,24 @@ const PriceChart = ({ onPriceUpdate }) => {
   const hasEnoughData = combinedData.length > 10;
 
   return (
-    <div className="w-[375vw] h-[346vw] relative" style={{ backgroundColor: '#121212' }}>
+    <div className="w-[375vw] md:w-full h-[346vw] md:h-80 relative" style={{ backgroundColor: '#121212' }}>
       {!hasEnoughData ? (
         // Loading状态
         <div className="absolute inset-0 flex items-center justify-center">
-          <div className="text-white text-size-[16vw]">Loading...</div>
+          <div className="text-white text-size-[16vw] md:text-base">Loading...</div>
         </div>
       ) : (
         // 图表内容
         <>
-          {/* Chart.js 图表 */}
-          <div className="w-full h-full">
-            <Line ref={chartRef} data={data} options={chartOptions} />
+          {/* Chart.js 图表 - 稍微向左移动，贴左边 */}
+          <div className="w-full h-full relative overflow-hidden">
+            {/* 图表容器，向左偏移一小段距离 */}
+            <div className="absolute left-[-4%] md:left-0 top-0 w-[103%] md:w-full h-full">
+              <Line ref={chartRef} data={data} options={chartOptions} />
+            </div>
           </div>
 
-          {/* 错误提示 */}
-          {error && (
-            <div className="absolute top-[24vw] left-[8vw] right-[8vw] bg-red-500 bg-opacity-80 text-white text-size-[12vw] p-[8vw] rounded-[4vw] z-20">
-              {error}
-            </div>
-          )}
+
         </>
       )}
     </div>

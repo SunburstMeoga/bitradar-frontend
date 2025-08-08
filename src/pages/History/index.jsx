@@ -36,6 +36,7 @@ const DownArrowIcon = ({ color = '#f5384e' }) => (
 const generateMockData = (page = 1, pageSize = 10) => {
   const data = [];
   const startIndex = (page - 1) * pageSize;
+  const timestamp = Date.now(); // 添加时间戳确保唯一性
 
   for (let i = 0; i < pageSize; i++) {
     const index = startIndex + i;
@@ -57,7 +58,7 @@ const generateMockData = (page = 1, pageSize = 10) => {
     const closeTime = new Date(openTime.getTime() + durationMinutes * 60000);
 
     data.push({
-      id: `trade_${index}`,
+      id: `trade_${page}_${index}_${timestamp}_${i}`, // 使用页码、索引、时间戳和循环索引确保唯一性
       direction: isUp ? 'up' : 'down',
       result: isWin ? 'win' : 'lose',
       amount,
@@ -109,23 +110,33 @@ const History = () => {
 
     setLoading(true);
 
-    // 模拟API延迟
-    await new Promise(resolve => setTimeout(resolve, 500));
+    try {
+      // 模拟API延迟
+      await new Promise(resolve => setTimeout(resolve, 500));
 
-    const newData = generateMockData(pageNum, 10);
+      const newData = generateMockData(pageNum, 10);
 
-    if (isRefresh) {
-      setHistoryData(newData);
-    } else {
-      setHistoryData(prev => [...prev, ...newData]);
+      if (isRefresh) {
+        setHistoryData(newData);
+        setPage(1); // 重置页码
+      } else {
+        setHistoryData(prev => {
+          // 检查是否已存在相同的数据，避免重复添加
+          const existingIds = new Set(prev.map(item => item.id));
+          const filteredNewData = newData.filter(item => !existingIds.has(item.id));
+          return [...prev, ...filteredNewData];
+        });
+      }
+
+      // 模拟没有更多数据的情况
+      if (pageNum >= 5) {
+        setHasMore(false);
+      }
+    } catch (error) {
+      console.error('Error loading data:', error);
+    } finally {
+      setLoading(false);
     }
-
-    // 模拟没有更多数据的情况
-    if (pageNum >= 5) {
-      setHasMore(false);
-    }
-
-    setLoading(false);
   }, [loading]);
 
   // 初始加载
@@ -144,7 +155,7 @@ const History = () => {
     if (scrollTop + clientHeight >= scrollHeight - 100) {
       const nextPage = page + 1;
       setPage(nextPage);
-      loadData(nextPage);
+      loadData(nextPage, false);
     }
   }, [loading, hasMore, page, loadData]);
 

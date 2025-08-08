@@ -26,24 +26,33 @@ const useWebSocket = (url) => {
       ws.current.onmessage = (event) => {
         try {
           const message = JSON.parse(event.data);
-          
+
+          // 打印所有接收到的WebSocket数据
+          console.log('📡 WebSocket接收数据:', {
+            原始数据: event.data,
+            解析后数据: message,
+            时间戳: new Date().toLocaleTimeString()
+          });
+
           switch(message.type) {
             case 'connected':
-              console.log('连接ID:', message.connectionId);
+              console.log('✅ WebSocket连接成功 - 连接ID:', message.connectionId);
               break;
             case 'price_update':
-              setData({
+              const priceData = {
                 symbol: message.symbol,
                 price: parseFloat(message.price),
                 timestamp: new Date(message.timestamp).getTime(),
                 rawTimestamp: message.timestamp
-              });
+              };
+              console.log('💰 价格更新:', priceData);
+              setData(priceData);
               break;
             default:
-              console.log('未知消息类型:', message);
+              console.log('❓ 未知消息类型:', message);
           }
         } catch (err) {
-          console.error('解析WebSocket消息失败:', err);
+          console.error('❌ 解析WebSocket消息失败:', err, '原始数据:', event.data);
           setError('数据解析错误');
         }
       };
