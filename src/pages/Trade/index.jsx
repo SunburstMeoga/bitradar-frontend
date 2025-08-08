@@ -1,5 +1,7 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import usePageTitle from '../../hooks/usePageTitle';
+import Modal from '../../components/Modal';
 import pUSDIcon from '../../assets/icons/pUSD.png';
 import upDownIcon from '../../assets/icons/up-down.png';
 import buyUpIcon from '../../assets/icons/buy-up.png';
@@ -8,6 +10,8 @@ import timeIcon from '../../assets/icons/time.png';
 import sliderIcon from '../../assets/icons/slider.png';
 
 const Trade = () => {
+  const { t } = useTranslation();
+
   // 设置页面标题
   usePageTitle('trade');
 
@@ -15,10 +19,18 @@ const Trade = () => {
   const [sliderValue, setSliderValue] = useState(1);
   const [currentPrice, setCurrentPrice] = useState(67234.56);
   const [priceChange, setPriceChange] = useState(2.34);
+  const [selectedToken, setSelectedToken] = useState('LuckyUSD');
+  const [isTokenModalOpen, setIsTokenModalOpen] = useState(false);
 
   const balance = 654.3;
   const isUp = priceChange > 0;
   const isButtonsDisabled = tradeAmount === 0;
+
+  // 可选择的币种列表
+  const tokenOptions = [
+    { name: 'USDR', icon: pUSDIcon },
+    { name: 'LuckyUSD', icon: pUSDIcon }
+  ];
 
   // 处理滑块变化
   const handleSliderChange = (e) => {
@@ -32,6 +44,22 @@ const Trade = () => {
     const value = parseFloat(e.target.value) || 0;
     setTradeAmount(value);
     setSliderValue(value);
+  };
+
+  // 处理币种选择框点击
+  const handleTokenSelectorClick = () => {
+    setIsTokenModalOpen(true);
+  };
+
+  // 处理币种选择
+  const handleTokenSelect = (tokenName) => {
+    setSelectedToken(tokenName);
+    setIsTokenModalOpen(false);
+  };
+
+  // 关闭币种选择弹窗
+  const handleCloseTokenModal = () => {
+    setIsTokenModalOpen(false);
   };
 
   return (
@@ -50,7 +78,7 @@ const Trade = () => {
           />
           <div className="h-[34vw] md:h-9 flex flex-col justify-between -mt-[7vw] md:mt-0">
             <p className="text-white text-size-[15vw] md:text-base font-semibold h-[18vw] md:h-auto">BTC-USD</p>
-            <p className="text-white text-size-[13vw] md:text-sm h-[15vw] md:h-auto">Binary Options</p>
+            <p className="text-white text-size-[13vw] md:text-sm h-[15vw] md:h-auto">{t('trade.binary_options')}</p>
           </div>
         </div>
 
@@ -82,7 +110,7 @@ const Trade = () => {
 
       {/* 价格图表占位 */}
       <div className='w-full h-[346vw] md:h-80 mb-[10vw] md:mb-3 flex items-center justify-center' style={{ backgroundColor: '#1a1a1a' }}>
-        <p className="text-[#8f8f8f] text-size-[14vw] md:text-sm">价格图表区域</p>
+        <p className="text-[#8f8f8f] text-size-[14vw] md:text-sm">{t('trade.price_chart_area')}</p>
       </div>
 
       {/* 交易卡片 */}
@@ -94,23 +122,29 @@ const Trade = () => {
         >
           {/* 第一行：标题和余额 */}
           <div className="flex justify-between items-center mb-[6vw] md:mb-2">
-            <span className="text-white text-size-[13vw] md:text-sm">Trade Amount</span>
-            <span className="text-[#8f8f8f] text-size-[13vw] md:text-sm">Balance: {balance}</span>
+            <span className="text-white text-size-[13vw] md:text-sm">{t('trade.trade_amount')}</span>
+            <span className="text-[#8f8f8f] text-size-[13vw] md:text-sm">{t('trade.balance')}: {balance}</span>
           </div>
 
           {/* 第二行：输入框和按钮 */}
-          <div className="flex justify-between items-center mb-[6vw] md:mb-2">
-            <input
-              type="number"
-              value={tradeAmount}
-              onChange={handleInputChange}
-              className="w-[196vw] md:w-48 h-[40vw] md:h-10 bg-transparent border-none outline-none text-[#c5ff33] text-size-[34vw] md:text-2xl font-semibold"
-              style={{ appearance: 'none' }}
-            />
-            <div className="w-[116vw] md:w-28 h-[34vw] md:h-8 bg-[#3d3d3d] rounded-[34vw] md:rounded-full px-[16vw] md:px-4 py-[8vw] md:py-2 flex items-center justify-between">
-              <img src={pUSDIcon} alt="pUSD" className="w-[16vw] md:w-4 h-[16vw] md:h-4" />
-              <span className="text-white font-semibold text-size-[15vw] md:text-sm">LuckyUSD</span>
-              <img src={upDownIcon} alt="up-down" className="w-[16vw] md:w-4 h-[16vw] md:h-4" />
+          <div className="w-full flex items-center mb-[6vw] md:mb-2">
+            <div className="flex-1 min-w-0">
+              <input
+                type="number"
+                value={tradeAmount}
+                onChange={handleInputChange}
+                className="w-full h-[40vw] md:h-10 bg-transparent border-none outline-none text-[#c5ff33] text-size-[34vw] md:text-2xl font-semibold"
+                style={{ appearance: 'none' }}
+              />
+            </div>
+            <div className="w-[8vw] md:w-2 flex-shrink-0"></div>
+            <div
+              className="h-[34vw] md:h-8 bg-[#3d3d3d] rounded-[34vw] md:rounded-full px-[10vw] md:px-2.5 py-[8vw] md:py-2 flex items-center gap-[4vw] md:gap-1 cursor-pointer flex-shrink-0"
+              onClick={handleTokenSelectorClick}
+            >
+              <img src={pUSDIcon} alt="token" className="w-[14vw] md:w-3.5 h-[14vw] md:h-3.5 flex-shrink-0" />
+              <span className="text-white font-medium text-size-[12vw] md:text-xs whitespace-nowrap">{selectedToken}</span>
+              <img src={upDownIcon} alt="up-down" className="w-[14vw] md:w-3.5 h-[14vw] md:h-3.5 flex-shrink-0" />
             </div>
           </div>
 
@@ -156,10 +190,10 @@ const Trade = () => {
 
         {/* 第二部分：Payout */}
         <div
-          className="w-[343vw] md:w-full h-[48vw] md:h-12 -mt-[17vw] md:-mt-4 border rounded-[12vw] md:rounded-lg flex items-center justify-center"
+          className="w-[343vw] md:w-full h-[50vw] md:h-12 -mt-[17vw] md:-mt-4 border rounded-[12vw] md:rounded-lg flex items-center justify-center"
           style={{ borderColor: '#1f1f1f' }}
         >
-          <span className="text-[#8f8f8f] text-size-[13vw] md:text-sm">Payout: 456.45</span>
+          <span className="text-[#8f8f8f] text-size-[13vw] md:text-sm"> <br /> {t('trade.payout')}: 456.45</span>
         </div>
 
         {/* 第三部分：按钮和时间 */}
@@ -173,7 +207,7 @@ const Trade = () => {
             }}
           >
             <img src={buyUpIcon} alt="Up" className="w-[24vw] md:w-6 h-[24vw] md:h-6" />
-            <span className="text-white text-size-[17vw] md:text-lg font-semibold">Up</span>
+            <span className="text-white text-size-[17vw] md:text-lg font-semibold">{t('trade.up')}</span>
           </div>
 
           {/* 中间时间显示 */}
@@ -191,10 +225,47 @@ const Trade = () => {
             }}
           >
             <img src={buyDownIcon} alt="Down" className="w-[24vw] md:w-6 h-[24vw] md:h-6" />
-            <span className="text-white text-size-[17vw] md:text-lg font-semibold">Down</span>
+            <span className="text-white text-size-[17vw] md:text-lg font-semibold">{t('trade.down')}</span>
           </div>
         </div>
       </div>
+
+      {/* 币种选择弹窗 */}
+      <Modal isOpen={isTokenModalOpen} onClose={handleCloseTokenModal}>
+        <div className="p-[20vw] md:p-5">
+          {/* 弹窗标题 */}
+          <div className="text-center mb-[20vw] md:mb-5">
+            <h3 className="text-white text-size-[18vw] md:text-lg font-semibold">{t('trade.select_token')}</h3>
+          </div>
+
+          {/* 币种选项列表 */}
+          <div className="space-y-[12vw] md:space-y-3">
+            {tokenOptions.map((token) => (
+              <div
+                key={token.name}
+                className={`w-full h-[50vw] md:h-12 rounded-[12vw] md:rounded-lg px-[16vw] md:px-4 flex items-center gap-[12vw] md:gap-3 cursor-pointer transition-colors ${
+                  selectedToken === token.name
+                    ? 'bg-[#c5ff33] bg-opacity-20 border border-[#c5ff33]'
+                    : 'bg-[#3d3d3d] hover:bg-[#4d4d4d]'
+                }`}
+                onClick={() => handleTokenSelect(token.name)}
+              >
+                <img src={token.icon} alt={token.name} className="w-[24vw] md:w-6 h-[24vw] md:h-6 flex-shrink-0" />
+                <span className={`text-size-[16vw] md:text-base font-medium ${
+                  selectedToken === token.name ? 'text-[#c5ff33]' : 'text-white'
+                }`}>
+                  {token.name}
+                </span>
+                {selectedToken === token.name && (
+                  <div className="ml-auto w-[16vw] md:w-4 h-[16vw] md:h-4 rounded-full bg-[#c5ff33] flex items-center justify-center">
+                    <div className="w-[8vw] md:w-2 h-[8vw] md:h-2 rounded-full bg-white"></div>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };

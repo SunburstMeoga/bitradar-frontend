@@ -130,6 +130,16 @@
     "confirm_swap": "Confirm Swap",
     "withdraw_usdr": "Withdraw USDR"
   },
+  "trade": {
+    "trade_amount": "Trade Amount",
+    "balance": "Balance",
+    "payout": "Payout",
+    "up": "Up",
+    "down": "Down",
+    "select_token": "Select Token",
+    "price_chart_area": "Price Chart Area",
+    "binary_options": "Binary Options"
+  },
   "transaction_history": {
     "title": "Transaction History",
     "loading": "Loading...",

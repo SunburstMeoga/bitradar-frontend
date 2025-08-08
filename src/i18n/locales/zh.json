@@ -130,6 +130,16 @@
     "confirm_swap": "确认兑换",
     "withdraw_usdr": "提现USDR"
   },
+  "trade": {
+    "trade_amount": "交易金额",
+    "balance": "余额",
+    "payout": "收益",
+    "up": "涨",
+    "down": "跌",
+    "select_token": "选择币种",
+    "price_chart_area": "价格图表区域",
+    "binary_options": "二元期权"
+  },
   "transaction_history": {
     "title": "交易记录",
     "loading": "加载中...",
