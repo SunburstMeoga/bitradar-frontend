@@ -140,6 +140,13 @@ const Trade = () => {
         </div>
       </div>
 
+      {/* 调试信息 */}
+      {userBets.length > 0 && (
+        <div className="text-white text-center mb-2">
+          当前下注数量: {userBets.length}
+        </div>
+      )}
+
       {/* 价格图表 */}
       <div className='w-full h-[346vw] md:h-80 mb-[10vw] md:mb-3'>
         <PriceChart

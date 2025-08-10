@@ -145,10 +145,114 @@ const customDrawPlugin = {
   }
 };
 
-ChartJS.register(customDrawPlugin);
+// 用户下注点绘制插件
+const userBetsPlugin = {
+  id: 'userBets',
+  afterDatasetsDraw: (chart) => {
+    const { ctx, scales, data } = chart;
+    const userBets = chart.options.userBets || [];
 
-const PriceChart = ({ onPriceUpdate }) => {
+    if (!scales.y || !scales.x) return;
+
+    // 调试信息
+    if (userBets.length > 0) {
+      console.log('🎨 绘制用户下注点:', userBets.length, '个点');
+    }
+
+    if (userBets.length === 0) return;
+
+    const yScale = scales.y;
+    const xScale = scales.x;
+    const dataset = data.datasets[0];
+    const dataArray = dataset.data;
+
+    ctx.save();
+
+    userBets.forEach(bet => {
+      // 找到下注时间对应的数据点索引
+      const betTime = bet.timestamp;
+
+      // 从数据数组中找到最接近下注时间的数据点
+      let closestIndex = -1;
+      let minTimeDiff = Infinity;
+
+      for (let i = 0; i < dataArray.length; i++) {
+        if (dataArray[i] !== null && dataArray[i] !== undefined) {
+          // 计算数据点的时间戳（基于当前时间往前推算）
+          const dataPointTime = Date.now() - ((119 - i) * 1000);
+          const timeDiff = Math.abs(dataPointTime - betTime);
+
+          if (timeDiff < minTimeDiff) {
+            minTimeDiff = timeDiff;
+            closestIndex = i;
+          }
+        }
+      }
+
+      // 如果找不到合适的数据点或者时间差太大（超过60秒），跳过
+      if (closestIndex === -1 || minTimeDiff > 60000) return;
+
+      // 获取下注时的价格位置
+      const betPriceY = yScale.getPixelForValue(bet.price);
+      const betPriceX = xScale.getPixelForValue(closestIndex);
+
+      // 绘制下注点
+      drawBetPoint(ctx, betPriceX, betPriceY, bet.direction);
+    });
+
+    ctx.restore();
+  }
+};
+
+// 绘制单个下注点的函数
+function drawBetPoint(ctx, x, y, direction) {
+  const pointSize = 10; // 点的宽高
+  const triangleSize = 4; // 三角形宽度
+
+  // 根据方向决定颜色
+  const backgroundColor = direction === 'up' ? '#00bc4b' : '#f5384e';
+
+  ctx.save();
+
+  // 绘制圆形背景
+  ctx.fillStyle = backgroundColor;
+  ctx.beginPath();
+  ctx.arc(x, y, pointSize / 2, 0, 2 * Math.PI);
+  ctx.fill();
+
+  // 绘制白色三角形
+  ctx.fillStyle = '#ffffff';
+  ctx.beginPath();
+
+  if (direction === 'up') {
+    // 向上三角形
+    ctx.moveTo(x, y - triangleSize / 2);
+    ctx.lineTo(x - triangleSize / 2, y + triangleSize / 2);
+    ctx.lineTo(x + triangleSize / 2, y + triangleSize / 2);
+  } else {
+    // 向下三角形
+    ctx.moveTo(x, y + triangleSize / 2);
+    ctx.lineTo(x - triangleSize / 2, y - triangleSize / 2);
+    ctx.lineTo(x + triangleSize / 2, y - triangleSize / 2);
+  }
+
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.restore();
+}
+
+ChartJS.register(customDrawPlugin, userBetsPlugin);
+
+const PriceChart = ({ onPriceUpdate, userBets = [] }) => {
   const chartRef = useRef(null);
+
+  // 调试：监听userBets变化
+  useEffect(() => {
+    if (userBets.length > 0) {
+      console.log('📊 PriceChart收到userBets:', userBets);
+    }
+  }, [userBets]);
 
   const [mockData, setMockData] = useState([]);
   const [currentPrice, setCurrentPrice] = useState(null);
@@ -432,6 +536,7 @@ const PriceChart = ({ onPriceUpdate }) => {
     currentPrice: currentPrice, // 传递当前价格给插件
     priceChanged: priceChanged, // 传递价格变化状态给插件
     blinkStartTime: blinkStartTimeRef.current, // 传递闪烁开始时间给插件
+    userBets: userBets, // 传递用户下注数据给插件
     // 动画配置 - 滑动窗口平滑动画
     animation: {
       duration: 800, // 800ms动画时长
@@ -551,10 +656,6 @@ const PriceChart = ({ onPriceUpdate }) => {
         top: 0,
         bottom: 0
       }
-    },
-    animation: {
-      duration: 800, // 800ms的平滑滑动动画
-      easing: 'easeOutQuart', // 缓出动画，更自然的滑动效果
     },
   };
 
