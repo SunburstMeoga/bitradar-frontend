@@ -82,14 +82,14 @@ const Trade = () => {
     console.log('🎯 用户下注:', newBet);
   };
 
-  // 清理过期的下注记录
+  // 清理过期的下注记录（60秒后开盘，下注记录消失）
   useEffect(() => {
     const interval = setInterval(() => {
       const now = Date.now();
       setUserBets(prev => prev.filter(bet =>
-        now - bet.timestamp < 180000 // 保留3分钟内的下注记录
+        now - bet.timestamp < 60000 // 保留60秒内的下注记录（开盘前）
       ));
-    }, 30000); // 每30秒清理一次
+    }, 1000); // 每1秒检查一次，确保及时清理
 
     return () => clearInterval(interval);
   }, []);

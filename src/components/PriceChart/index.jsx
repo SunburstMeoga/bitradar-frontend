@@ -152,62 +152,62 @@ const userBetsPlugin = {
     const { ctx, scales, data } = chart;
     const userBets = chart.options.userBets || [];
 
-    if (!scales.y || !scales.x) return;
-
-    // 调试信息
-    if (userBets.length > 0) {
-      console.log('🎨 绘制用户下注点:', userBets.length, '个点');
-    }
-
-    if (userBets.length === 0) return;
+    if (!scales.y || !scales.x || userBets.length === 0) return;
 
     const yScale = scales.y;
     const xScale = scales.x;
     const dataset = data.datasets[0];
     const dataArray = dataset.data;
+    const currentTime = Date.now();
 
     ctx.save();
 
     userBets.forEach(bet => {
-      // 找到下注时间对应的数据点索引
       const betTime = bet.timestamp;
+      const settlementTime = betTime + 60000; // 60秒后结算
 
-      // 从数据数组中找到最接近下注时间的数据点
-      let closestIndex = -1;
-      let minTimeDiff = Infinity;
+      // 检查是否已经到达结算时间，如果是则跳过绘制
+      if (currentTime >= settlementTime) return;
 
-      for (let i = 0; i < dataArray.length; i++) {
-        if (dataArray[i] !== null && dataArray[i] !== undefined) {
-          // 计算数据点的时间戳（基于当前时间往前推算）
-          const dataPointTime = Date.now() - ((119 - i) * 1000);
-          const timeDiff = Math.abs(dataPointTime - betTime);
+      // 简化时间计算：直接计算相对于当前时间的偏移
+      const betTimeOffset = (currentTime - betTime) / 1000; // 秒
+      const settlementTimeOffset = (currentTime - settlementTime) / 1000; // 秒
 
-          if (timeDiff < minTimeDiff) {
-            minTimeDiff = timeDiff;
-            closestIndex = i;
-          }
-        }
-      }
+      // 计算数据点索引（第120个数据点是当前时间，索引119）
+      const betIndex = Math.max(0, Math.min(119, 119 - Math.floor(betTimeOffset)));
+      const settlementIndex = 119 - Math.floor(settlementTimeOffset);
 
-      // 如果找不到合适的数据点或者时间差太大（超过60秒），跳过
-      if (closestIndex === -1 || minTimeDiff > 60000) return;
+      // 如果下注点已经超出显示范围，跳过
+      if (betIndex < 0 || betIndex >= dataArray.length) return;
 
-      // 获取下注时的价格位置
+      // 获取下注点位置
       const betPriceY = yScale.getPixelForValue(bet.price);
-      const betPriceX = xScale.getPixelForValue(closestIndex);
+      const betPriceX = xScale.getPixelForValue(betIndex);
 
-      // 绘制下注点
+      // 绘制下注点（新尺寸20px）
       drawBetPoint(ctx, betPriceX, betPriceY, bet.direction);
+
+      // 如果结算时间点在可见范围内，绘制虚线和连接线
+      if (settlementIndex >= 0 && settlementIndex < 180) {
+        const settlementX = xScale.getPixelForValue(settlementIndex);
+
+        // 绘制结算虚线
+        drawSettlementLine(ctx, settlementX, chart.chartArea, bet.direction);
+
+        // 绘制连接线和连接点
+        drawConnectionLine(ctx, betPriceX, betPriceY, settlementX, betPriceY, bet.direction);
+        drawConnectionPoint(ctx, settlementX, betPriceY, bet.direction);
+      }
     });
 
     ctx.restore();
   }
 };
 
-// 绘制单个下注点的函数
+// 绘制单个下注点的函数（新尺寸20px）
 function drawBetPoint(ctx, x, y, direction) {
-  const pointSize = 10; // 点的宽高
-  const triangleSize = 4; // 三角形宽度
+  const pointSize = 20; // 点的宽高（从10改为20）
+  const triangleSize = 8; // 三角形宽度（从4改为8）
 
   // 根据方向决定颜色
   const backgroundColor = direction === 'up' ? '#00bc4b' : '#f5384e';
@@ -242,17 +242,53 @@ function drawBetPoint(ctx, x, y, direction) {
   ctx.restore();
 }
 
+// 绘制结算虚线的函数
+function drawSettlementLine(ctx, x, chartArea, direction) {
+  const color = direction === 'up' ? '#00bc4b' : '#f5384e';
+
+  ctx.save();
+  ctx.setLineDash([5, 5]); // 虚线样式
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 1; // 改为1px，更细
+  ctx.beginPath();
+  ctx.moveTo(x, chartArea.top);
+  ctx.lineTo(x, chartArea.bottom);
+  ctx.stroke();
+  ctx.setLineDash([]); // 重置虚线
+  ctx.restore();
+}
+
+// 绘制连接线的函数
+function drawConnectionLine(ctx, startX, startY, endX, endY, direction) {
+  const color = direction === 'up' ? '#00bc4b' : '#f5384e';
+
+  ctx.save();
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(startX, startY);
+  ctx.lineTo(endX, endY);
+  ctx.stroke();
+  ctx.restore();
+}
+
+// 绘制连接点的函数
+function drawConnectionPoint(ctx, x, y, direction) {
+  const pointSize = 10; // 连接点大小
+  const color = direction === 'up' ? '#00bc4b' : '#f5384e';
+
+  ctx.save();
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.arc(x, y, pointSize / 2, 0, 2 * Math.PI);
+  ctx.fill();
+  ctx.restore();
+}
+
 ChartJS.register(customDrawPlugin, userBetsPlugin);
 
 const PriceChart = ({ onPriceUpdate, userBets = [] }) => {
   const chartRef = useRef(null);
-
-  // 调试：监听userBets变化
-  useEffect(() => {
-    if (userBets.length > 0) {
-      console.log('📊 PriceChart收到userBets:', userBets);
-    }
-  }, [userBets]);
 
   const [mockData, setMockData] = useState([]);
   const [currentPrice, setCurrentPrice] = useState(null);
