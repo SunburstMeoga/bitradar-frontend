@@ -318,12 +318,12 @@ const PriceChart = ({ onPriceUpdate, userBets = [] }) => {
     };
   }, []);
 
-  // 生成模拟历史数据（2分钟，每秒一个数据点）
+  // 生成模拟历史数据（2分钟，每秒一个数据点）- 只在组件初始化时执行一次
   useEffect(() => {
     const generateMockData = () => {
       const now = Date.now();
       const data = [];
-      const basePrice = currentPrice || 67234.56;
+      const basePrice = 67234.56; // 使用固定的初始价格，避免循环依赖
 
       // 生成120个数据点（2分钟）
       for (let i = 119; i >= 0; i--) {
@@ -342,15 +342,23 @@ const PriceChart = ({ onPriceUpdate, userBets = [] }) => {
       return { data };
     };
 
-    setMockData(generateMockData());
-  }, [currentPrice]);
+    // 只在组件初始化时生成一次数据
+    if (!mockData || !mockData.data || mockData.data.length === 0) {
+      setMockData(generateMockData());
+    }
+  }, []); // 移除currentPrice依赖，避免循环依赖
 
   // 模拟WebSocket数据推送（每秒更新）- 滑动窗口
   useEffect(() => {
     const interval = setInterval(() => {
-      if (mockData && mockData.data && mockData.data.length > 0) {
+      setMockData(prevMockData => {
+        // 检查是否有数据
+        if (!prevMockData || !prevMockData.data || prevMockData.data.length === 0) {
+          return prevMockData;
+        }
+
         // 模拟新的价格数据
-        const lastDataPoint = mockData.data[mockData.data.length - 1];
+        const lastDataPoint = prevMockData.data[prevMockData.data.length - 1];
         const lastPrice = lastDataPoint ? lastDataPoint[1] : 67234.56;
         const priceChange = (Math.random() - 0.5) * 0.002; // ±0.1%
         const newPrice = lastPrice * (1 + priceChange);
@@ -359,12 +367,9 @@ const PriceChart = ({ onPriceUpdate, userBets = [] }) => {
         const newDataPoint = [newTimestamp, newPrice];
 
         // 更新mock数据 - 滑动窗口：新数据进来，最老数据移出
-        setMockData(prevMockData => {
-          const newData = [...prevMockData.data, newDataPoint];
-          // 保持120个数据点
-          const updatedData = newData.slice(-120);
-          return { data: updatedData };
-        });
+        const newData = [...prevMockData.data, newDataPoint];
+        // 保持120个数据点
+        const updatedData = newData.slice(-120);
 
         // 检查价格是否变化来决定是否闪烁
         if (previousPriceRef.current !== null && previousPriceRef.current !== newPrice) {
@@ -395,11 +400,13 @@ const PriceChart = ({ onPriceUpdate, userBets = [] }) => {
             })
           });
         }
-      }
+
+        return { data: updatedData };
+      });
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [mockData, onPriceUpdate]);
+  }, [onPriceUpdate]); // 移除mockData依赖，避免循环依赖
 
   // 处理模拟数据（新格式）
   const combinedData = useMemo(() => {

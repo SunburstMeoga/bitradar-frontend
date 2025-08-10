@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import usePageTitle from '../../hooks/usePageTitle';
 import Modal from '../../components/Modal';
@@ -82,6 +82,14 @@ const Trade = () => {
     console.log('🎯 用户下注:', newBet);
   };
 
+  // 处理价格更新的回调函数，使用useCallback稳定引用
+  const handlePriceUpdate = useCallback((priceData) => {
+    setCurrentPrice(priceData.price);
+    // 计算价格变化百分比（这里简化处理，实际应该基于前一个价格）
+    const changePercent = ((priceData.price - currentPrice) / currentPrice) * 100;
+    setPriceChange(changePercent);
+  }, [currentPrice]);
+
   // 清理过期的下注记录（60秒后开盘，下注记录消失）
   useEffect(() => {
     const interval = setInterval(() => {
@@ -140,23 +148,12 @@ const Trade = () => {
         </div>
       </div>
 
-      {/* 调试信息 */}
-      {userBets.length > 0 && (
-        <div className="text-white text-center mb-2">
-          当前下注数量: {userBets.length}
-        </div>
-      )}
-
+    
       {/* 价格图表 */}
       <div className='w-full h-[346vw] md:h-80 mb-[10vw] md:mb-3'>
         <PriceChart
           userBets={userBets}
-          onPriceUpdate={(priceData) => {
-            setCurrentPrice(priceData.price);
-            // 计算价格变化百分比（这里简化处理，实际应该基于前一个价格）
-            const changePercent = ((priceData.price - currentPrice) / currentPrice) * 100;
-            setPriceChange(changePercent);
-          }}
+          onPriceUpdate={handlePriceUpdate}
         />
       </div>
 
