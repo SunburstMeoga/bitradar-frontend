@@ -71,13 +71,17 @@ const Trade = () => {
   const handlePlaceBet = (direction) => {
     if (tradeAmount === 0 || !currentPrice) return;
 
+    const now = Date.now();
     const newBet = {
-      id: Date.now(), // 简单的ID生成
+      id: now, // 简单的ID生成
       direction, // 'up' 或 'down'
       amount: tradeAmount,
       price: currentPrice,
-      timestamp: Date.now(),
-      settlementTime: Date.now() + 60000, // 60秒后结算
+      timestamp: now,
+      settlementTime: now + 60000, // 60秒后结算
+      settlementPrice: null, // 结算时价格
+      isWin: null, // 是否猜中
+      profit: null, // 盈利金额
       status: 'active' // active, settled
     };
 
@@ -89,6 +93,7 @@ const Trade = () => {
   const handlePriceUpdate = useCallback((priceData) => {
     const newPrice = priceData.price;
     const prevPrice = previousPriceRef.current;
+    const currentTime = Date.now();
 
     // 更新当前价格
     setCurrentPrice(newPrice);
@@ -99,18 +104,63 @@ const Trade = () => {
       setPriceChange(changePercent);
     }
 
+    // 检查并处理到期的下注记录
+    setUserBets(prev => {
+      return prev.map(bet => {
+        // 如果下注已经结算过，跳过
+        if (bet.status === 'settled') return bet;
+
+        // 检查是否到达结算时间
+        if (currentTime >= bet.settlementTime) {
+          // 计算是否猜中
+          const priceChange = newPrice - bet.price;
+          const isWin = (bet.direction === 'up' && priceChange > 0) ||
+                       (bet.direction === 'down' && priceChange < 0);
+
+          // 计算盈利金额（赔率1赔1，手续费3%）
+          const profit = isWin ? bet.amount * (1 - 0.03) : 0;
+
+          console.log('🎯 交易结算:', {
+            id: bet.id,
+            direction: bet.direction,
+            betPrice: bet.price,
+            settlementPrice: newPrice,
+            priceChange,
+            isWin,
+            profit
+          });
+
+          return {
+            ...bet,
+            settlementPrice: newPrice,
+            isWin,
+            profit,
+            status: 'settled'
+          };
+        }
+
+        return bet;
+      });
+    });
+
     // 更新前一个价格的引用
     previousPriceRef.current = newPrice;
   }, []); // 移除依赖，使用 ref 避免循环依赖
 
-  // 清理过期的下注记录（60秒后开盘，下注记录消失）
+  // 清理过期的下注记录（只清理未结算且超过结算时间5秒的记录）
   useEffect(() => {
     const interval = setInterval(() => {
       const now = Date.now();
-      setUserBets(prev => prev.filter(bet =>
-        now - bet.timestamp < 60000 // 保留60秒内的下注记录（开盘前）
-      ));
-    }, 1000); // 每1秒检查一次，确保及时清理
+      setUserBets(prev => prev.filter(bet => {
+        // 保留已结算的记录（永久显示）
+        if (bet.status === 'settled') return true;
+
+        // 对于活跃记录，只有在超过结算时间5秒后才清理
+        // 这样给结算逻辑足够的时间来处理
+        const timeAfterSettlement = now - bet.settlementTime;
+        return timeAfterSettlement < 5000; // 结算后5秒才清理
+      }));
+    }, 1000); // 每1秒检查一次
 
     return () => clearInterval(interval);
   }, []);

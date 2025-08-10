@@ -166,37 +166,55 @@ const userBetsPlugin = {
       const betTime = bet.timestamp;
       const settlementTime = betTime + 60000; // 60秒后结算
 
-      // 检查是否已经到达结算时间，如果是则跳过绘制
-      if (currentTime >= settlementTime) return;
+      if (bet.status === 'settled') {
+        // 已结算的交易：显示结算信息
+        const settlementTimeOffset = (currentTime - settlementTime) / 1000; // 秒
+        const settlementIndex = 119 - Math.floor(settlementTimeOffset);
 
-      // 简化时间计算：直接计算相对于当前时间的偏移
-      const betTimeOffset = (currentTime - betTime) / 1000; // 秒
-      const settlementTimeOffset = (currentTime - settlementTime) / 1000; // 秒
+        // 如果结算点在可见范围内，绘制结算信息
+        if (settlementIndex >= 0 && settlementIndex < 180) {
+          const settlementX = xScale.getPixelForValue(settlementIndex);
+          const settlementY = yScale.getPixelForValue(bet.settlementPrice);
 
-      // 计算数据点索引（第120个数据点是当前时间，索引119）
-      const betIndex = Math.max(0, Math.min(119, 119 - Math.floor(betTimeOffset)));
-      const settlementIndex = 119 - Math.floor(settlementTimeOffset);
+          // 绘制结算点（黑色三角形）
+          drawSettlementPoint(ctx, settlementX, settlementY, bet.direction);
 
-      // 如果下注点已经超出显示范围，跳过
-      if (betIndex < 0 || betIndex >= dataArray.length) return;
+          // 如果猜中了，绘制盈利金额
+          if (bet.isWin && bet.profit > 0) {
+            drawProfitAmount(ctx, settlementX, settlementY, bet.profit, bet.direction);
+          }
+        }
+      } else {
+        // 活跃的下注：显示下注点和预测线
+        // 简化时间计算：直接计算相对于当前时间的偏移
+        const betTimeOffset = (currentTime - betTime) / 1000; // 秒
+        const settlementTimeOffset = (currentTime - settlementTime) / 1000; // 秒
 
-      // 获取下注点位置
-      const betPriceY = yScale.getPixelForValue(bet.price);
-      const betPriceX = xScale.getPixelForValue(betIndex);
+        // 计算数据点索引（第120个数据点是当前时间，索引119）
+        const betIndex = Math.max(0, Math.min(119, 119 - Math.floor(betTimeOffset)));
+        const settlementIndex = 119 - Math.floor(settlementTimeOffset);
 
-      // 绘制下注点（新尺寸20px）
-      drawBetPoint(ctx, betPriceX, betPriceY, bet.direction);
+        // 如果下注点已经超出显示范围，跳过
+        if (betIndex < 0 || betIndex >= dataArray.length) return;
 
-      // 如果结算时间点在可见范围内，绘制虚线和连接线
-      if (settlementIndex >= 0 && settlementIndex < 180) {
-        const settlementX = xScale.getPixelForValue(settlementIndex);
+        // 获取下注点位置
+        const betPriceY = yScale.getPixelForValue(bet.price);
+        const betPriceX = xScale.getPixelForValue(betIndex);
 
-        // 绘制结算虚线
-        drawSettlementLine(ctx, settlementX, chart.chartArea, bet.direction);
+        // 绘制下注点（新尺寸20px）
+        drawBetPoint(ctx, betPriceX, betPriceY, bet.direction);
 
-        // 绘制连接线和连接点
-        drawConnectionLine(ctx, betPriceX, betPriceY, settlementX, betPriceY, bet.direction);
-        drawConnectionPoint(ctx, settlementX, betPriceY, bet.direction);
+        // 如果结算时间点在可见范围内，绘制虚线和连接线
+        if (settlementIndex >= 0 && settlementIndex < 180) {
+          const settlementX = xScale.getPixelForValue(settlementIndex);
+
+          // 绘制结算虚线
+          drawSettlementLine(ctx, settlementX, chart.chartArea, bet.direction);
+
+          // 绘制连接线和连接点
+          drawConnectionLine(ctx, betPriceX, betPriceY, settlementX, betPriceY, bet.direction);
+          drawConnectionPoint(ctx, settlementX, betPriceY, bet.direction);
+        }
       }
     });
 
@@ -285,6 +303,109 @@ function drawConnectionPoint(ctx, x, y, direction) {
   ctx.restore();
 }
 
+// 绘制结算点的函数（黑色三角形）
+function drawSettlementPoint(ctx, x, y, direction) {
+  const pointSize = 20; // 点的宽高，与下注点一致
+  const triangleSize = 8; // 三角形宽度，与下注点一致
+
+  // 根据方向决定颜色
+  const backgroundColor = direction === 'up' ? '#00bc4b' : '#f5384e';
+
+  ctx.save();
+
+  // 绘制圆形背景
+  ctx.fillStyle = backgroundColor;
+  ctx.beginPath();
+  ctx.arc(x, y, pointSize / 2, 0, 2 * Math.PI);
+  ctx.fill();
+
+  // 绘制黑色三角形（与下注点的白色三角形不同）
+  ctx.fillStyle = '#000000';
+  ctx.beginPath();
+
+  if (direction === 'up') {
+    // 向上三角形
+    ctx.moveTo(x, y - triangleSize / 2);
+    ctx.lineTo(x - triangleSize / 2, y + triangleSize / 2);
+    ctx.lineTo(x + triangleSize / 2, y + triangleSize / 2);
+  } else {
+    // 向下三角形
+    ctx.moveTo(x, y + triangleSize / 2);
+    ctx.lineTo(x - triangleSize / 2, y - triangleSize / 2);
+    ctx.lineTo(x + triangleSize / 2, y - triangleSize / 2);
+  }
+
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.restore();
+}
+
+// 绘制盈利金额的函数
+function drawProfitAmount(ctx, x, y, profit, direction) {
+  const fontSize = 10; // 字体大小10px
+  const padding = 4; // 内边距
+  const borderRadius = 8; // 圆角半径
+  const overlap = 2; // 与结算点的重叠距离
+
+  // 根据方向决定边框和文字颜色
+  const borderColor = direction === 'up' ? '#00bc4b' : '#f5384e';
+  const textColor = borderColor;
+
+  ctx.save();
+
+  // 设置字体
+  ctx.font = `${fontSize}px Arial`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+
+  // 格式化金额文本（显示小数点后两位）
+  const profitText = `+${profit.toFixed(2)}`;
+
+  // 测量文字尺寸
+  const textMetrics = ctx.measureText(profitText);
+  const textWidth = textMetrics.width;
+  const labelWidth = textWidth + padding * 2;
+  const labelHeight = fontSize + padding * 2;
+
+  // 计算金额标签位置（在结算点左边，有重叠）
+  const labelX = x - labelWidth / 2 - 10 + overlap; // 向左偏移10px，然后重叠2px
+  const labelY = y;
+
+  // 绘制黑色背景的圆角矩形
+  ctx.fillStyle = '#000000';
+  ctx.beginPath();
+  drawRoundedRect(ctx, labelX - labelWidth / 2, labelY - labelHeight / 2, labelWidth, labelHeight, borderRadius);
+  ctx.fill();
+
+  // 绘制边框
+  ctx.strokeStyle = borderColor;
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  drawRoundedRect(ctx, labelX - labelWidth / 2, labelY - labelHeight / 2, labelWidth, labelHeight, borderRadius);
+  ctx.stroke();
+
+  // 绘制文字
+  ctx.fillStyle = textColor;
+  ctx.fillText(profitText, labelX, labelY);
+
+  ctx.restore();
+}
+
+// 绘制圆角矩形的辅助函数
+function drawRoundedRect(ctx, x, y, width, height, radius) {
+  ctx.moveTo(x + radius, y);
+  ctx.lineTo(x + width - radius, y);
+  ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+  ctx.lineTo(x + width, y + height - radius);
+  ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+  ctx.lineTo(x + radius, y + height);
+  ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+  ctx.lineTo(x, y + radius);
+  ctx.quadraticCurveTo(x, y, x + radius, y);
+  ctx.closePath();
+}
+
 ChartJS.register(customDrawPlugin, userBetsPlugin);
 
 const PriceChart = ({ onPriceUpdate, userBets = [] }) => {
@@ -344,7 +465,14 @@ const PriceChart = ({ onPriceUpdate, userBets = [] }) => {
 
     // 只在组件初始化时生成一次数据
     if (!mockData || !mockData.data || mockData.data.length === 0) {
-      setMockData(generateMockData());
+      const initialData = generateMockData();
+      console.log('📊 初始化Mock数据:', {
+        dataPoints: initialData.data.length,
+        firstPrice: initialData.data[0][1].toFixed(2),
+        lastPrice: initialData.data[initialData.data.length - 1][1].toFixed(2),
+        timeRange: `${new Date(initialData.data[0][0]).toLocaleTimeString()} - ${new Date(initialData.data[initialData.data.length - 1][0]).toLocaleTimeString()}`
+      });
+      setMockData(initialData);
     }
   }, []); // 移除currentPrice依赖，避免循环依赖
 
@@ -402,6 +530,20 @@ const PriceChart = ({ onPriceUpdate, userBets = [] }) => {
           })
         };
 
+        // 打印模拟的WebSocket数据
+        console.log('🚀 Mock WebSocket Data:', {
+          timestamp: newTimestamp,
+          price: newPrice.toFixed(2),
+          time: new Date(newTimestamp).toLocaleTimeString('en-US', {
+            hour12: false,
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+          }),
+          priceChange: ((newPrice - lastPrice) / lastPrice * 100).toFixed(4) + '%',
+          dataPointsCount: updatedData.length
+        });
+
         return { data: updatedData };
       });
     }, 1000);
@@ -412,6 +554,7 @@ const PriceChart = ({ onPriceUpdate, userBets = [] }) => {
   // 单独的useEffect来处理父组件回调，避免在渲染过程中调用
   useEffect(() => {
     if (latestPriceDataRef.current && onPriceUpdate) {
+      console.log('📤 发送价格数据给Trade组件:', latestPriceDataRef.current);
       onPriceUpdate(latestPriceDataRef.current);
     }
   }, [currentPrice, onPriceUpdate]); // 当currentPrice变化时触发回调
