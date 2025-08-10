@@ -348,6 +348,9 @@ const PriceChart = ({ onPriceUpdate, userBets = [] }) => {
     }
   }, []); // 移除currentPrice依赖，避免循环依赖
 
+  // 用于存储最新的价格数据，供父组件回调使用
+  const latestPriceDataRef = useRef(null);
+
   // 模拟WebSocket数据推送（每秒更新）- 滑动窗口
   useEffect(() => {
     const interval = setInterval(() => {
@@ -388,25 +391,30 @@ const PriceChart = ({ onPriceUpdate, userBets = [] }) => {
         // 触发时间更新
         setTimeUpdate(prev => prev + 1);
 
-        // 通知父组件价格更新
-        if (onPriceUpdate) {
-          onPriceUpdate({
-            timestamp: newTimestamp,
-            price: newPrice,
-            time: new Date(newTimestamp).toLocaleTimeString('en-US', {
-              hour12: false,
-              minute: '2-digit',
-              second: '2-digit'
-            })
-          });
-        }
+        // 存储最新价格数据到ref，供单独的useEffect使用
+        latestPriceDataRef.current = {
+          timestamp: newTimestamp,
+          price: newPrice,
+          time: new Date(newTimestamp).toLocaleTimeString('en-US', {
+            hour12: false,
+            minute: '2-digit',
+            second: '2-digit'
+          })
+        };
 
         return { data: updatedData };
       });
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [onPriceUpdate]); // 移除mockData依赖，避免循环依赖
+  }, []); // 移除onPriceUpdate依赖，避免循环依赖
+
+  // 单独的useEffect来处理父组件回调，避免在渲染过程中调用
+  useEffect(() => {
+    if (latestPriceDataRef.current && onPriceUpdate) {
+      onPriceUpdate(latestPriceDataRef.current);
+    }
+  }, [currentPrice, onPriceUpdate]); // 当currentPrice变化时触发回调
 
   // 处理模拟数据（新格式）
   const combinedData = useMemo(() => {

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import usePageTitle from '../../hooks/usePageTitle';
 import Modal from '../../components/Modal';
@@ -23,6 +23,9 @@ const Trade = () => {
   const [selectedToken, setSelectedToken] = useState('LuckyUSD');
   const [isTokenModalOpen, setIsTokenModalOpen] = useState(false);
   const [userBets, setUserBets] = useState([]); // 用户下注记录
+
+  // 使用 ref 来跟踪前一个价格，避免循环依赖
+  const previousPriceRef = useRef(67234.56);
 
   const balance = 654.3;
   const isUp = priceChange > 0;
@@ -84,11 +87,21 @@ const Trade = () => {
 
   // 处理价格更新的回调函数，使用useCallback稳定引用
   const handlePriceUpdate = useCallback((priceData) => {
-    setCurrentPrice(priceData.price);
-    // 计算价格变化百分比（这里简化处理，实际应该基于前一个价格）
-    const changePercent = ((priceData.price - currentPrice) / currentPrice) * 100;
-    setPriceChange(changePercent);
-  }, [currentPrice]);
+    const newPrice = priceData.price;
+    const prevPrice = previousPriceRef.current;
+
+    // 更新当前价格
+    setCurrentPrice(newPrice);
+
+    // 计算价格变化百分比（基于前一个价格）
+    if (prevPrice && prevPrice !== newPrice) {
+      const changePercent = ((newPrice - prevPrice) / prevPrice) * 100;
+      setPriceChange(changePercent);
+    }
+
+    // 更新前一个价格的引用
+    previousPriceRef.current = newPrice;
+  }, []); // 移除依赖，使用 ref 避免循环依赖
 
   // 清理过期的下注记录（60秒后开盘，下注记录消失）
   useEffect(() => {
