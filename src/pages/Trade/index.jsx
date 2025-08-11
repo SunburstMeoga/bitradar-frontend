@@ -21,13 +21,14 @@ const Trade = () => {
   // 设置页面标题
   usePageTitle('trade');
 
-  const [tradeAmount, setTradeAmount] = useState(1);
-  const [sliderValue, setSliderValue] = useState(1);
+  const [tradeAmount, setTradeAmount] = useState(0);
+  const [sliderValue, setSliderValue] = useState(0);
   const [currentPrice, setCurrentPrice] = useState(67234.56);
   const [priceChange, setPriceChange] = useState(2.34);
-  const [selectedToken, setSelectedToken] = useState('LuckyUSD');
+  const [selectedToken, setSelectedToken] = useState('USDT');
   const [isTokenModalOpen, setIsTokenModalOpen] = useState(false);
   const [userBets, setUserBets] = useState([]); // 用户下注记录
+  const [luckyUSDBalance, setLuckyUSDBalance] = useState(0); // LuckyUSD随机余额
 
   // 使用 ref 来跟踪前一个价格，避免循环依赖
   const previousPriceRef = useRef(67234.56);
@@ -36,19 +37,44 @@ const Trade = () => {
   // 使用防重复调用的API hook
   const safeFetchBalance = useApiCall(fetchBalance, [fetchBalance]);
 
-  // 获取用户余额（优先使用API数据）
-  const userBalance = safeParseFloat(balance?.usdtBalance, 654.3);
+  // 生成LuckyUSD随机余额（0-10000，两位小数）
+  const generateLuckyUSDBalance = () => {
+    const randomBalance = Math.random() * 10000;
+    return Math.round(randomBalance * 100) / 100; // 保留两位小数
+  };
+
+  // 获取当前选中币种的余额
+  const getCurrentTokenBalance = () => {
+    if (selectedToken === 'USDT') {
+      // USDT余额，如果余额数据为null/undefined或网络请求失败，返回0
+      return safeParseFloat(balance?.usdtBalance, 0);
+    } else if (selectedToken === 'LuckyUSD') {
+      return luckyUSDBalance;
+    }
+    return 0;
+  };
+
+  const userBalance = getCurrentTokenBalance();
   const isUp = priceChange > 0;
   const isButtonsDisabled = tradeAmount === 0;
 
+  // 滑动条是否禁用（余额 <= 0）
+  const isSliderDisabled = userBalance <= 0;
+
+  // 确保滑动条计算的安全性
+  const safeUserBalance = Math.max(userBalance, 1); // 最小值为1，避免除零错误
+
   // 可选择的币种列表
   const tokenOptions = [
-    { name: 'USDR', icon: pUSDIcon },
+    { name: 'USDT', icon: pUSDIcon },
     { name: 'LuckyUSD', icon: pUSDIcon }
   ];
 
   // 处理滑块变化
   const handleSliderChange = (e) => {
+    // 如果滑动条被禁用，不处理变化
+    if (isSliderDisabled) return;
+
     const value = parseFloat(e.target.value);
     setSliderValue(value);
     setTradeAmount(Math.floor(value));
@@ -56,9 +82,14 @@ const Trade = () => {
 
   // 处理输入框变化
   const handleInputChange = (e) => {
+    // 如果滑动条被禁用，不处理变化
+    if (isSliderDisabled) return;
+
     const value = parseFloat(e.target.value) || 0;
-    setTradeAmount(value);
-    setSliderValue(value);
+    // 确保输入值不超过用户余额
+    const clampedValue = Math.min(value, userBalance);
+    setTradeAmount(clampedValue);
+    setSliderValue(clampedValue);
   };
 
   // 处理币种选择框点击
@@ -70,6 +101,25 @@ const Trade = () => {
   const handleTokenSelect = (tokenName) => {
     setSelectedToken(tokenName);
     setIsTokenModalOpen(false);
+
+    // 币种切换时重置滑动条值
+    const newBalance = tokenName === 'USDT'
+      ? safeParseFloat(balance?.usdtBalance, 0)
+      : luckyUSDBalance;
+
+    if (newBalance <= 0) {
+      // 余额为0时，滑动条和交易金额都设为0
+      setSliderValue(0);
+      setTradeAmount(0);
+    } else if (newBalance >= 1) {
+      // 余额>=1时，设置默认值为1
+      setSliderValue(1);
+      setTradeAmount(1);
+    } else {
+      // 余额在0-1之间时，设置为余额值
+      setSliderValue(newBalance);
+      setTradeAmount(newBalance);
+    }
   };
 
   // 关闭币种选择弹窗
@@ -157,6 +207,12 @@ const Trade = () => {
     previousPriceRef.current = newPrice;
   }, []); // 移除依赖，使用 ref 避免循环依赖
 
+  // 初始化LuckyUSD随机余额
+  useEffect(() => {
+    const initialLuckyUSDBalance = generateLuckyUSDBalance();
+    setLuckyUSDBalance(initialLuckyUSDBalance);
+  }, []); // 只在组件挂载时执行一次
+
   // 获取用户余额
   useEffect(() => {
     if (isAuthenticated && !balanceFetchedRef.current) {
@@ -167,6 +223,21 @@ const Trade = () => {
       });
     }
   }, [isAuthenticated, safeFetchBalance]);
+
+  // 当余额数据更新时，设置滑动条默认值
+  useEffect(() => {
+    const currentBalance = getCurrentTokenBalance();
+
+    if (currentBalance <= 0) {
+      // 余额为0时，滑动条和交易金额都设为0
+      setSliderValue(0);
+      setTradeAmount(0);
+    } else if (currentBalance >= 1 && tradeAmount === 0) {
+      // 余额>=1且当前交易金额为0时，设置默认值为1
+      setSliderValue(1);
+      setTradeAmount(1);
+    }
+  }, [balance, luckyUSDBalance, selectedToken]); // 只依赖余额数据和选中的币种
 
   // 清理过期的下注记录（只清理未结算且超过结算时间5秒的记录）
   useEffect(() => {
@@ -261,6 +332,7 @@ const Trade = () => {
                 type="number"
                 value={tradeAmount}
                 onChange={handleInputChange}
+                disabled={isSliderDisabled}
                 className="w-full h-[40vw] md:h-10 bg-transparent border-none outline-none text-[#c5ff33] text-size-[34vw] md:text-2xl font-semibold"
                 style={{ appearance: 'none' }}
               />
@@ -284,15 +356,15 @@ const Trade = () => {
               <div
                 className="h-full bg-[#c5ff33] rounded-full transition-all duration-200"
                 style={{
-                  width: `${(sliderValue / balance) * 100}%`
+                  width: `${(sliderValue / safeUserBalance) * 100}%`
                 }}
               />
 
               {/* 滑块按钮 */}
               <div
-                className="absolute w-[17vw] md:w-4 h-[17vw] md:h-4 top-1/2 transform -translate-y-1/2 cursor-pointer"
+                className={`absolute w-[17vw] md:w-4 h-[17vw] md:h-4 top-1/2 transform -translate-y-1/2 ${isSliderDisabled ? 'cursor-not-allowed' : 'cursor-pointer'}`}
                 style={{
-                  left: `calc(${(sliderValue / balance) * 100}% - 8.5vw)`,
+                  left: `calc(${(sliderValue / safeUserBalance) * 100}% - 8.5vw)`,
                   minWidth: '17vw'
                 }}
               >
@@ -308,10 +380,11 @@ const Trade = () => {
             <input
               type="range"
               min="0"
-              max={balance}
+              max={safeUserBalance}
               value={sliderValue}
               onChange={handleSliderChange}
-              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              disabled={isSliderDisabled}
+              className={`absolute inset-0 w-full h-full opacity-0 ${isSliderDisabled ? 'cursor-not-allowed' : 'cursor-pointer'}`}
             />
           </div>
         </div>

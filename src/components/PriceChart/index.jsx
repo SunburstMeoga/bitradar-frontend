@@ -531,18 +531,18 @@ const PriceChart = ({ onPriceUpdate, userBets = [] }) => {
         };
 
         // 打印模拟的WebSocket数据
-        console.log('🚀 Mock WebSocket Data:', {
-          timestamp: newTimestamp,
-          price: newPrice.toFixed(2),
-          time: new Date(newTimestamp).toLocaleTimeString('en-US', {
-            hour12: false,
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit'
-          }),
-          priceChange: ((newPrice - lastPrice) / lastPrice * 100).toFixed(4) + '%',
-          dataPointsCount: updatedData.length
-        });
+        // console.log('🚀 Mock WebSocket Data:', {
+        //   timestamp: newTimestamp,
+        //   price: newPrice.toFixed(2),
+        //   time: new Date(newTimestamp).toLocaleTimeString('en-US', {
+        //     hour12: false,
+        //     hour: '2-digit',
+        //     minute: '2-digit',
+        //     second: '2-digit'
+        //   }),
+        //   priceChange: ((newPrice - lastPrice) / lastPrice * 100).toFixed(4) + '%',
+        //   dataPointsCount: updatedData.length
+        // });
 
         return { data: updatedData };
       });
@@ -554,7 +554,7 @@ const PriceChart = ({ onPriceUpdate, userBets = [] }) => {
   // 单独的useEffect来处理父组件回调，避免在渲染过程中调用
   useEffect(() => {
     if (latestPriceDataRef.current && onPriceUpdate) {
-      console.log('📤 发送价格数据给Trade组件:', latestPriceDataRef.current);
+      // console.log('📤 发送价格数据给Trade组件:', latestPriceDataRef.current);
       onPriceUpdate(latestPriceDataRef.current);
     }
   }, [currentPrice, onPriceUpdate]); // 当currentPrice变化时触发回调
