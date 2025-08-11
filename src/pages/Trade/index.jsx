@@ -35,7 +35,7 @@ const Trade = () => {
   const balanceFetchedRef = useRef(false);
 
   // 使用防重复调用的API hook
-  const safeFetchBalance = useApiCall(fetchBalance, [fetchBalance]);
+  const safeFetchBalance = useApiCall(fetchBalance, []);
 
   // 生成LuckyUSD随机余额（0-10000，两位小数）
   const generateLuckyUSDBalance = () => {
@@ -222,7 +222,7 @@ const Trade = () => {
         balanceFetchedRef.current = false; // 失败时重置，允许重试
       });
     }
-  }, [isAuthenticated, safeFetchBalance]);
+  }, [isAuthenticated]); // 移除 safeFetchBalance 依赖，避免循环依赖
 
   // 当余额数据更新时，设置滑动条默认值
   useEffect(() => {

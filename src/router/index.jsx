@@ -12,6 +12,7 @@ import TransactionHistory from '../pages/TransactionHistory';
 import NotFound from '../pages/NotFound';
 import PageTitleTest from '../components/PageTitleTest';
 
+
 // 创建一个包装组件来提供标题
 const NetworkDetailsWrapper = () => {
   const { t } = useTranslation();
@@ -81,6 +82,7 @@ export const router = createBrowserRouter([
     path: '/test-page-titles',
     element: <PageTitleTest />,
   },
+
   {
     path: '*',
     element: <NotFound />,

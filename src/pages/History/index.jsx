@@ -93,7 +93,7 @@ const History = () => {
   const initialLoadRef = useRef(false);
 
   // 使用防重复调用的API hook
-  const safeApiCall = useApiCall(fetchOrders, [fetchOrders]);
+  const safeApiCall = useApiCall(fetchOrders, []);
 
   // 同步store中的orders到本地状态
   useEffect(() => {

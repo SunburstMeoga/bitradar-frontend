@@ -23,7 +23,7 @@ const Account = () => {
   const balanceFetchedRef = useRef(false);
 
   // 使用防重复调用的API hook
-  const safeFetchBalance = useApiCall(fetchBalance, [fetchBalance]);
+  const safeFetchBalance = useApiCall(fetchBalance, []);
 
   // 获取用户余额数据
   useEffect(() => {
@@ -35,7 +35,7 @@ const Account = () => {
         balanceFetchedRef.current = false; // 失败时重置，允许重试
       });
     }
-  }, [isAuthenticated, safeFetchBalance]);
+  }, [isAuthenticated]); // 移除 safeFetchBalance 依赖，避免循环依赖
 
   // 余额数据（优先使用API数据，否则使用默认值）
   const balances = {
