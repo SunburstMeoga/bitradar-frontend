@@ -1,25 +1,46 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import usePageTitle from '../../hooks/usePageTitle';
-import { useWeb3Store } from '../../store';
+import { useApiCall } from '../../hooks/useApiCall';
+import { useWeb3Store, useAuthStore, useUserStore } from '../../store';
 import { formatAddress } from '../../utils/web3';
+import { safeParseFloat, formatBalance } from '../../utils/format';
 import btcIcon from '../../assets/images/account-btc.png';
+import toast from 'react-hot-toast';
 
 const Account = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { account, isConnected } = useWeb3Store();
+  const { isAuthenticated } = useAuthStore();
+  const { balance, fetchBalance, isLoading } = useUserStore();
 
   // 设置页面标题
   usePageTitle('account');
   const [activeTab, setActiveTab] = useState('USDT');
   const [countdown, setCountdown] = useState(86400); // 24小时倒计时（秒）
+  const balanceFetchedRef = useRef(false);
 
-  // 模拟余额数据
+  // 使用防重复调用的API hook
+  const safeFetchBalance = useApiCall(fetchBalance, [fetchBalance]);
+
+  // 获取用户余额数据
+  useEffect(() => {
+    if (isAuthenticated && !balanceFetchedRef.current) {
+      balanceFetchedRef.current = true;
+      safeFetchBalance().catch(error => {
+        console.error('获取余额失败:', error);
+        toast.error('获取余额失败');
+        balanceFetchedRef.current = false; // 失败时重置，允许重试
+      });
+    }
+  }, [isAuthenticated, safeFetchBalance]);
+
+  // 余额数据（优先使用API数据，否则使用默认值）
   const balances = {
-    USDT: 843.75,
-    LuckyUSD: 1256.32
+    USDT: safeParseFloat(balance?.usdtBalance, 0),
+    LuckyUSD: safeParseFloat(balance?.usdtBalance, 0) // 暂时使用同一个余额
   };
 
 
@@ -67,16 +88,6 @@ const Account = () => {
 
 
 
-  // 格式化余额显示
-  const formatBalance = (balance) => {
-    const balanceStr = balance.toString();
-    const parts = balanceStr.split('.');
-    const integerPart = parts[0];
-    const decimalPart = parts[1] || '00';
-    
-    return { integerPart, decimalPart };
-  };
-
   const currentBalance = balances[activeTab];
   const { integerPart, decimalPart } = formatBalance(currentBalance);
 
@@ -117,12 +128,23 @@ const Account = () => {
       <div className="px-[16vw] md:px-4 pb-[24vw] md:pb-6">
         <div className="flex items-center justify-between">
           <div className="flex items-baseline">
-            <span className="text-white text-size-[44vw] md:text-4xl font-semibold" style={{ fontWeight: 600 }}>
-              {integerPart}
-            </span>
-            <span className="text-[rgb(87,87,87)] text-size-[28vw] md:text-2xl font-semibold" style={{ fontWeight: 600 }}>
-              .{decimalPart} {activeTab}
-            </span>
+            {isLoading ? (
+              <div className="flex items-center">
+                <div className="animate-pulse bg-gray-600 h-[44vw] md:h-10 w-[120vw] md:w-32 rounded"></div>
+                <span className="text-[rgb(87,87,87)] text-size-[28vw] md:text-2xl font-semibold ml-2" style={{ fontWeight: 600 }}>
+                  {activeTab}
+                </span>
+              </div>
+            ) : (
+              <>
+                <span className="text-white text-size-[44vw] md:text-4xl font-semibold" style={{ fontWeight: 600 }}>
+                  {integerPart}
+                </span>
+                <span className="text-[rgb(87,87,87)] text-size-[28vw] md:text-2xl font-semibold" style={{ fontWeight: 600 }}>
+                  .{decimalPart} {activeTab}
+                </span>
+              </>
+            )}
           </div>
           {/* 只在选中USDT时显示兑换按钮 */}
           {activeTab === 'USDT' && (

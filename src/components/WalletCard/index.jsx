@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useWeb3Store } from '../../store';
+import { useWeb3Store, useAuthStore } from '../../store';
 import { formatAddress, getBNBBalance } from '../../utils/web3';
 import toast from 'react-hot-toast';
 
@@ -74,6 +74,7 @@ const CopyIcon = ({ color = "#e4e7e7" }) => (
 
 const WalletCard = ({ onClose, onSendClick, onActivityClick, onAddReferrerClick }) => {
   const { account, reset } = useWeb3Store();
+  const { isAuthenticated, logout } = useAuthStore();
   const { i18n, t } = useTranslation();
   const [bnbBalance, setBnbBalance] = useState('0.000');
   const [isLanguageExpanded, setIsLanguageExpanded] = useState(false);
@@ -155,8 +156,13 @@ const WalletCard = ({ onClose, onSendClick, onActivityClick, onAddReferrerClick 
 
   // 断开连接
   const handleDisconnect = () => {
+    // 登出认证
+    logout();
+    // 重置Web3状态
     reset();
+    // 关闭弹窗
     onClose();
+    toast.success('已断开钱包连接');
   };
 
   // 切换语言展开状态
@@ -241,7 +247,7 @@ const WalletCard = ({ onClose, onSendClick, onActivityClick, onAddReferrerClick 
         </div>
 
         {/* 钱包地址 */}
-        <div className="flex items-center justify-center gap-[8px] mb-[12px]">
+        <div className="flex items-center justify-center gap-[8px] mb-[8px]">
           <span
             className="text-[20px]"
             style={{ color: '#E4E7E7', fontWeight: 600 }}
@@ -251,6 +257,17 @@ const WalletCard = ({ onClose, onSendClick, onActivityClick, onAddReferrerClick 
           <button onClick={handleCopyAddress} className="w-[16px] h-[16px]">
             <CopyIcon />
           </button>
+        </div>
+
+        {/* 认证状态 */}
+        <div className="flex items-center justify-center gap-[4px] mb-[12px]">
+          <div className={`w-[8px] h-[8px] rounded-full ${isAuthenticated ? 'bg-[#c5ff33]' : 'bg-[#8f8f8f]'}`}></div>
+          <span
+            className="text-[14px]"
+            style={{ color: isAuthenticated ? '#c5ff33' : '#8f8f8f', fontWeight: 500 }}
+          >
+            {isAuthenticated ? t('wallet.authenticated') : t('wallet.not_authenticated')}
+          </span>
         </div>
 
         {/* BNB余额 */}

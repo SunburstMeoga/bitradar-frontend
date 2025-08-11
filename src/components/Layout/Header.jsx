@@ -1,15 +1,17 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useWeb3Store } from '../../store';
+import { useWeb3Store, useAuthStore } from '../../store';
 import { connectWallet, formatAddress, autoReconnectWallet, onAccountsChanged, onChainChanged } from '../../utils/web3';
 import logoImg from '../../assets/images/logo.png';
 import binanceIcon from '../../assets/icons/binance.png';
 import downIcon from '../../assets/icons/down.png';
 import WalletModal from '../WalletModal';
+import toast from 'react-hot-toast';
 
 const Header = () => {
   const { t } = useTranslation();
   const { account, isConnected, isConnecting, setAccount, setIsConnected, setIsConnecting, setChainId, setWeb3, setProvider } = useWeb3Store();
+  const { isAuthenticated, user, login, logout, checkAuth, isLoading: authLoading } = useAuthStore();
   const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
 
   // 页面加载时自动重连钱包
@@ -41,6 +43,9 @@ const Header = () => {
     };
 
     initWallet();
+
+    // 检查认证状态
+    checkAuth();
 
     // 监听账户变化
     const handleAccountsChanged = (accounts) => {
@@ -76,15 +81,27 @@ const Header = () => {
   const handleConnect = async () => {
     try {
       setIsConnecting(true);
+
+      // 1. 首先连接钱包
       const result = await connectWallet();
       setAccount(result.account);
-      setChainId(result.chainId); // 现在chainId已经是字符串
+      setChainId(result.chainId);
       setWeb3(result.web3);
       setProvider(result.provider);
       setIsConnected(true);
+
+      // 2. 然后进行Web3登录认证
+      try {
+        await login(result.account);
+        toast.success('钱包连接并登录成功！');
+      } catch (authError) {
+        console.error('Web3登录失败:', authError);
+        toast.error(`登录失败: ${authError.message}`);
+        // 即使登录失败，钱包连接仍然保持
+      }
     } catch (error) {
       console.error('Failed to connect wallet:', error);
-      alert(error.message);
+      toast.error(error.message);
     } finally {
       setIsConnecting(false);
     }
@@ -124,10 +141,10 @@ const Header = () => {
           ) : (
             <button
               onClick={handleWalletClick}
-              disabled={isConnecting}
+              disabled={isConnecting || authLoading}
               className="w-[130vw] h-[34vw] bg-white text-black text-size-[15vw] font-semibold rounded-[34vw] flex items-center justify-center hover:bg-gray-100 disabled:opacity-60 disabled:cursor-not-allowed transition-all"
             >
-              {isConnecting ? t('wallet.connecting') : t('common.connect_wallet')}
+              {(isConnecting || authLoading) ? t('wallet.connecting') : t('common.connect_wallet')}
             </button>
           )}
         </div>
@@ -154,10 +171,10 @@ const Header = () => {
           ) : (
             <button
               onClick={handleWalletClick}
-              disabled={isConnecting}
+              disabled={isConnecting || authLoading}
               className="w-32 h-8 bg-white text-black text-sm font-semibold rounded-full flex items-center justify-center hover:bg-gray-100 disabled:opacity-60 disabled:cursor-not-allowed transition-all"
             >
-              {isConnecting ? t('wallet.connecting') : t('common.connect_wallet')}
+              {(isConnecting || authLoading) ? t('wallet.connecting') : t('common.connect_wallet')}
             </button>
           )}
         </div>

@@ -1,6 +1,9 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import usePageTitle from '../../hooks/usePageTitle';
+import { useApiCall } from '../../hooks/useApiCall';
+import { useAuthStore, useUserStore } from '../../store';
+import { safeParseFloat, formatNumber } from '../../utils/format';
 import Modal from '../../components/Modal';
 import PriceChart from '../../components/PriceChart';
 import pUSDIcon from '../../assets/icons/pUSD.png';
@@ -12,6 +15,8 @@ import sliderIcon from '../../assets/icons/slider.png';
 
 const Trade = () => {
   const { t } = useTranslation();
+  const { isAuthenticated } = useAuthStore();
+  const { balance, fetchBalance } = useUserStore();
 
   // 设置页面标题
   usePageTitle('trade');
@@ -26,8 +31,13 @@ const Trade = () => {
 
   // 使用 ref 来跟踪前一个价格，避免循环依赖
   const previousPriceRef = useRef(67234.56);
+  const balanceFetchedRef = useRef(false);
 
-  const balance = 654.3;
+  // 使用防重复调用的API hook
+  const safeFetchBalance = useApiCall(fetchBalance, [fetchBalance]);
+
+  // 获取用户余额（优先使用API数据）
+  const userBalance = safeParseFloat(balance?.usdtBalance, 654.3);
   const isUp = priceChange > 0;
   const isButtonsDisabled = tradeAmount === 0;
 
@@ -147,6 +157,17 @@ const Trade = () => {
     previousPriceRef.current = newPrice;
   }, []); // 移除依赖，使用 ref 避免循环依赖
 
+  // 获取用户余额
+  useEffect(() => {
+    if (isAuthenticated && !balanceFetchedRef.current) {
+      balanceFetchedRef.current = true;
+      safeFetchBalance().catch(error => {
+        console.error('获取余额失败:', error);
+        balanceFetchedRef.current = false; // 失败时重置，允许重试
+      });
+    }
+  }, [isAuthenticated, safeFetchBalance]);
+
   // 清理过期的下注记录（只清理未结算且超过结算时间5秒的记录）
   useEffect(() => {
     const interval = setInterval(() => {
@@ -230,7 +251,7 @@ const Trade = () => {
           {/* 第一行：标题和余额 */}
           <div className="flex justify-between items-center mb-[6vw] md:mb-2">
             <span className="text-white text-size-[13vw] md:text-sm">{t('trade.trade_amount')}</span>
-            <span className="text-[#8f8f8f] text-size-[13vw] md:text-sm">{t('trade.balance')}: {balance}</span>
+            <span className="text-[#8f8f8f] text-size-[13vw] md:text-sm">{t('trade.balance')}: {formatNumber(userBalance, 2)}</span>
           </div>
 
           {/* 第二行：输入框和按钮 */}

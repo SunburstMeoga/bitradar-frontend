@@ -1,8 +1,12 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import usePageTitle from '../../hooks/usePageTitle';
+import { useApiCall } from '../../hooks/useApiCall';
+import { useAuthStore, useUserStore } from '../../store';
+import { ErrorDisplay, LoadingSpinner } from '../../components/ErrorBoundary';
 import historyUpIcon from '../../assets/icons/history-up.png';
 import historyDownIcon from '../../assets/icons/history-down.png';
+import toast from 'react-hot-toast';
 
 // 右上45度箭头SVG组件（表示涨）- 加大尺寸
 const UpArrowIcon = ({ color = '#00bc4b' }) => (
@@ -76,6 +80,8 @@ const generateMockData = (page = 1, pageSize = 10) => {
 
 const History = () => {
   const { t, i18n } = useTranslation();
+  const { isAuthenticated } = useAuthStore();
+  const { orders, fetchOrders } = useUserStore();
 
   // 设置页面标题
   usePageTitle('history');
@@ -83,6 +89,18 @@ const History = () => {
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState(1);
+  const [error, setError] = useState(null);
+  const initialLoadRef = useRef(false);
+
+  // 使用防重复调用的API hook
+  const safeApiCall = useApiCall(fetchOrders, [fetchOrders]);
+
+  // 同步store中的orders到本地状态
+  useEffect(() => {
+    if (isAuthenticated && orders && Array.isArray(orders)) {
+      setHistoryData(orders);
+    }
+  }, [orders, isAuthenticated]);
 
   // 格式化时间
   const formatTime = (isoString) => {
@@ -109,39 +127,61 @@ const History = () => {
     if (loading) return;
 
     setLoading(true);
+    setError(null);
 
     try {
-      // 模拟API延迟
-      await new Promise(resolve => setTimeout(resolve, 500));
+      if (isAuthenticated) {
+        // 使用真实API
+        const result = await safeApiCall(pageNum, 20, !isRefresh);
 
-      const newData = generateMockData(pageNum, 10);
+        if (result.success) {
+          const newData = result.data || [];
 
-      if (isRefresh) {
-        setHistoryData(newData);
-        setPage(1); // 重置页码
+          // 检查是否还有更多数据
+          if (newData.length < 20) {
+            setHasMore(false);
+          }
+
+          // store会自动处理数据，我们通过useEffect同步到本地状态
+        } else {
+          throw new Error('获取订单历史失败');
+        }
       } else {
-        setHistoryData(prev => {
-          // 检查是否已存在相同的数据，避免重复添加
-          const existingIds = new Set(prev.map(item => item.id));
-          const filteredNewData = newData.filter(item => !existingIds.has(item.id));
-          return [...prev, ...filteredNewData];
-        });
-      }
+        // 未认证时使用mock数据
+        const newData = generateMockData(pageNum, 10);
 
-      // 模拟没有更多数据的情况
-      if (pageNum >= 5) {
-        setHasMore(false);
+        if (isRefresh) {
+          setHistoryData(newData);
+          setPage(1);
+        } else {
+          setHistoryData(prev => {
+            // 确保prev是数组
+            const prevArray = Array.isArray(prev) ? prev : [];
+            const existingIds = new Set(prevArray.map(item => item.id));
+            const filteredNewData = newData.filter(item => !existingIds.has(item.id));
+            return [...prevArray, ...filteredNewData];
+          });
+        }
+
+        if (pageNum >= 5) {
+          setHasMore(false);
+        }
       }
-    } catch (error) {
-      console.error('Error loading data:', error);
+    } catch (err) {
+      console.error('Error loading data:', err);
+      setError(err);
+      toast.error('加载数据失败');
     } finally {
       setLoading(false);
     }
-  }, [loading]);
+  }, [loading, isAuthenticated, fetchOrders]);
 
   // 初始加载
   useEffect(() => {
-    loadData(1, true);
+    if (!initialLoadRef.current) {
+      initialLoadRef.current = true;
+      loadData(1, true);
+    }
   }, []);
 
   // 触底加载更多
@@ -175,7 +215,21 @@ const History = () => {
 
       {/* 历史记录列表 */}
       <div className="px-[16vw] md:px-4">
-        {historyData.map((item) => (
+        {/* 错误状态 */}
+        {error && !loading && historyData.length === 0 && (
+          <ErrorDisplay
+            error={error}
+            onRetry={() => loadData(1, true)}
+            message="加载交易历史失败"
+          />
+        )}
+
+        {/* 初始加载状态 */}
+        {loading && historyData.length === 0 && (
+          <LoadingSpinner message="加载交易历史中..." />
+        )}
+
+        {Array.isArray(historyData) && historyData.map((item) => (
           <div
             key={item.id}
             className="w-[342vw] md:w-full h-[150vw] md:h-auto mb-[12vw] md:mb-3 rounded-[12vw] md:rounded-lg p-[16vw] md:p-4"

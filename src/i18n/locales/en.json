@@ -7,6 +7,7 @@
     "cancel": "Cancel",
     "connect_wallet": "Connect Wallet",
     "disconnect": "Disconnect",
+    "retry": "Retry",
     "app_name": "BitRadar"
   },
   "page_titles": {
@@ -28,6 +29,8 @@
     "not_connected": "Wallet not connected",
     "connecting": "Connecting...",
     "connected": "Connected",
+    "authenticated": "Authenticated",
+    "not_authenticated": "Not Authenticated",
     "install_metamask": "Please install MetaMask",
     "wrong_network": "Wrong network, please switch to BSC",
     "send": "Send",

@@ -7,6 +7,7 @@
     "cancel": "取消",
     "connect_wallet": "连接钱包",
     "disconnect": "断开连接",
+    "retry": "重试",
     "app_name": "BitRadar"
   },
   "page_titles": {
@@ -28,6 +29,8 @@
     "not_connected": "钱包未连接",
     "connecting": "连接中...",
     "connected": "已连接",
+    "authenticated": "已认证",
+    "not_authenticated": "未认证",
     "install_metamask": "请安装 MetaMask",
     "wrong_network": "网络错误，请切换到币安智能链",
     "send": "发送",
