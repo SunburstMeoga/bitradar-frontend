@@ -102,7 +102,7 @@ const SendCard = ({ onBack, onClose, onSelectToken }) => {
       <div className="flex-1">
         {/* 第一部分：金额输入卡片 */}
         <div
-          className="w-[290px] h-[102px] bg-[#1B1C1C] border border-[#171818] rounded-[20px] flex items-center justify-between"
+          className="w-[290px] md:w-full h-[102px] md:h-24 bg-[#1B1C1C] border border-[#171818] rounded-[20px] md:rounded-2xl flex items-center justify-between"
           style={{ padding: '11px 18px 11px 12px', boxSizing: 'border-box' }}
         >
           {/* 左侧：金额输入框 */}
@@ -112,7 +112,7 @@ const SendCard = ({ onBack, onClose, onSelectToken }) => {
             onChange={(e) => setAmount(e.target.value)}
             pattern="[0-9,.]*"
             inputMode="decimal"
-            className="flex-1 bg-transparent h-[36px] text-[32px] font-normal outline-none border-none"
+            className="flex-1 bg-transparent h-[36px] md:h-9 text-[32px] md:text-3xl font-normal outline-none border-none"
             style={{
               color: amount === '0' ? 'rgb(228, 231, 231)' : '#5671FB',
               caretColor: '#5671FB'
@@ -122,7 +122,7 @@ const SendCard = ({ onBack, onClose, onSelectToken }) => {
           {/* 右侧：Select token按钮 */}
           <div
             onClick={onSelectToken}
-            className="w-[140px] h-[36px] rounded-full flex items-center justify-center text-[13px] cursor-pointer border"
+            className="w-[140px] md:w-36 h-[36px] md:h-9 rounded-full flex items-center justify-center text-[13px] md:text-sm cursor-pointer border"
             style={{
               color: '#5671FB',
               backgroundColor: 'rgba(86, 113, 251, 0.1)',
@@ -135,14 +135,14 @@ const SendCard = ({ onBack, onClose, onSelectToken }) => {
 
         {/* 向下箭头 - 使用绝对定位实现重叠效果 */}
         <div className="relative flex justify-center" style={{ marginTop: '10px', marginBottom: '10px' }}>
-          <div className="w-[50px] h-[50px] bg-[#222525] rounded-[16px] flex items-center justify-center relative z-10">
+          <div className="w-[50px] h-[50px] md:w-12 md:h-12 bg-[#222525] rounded-[16px] md:rounded-xl flex items-center justify-center relative z-10">
             <ArrowDownIcon />
           </div>
         </div>
 
         {/* 第二部分：地址输入卡片 */}
         <div
-          className="w-[290px] h-[102px] bg-[#1B1C1C] border border-[#171818] rounded-[20px] relative"
+          className="w-[290px] md:w-full h-[102px] md:h-24 bg-[#1B1C1C] border border-[#171818] rounded-[20px] md:rounded-2xl relative"
           style={{ padding: '11px 18px 11px 12px', boxSizing: 'border-box' }}
         >
           {!isAddressFocused && !address.trim() ? (
@@ -152,14 +152,14 @@ const SendCard = ({ onBack, onClose, onSelectToken }) => {
               onClick={handleAddressAreaClick}
               style={{ padding: '11px 18px 11px 12px', boxSizing: 'border-box' }}
             >
-              <div className="flex items-center gap-2 text-[#e4e7e7]">
+              <div className="flex items-center gap-2 text-[#e4e7e7] text-[14px] md:text-sm">
                 <span>Type or</span>
                 <div
                   onClick={(e) => {
                     e.stopPropagation();
                     handlePaste();
                   }}
-                  className="w-[80px] h-[36px] rounded-full border border-[rgb(228,231,231)] flex items-center justify-center gap-1 cursor-pointer hover:bg-[rgba(228,231,231,0.1)]"
+                  className="w-[80px] md:w-20 h-[36px] md:h-9 rounded-full border border-[rgb(228,231,231)] flex items-center justify-center gap-1 cursor-pointer hover:bg-[rgba(228,231,231,0.1)]"
                 >
                   <PasteIcon />
                   <span>Paste</span>
@@ -175,7 +175,7 @@ const SendCard = ({ onBack, onClose, onSelectToken }) => {
               onChange={(e) => setAddress(e.target.value)}
               onFocus={() => setIsAddressFocused(true)}
               onBlur={handleTextareaBlur}
-              className="w-full h-[46px] bg-transparent text-white resize-none outline-none border-none"
+              className="w-full h-[46px] md:h-12 bg-transparent text-white text-[14px] md:text-sm resize-none outline-none border-none"
               style={{ caretColor: '#5671FB' }}
               placeholder=""
             />
@@ -183,10 +183,10 @@ const SendCard = ({ onBack, onClose, onSelectToken }) => {
         </div>
 
         {/* 第三部分：Select Token按钮 */}
-        <div className="pt-[20px]">
+        <div className="pt-[20px] md:pt-5">
           <button
             onClick={onSelectToken}
-            className="w-[290px] h-[48px] rounded-[8px] text-[14px] cursor-pointer"
+            className="w-[290px] md:w-full h-[48px] md:h-12 rounded-[8px] md:rounded-lg text-[14px] md:text-sm cursor-pointer"
             style={{
               color: 'rgba(255, 255, 255, 0.2)',
               backgroundColor: 'rgba(255, 255, 255, 0.02)',

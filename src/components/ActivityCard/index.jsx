@@ -34,7 +34,7 @@ const ActivityCard = ({ onBack, onClose }) => {
       {/* 内容区域 - 移除顶部导航栏，因为现在由SlideModal统一管理 */}
       <div className="flex-1">
         {/* 这里将来添加Activity功能的具体内容 */}
-        <div className="h-[300px] flex items-center justify-center text-white text-[14px]">
+        <div className="h-[300px] md:h-80 flex items-center justify-center text-white text-[14px] md:text-sm">
           {t('wallet.activity')}功能内容区域
         </div>
       </div>

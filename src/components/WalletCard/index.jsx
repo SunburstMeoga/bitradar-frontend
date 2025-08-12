@@ -238,32 +238,32 @@ const WalletCard = ({ onClose, onSendClick, onActivityClick, onAddReferrerClick 
     <>
       <div className="w-full relative box-border">
         {/* 用户头像 */}
-        <div className="flex justify-center mb-[16px]">
-          <div className="w-[64px] h-[64px] rounded-full bg-gradient-to-r from-blue-400 to-purple-500 flex items-center justify-center">
-            <span className="text-white text-[24px] font-bold">
+        <div className="flex justify-center mb-[16px] md:mb-4">
+          <div className="w-[64px] h-[64px] md:w-16 md:h-16 rounded-full bg-gradient-to-r from-blue-400 to-purple-500 flex items-center justify-center">
+            <span className="text-white text-[24px] md:text-2xl font-bold">
               {account ? account.slice(2, 4).toUpperCase() : 'U'}
             </span>
           </div>
         </div>
 
         {/* 钱包地址 */}
-        <div className="flex items-center justify-center gap-[8px] mb-[8px]">
+        <div className="flex items-center justify-center gap-[8px] md:gap-2 mb-[8px] md:mb-2">
           <span
-            className="text-[20px]"
+            className="text-[20px] md:text-xl"
             style={{ color: '#E4E7E7', fontWeight: 600 }}
           >
             {formatAddress(account)}
           </span>
-          <button onClick={handleCopyAddress} className="w-[16px] h-[16px]">
+          <button onClick={handleCopyAddress} className="w-[16px] h-[16px] md:w-4 md:h-4">
             <CopyIcon />
           </button>
         </div>
 
         {/* 认证状态 */}
-        <div className="flex items-center justify-center gap-[4px] mb-[12px]">
-          <div className={`w-[8px] h-[8px] rounded-full ${isAuthenticated ? 'bg-[#c5ff33]' : 'bg-[#8f8f8f]'}`}></div>
+        <div className="flex items-center justify-center gap-[4px] md:gap-1 mb-[12px] md:mb-3">
+          <div className={`w-[8px] h-[8px] md:w-2 md:h-2 rounded-full ${isAuthenticated ? 'bg-[#c5ff33]' : 'bg-[#8f8f8f]'}`}></div>
           <span
-            className="text-[14px]"
+            className="text-[14px] md:text-sm"
             style={{ color: isAuthenticated ? '#c5ff33' : '#8f8f8f', fontWeight: 500 }}
           >
             {isAuthenticated ? t('wallet.authenticated') : t('wallet.not_authenticated')}
@@ -271,9 +271,9 @@ const WalletCard = ({ onClose, onSendClick, onActivityClick, onAddReferrerClick 
         </div>
 
         {/* BNB余额 */}
-        <div className="text-center mb-[20px]">
-          <span 
-            className="text-[16px]"
+        <div className="text-center mb-[20px] md:mb-5">
+          <span
+            className="text-[16px] md:text-base"
             style={{ color: '#949E9E', fontWeight: 500 }}
           >
             {bnbBalance} BNB
@@ -281,29 +281,29 @@ const WalletCard = ({ onClose, onSendClick, onActivityClick, onAddReferrerClick 
         </div>
 
         {/* 菜单项 */}
-        <div className="space-y-[8px]">
+        <div className="space-y-[8px] md:space-y-2">
           {menuItems.map((item) => (
             <div key={item.id}>
               {/* 主菜单项 */}
               <div
                 onClick={item.onClick}
-                className="w-[290px] h-[54px] bg-[#2a2a2a] rounded-[8px] cursor-pointer hover:bg-[#333333] transition-colors box-border"
+                className="w-[290px] md:w-full h-[54px] md:h-14 bg-[#2a2a2a] rounded-[8px] md:rounded-lg cursor-pointer hover:bg-[#333333] transition-colors box-border"
                 style={{ padding: '11px 18px 11px 12px' }}
               >
                 <div className="flex items-center justify-between h-full">
                   {/* 左侧：图片和文字 */}
-                  <div className="flex items-center gap-[12px]">
+                  <div className="flex items-center gap-[12px] md:gap-3">
                     {item.icon ? (
                       <item.icon />
                     ) : (
                       <img
                         src={item.image}
                         alt={item.label}
-                        className="w-[32px] h-[32px] object-contain"
+                        className="w-[32px] h-[32px] md:w-8 md:h-8 object-contain"
                       />
                     )}
                     <span
-                      className="text-[16px] font-medium"
+                      className="text-[16px] md:text-base font-medium"
                       style={{ color: item.textColor }}
                     >
                       {item.label}
@@ -312,8 +312,8 @@ const WalletCard = ({ onClose, onSendClick, onActivityClick, onAddReferrerClick 
 
                   {/* 右侧：箭头或推荐人信息 */}
                   {item.showReferrerInfo && referrerAddress ? (
-                    <div className="flex items-center gap-[8px]">
-                      <span className="text-[12px]" style={{ color: '#949E9E' }}>
+                    <div className="flex items-center gap-[8px] md:gap-2">
+                      <span className="text-[12px] md:text-xs" style={{ color: '#949E9E' }}>
                         {formatAddress(referrerAddress)}
                       </span>
                       <button
@@ -321,7 +321,7 @@ const WalletCard = ({ onClose, onSendClick, onActivityClick, onAddReferrerClick 
                           e.stopPropagation();
                           handleCopyReferrerAddress();
                         }}
-                        className="w-[16px] h-[16px] flex items-center justify-center"
+                        className="w-[16px] h-[16px] md:w-4 md:h-4 flex items-center justify-center"
                       >
                         <CopyIcon color="#949E9E" />
                       </button>
@@ -335,20 +335,17 @@ const WalletCard = ({ onClose, onSendClick, onActivityClick, onAddReferrerClick 
               {/* 语言展开内容 */}
               {item.id === 'language' && isLanguageExpanded && (
                 <div
-                  className="mt-[4px] bg-[#2a2a2a] rounded-[8px] overflow-y-auto max-h-[200px] shadow-lg"
-                  style={{
-                    width: '290px'
-                  }}
+                  className="mt-[4px] md:mt-1 bg-[#2a2a2a] rounded-[8px] md:rounded-lg overflow-y-auto max-h-[200px] md:max-h-48 shadow-lg w-[290px] md:w-full"
                 >
                   {languageOptions.map((lang) => (
                     <div
                       key={lang.code}
                       onClick={() => handleLanguageSelect(lang.label, lang.code)}
-                      className="w-full h-[44px] cursor-pointer hover:bg-[#333333] transition-colors box-border flex items-center"
+                      className="w-full h-[44px] md:h-11 cursor-pointer hover:bg-[#333333] transition-colors box-border flex items-center"
                       style={{ padding: '0 18px 0 56px' }}
                     >
                       <span
-                        className="text-[14px] font-medium"
+                        className="text-[14px] md:text-sm font-medium"
                         style={{
                           color: selectedLanguage === lang.label ? '#FFFFFF' : '#9D9D9D'
                         }}

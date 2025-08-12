@@ -161,10 +161,10 @@ const SlideModal = ({
         style={{ backgroundColor: 'rgba(20, 20, 20, 0.8)' }}
         onClick={onClose}
       />
-      
+
       {/* 弹窗卡片容器 */}
       <div
-        className={`relative bg-[#1f1f1f] rounded-[12px] w-[330px] box-border pb-[20vw]  ${className}`}
+        className={`relative bg-[#1f1f1f] rounded-[12px] w-[330px] md:w-[380px] box-border pb-[20vw] md:pb-5  ${className}`}
         style={{
           height: modalHeight,
           maxHeight: '70vh',
@@ -175,28 +175,28 @@ const SlideModal = ({
         onClick={(e) => e.stopPropagation()}
       >
         {/* 固定顶部标题栏 */}
-        <div className="h-[64px] flex items-center justify-between px-[20px] flex-shrink-0">
+        <div className="h-[64px] md:h-16 flex items-center justify-between px-[20px] md:px-8 flex-shrink-0">
           {/* 左侧返回按钮 */}
           {showBackButton[currentIndex] ? (
             <button
               onClick={onBack}
-              className="w-[16px] h-[16px] flex items-center justify-center"
+              className="w-[16px] h-[16px] md:w-4 md:h-4 flex items-center justify-center"
             >
               <BackIcon />
             </button>
           ) : (
-            <div className="w-[16px] h-[16px]"></div>
+            <div className="w-[16px] h-[16px] md:w-4 md:h-4"></div>
           )}
 
           {/* 中间标题 */}
-          <span className="text-white text-[16px] font-medium">
+          <span className="text-white text-[16px] md:text-lg font-medium">
             {titles[currentIndex] || ''}
           </span>
 
           {/* 右侧关闭按钮 */}
           <button
             onClick={onClose}
-            className="w-[16px] h-[16px] flex items-center justify-center"
+            className="w-[16px] h-[16px] md:w-4 md:h-4 flex items-center justify-center"
           >
             <CloseIcon />
           </button>
@@ -222,7 +222,7 @@ const SlideModal = ({
               }}
             >
               <div
-                className="modal-content overflow-y-auto scrollbar-hide px-[20vw]"
+                className="modal-content overflow-y-auto scrollbar-hide px-[20vw] md:px-8"
                 style={{
                   scrollbarWidth: 'none', /* Firefox */
                   msOverflowStyle: 'none' /* IE and Edge */
@@ -240,7 +240,7 @@ const SlideModal = ({
               }}
             >
               <div
-                className="modal-content overflow-y-auto scrollbar-hide px-[20vw]"
+                className="modal-content overflow-y-auto scrollbar-hide px-[20vw] md:px-8"
                 style={{
                   scrollbarWidth: 'none', /* Firefox */
                   msOverflowStyle: 'none' /* IE and Edge */
