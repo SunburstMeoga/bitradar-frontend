@@ -107,6 +107,11 @@ apiClient.interceptors.response.use(
 
 // 错误处理函数
 const handleApiError = (error) => {
+  // 如果错误被标记为跳过toast显示，则不显示
+  if (error.skipToast) {
+    return;
+  }
+
   if (error.response) {
     const { status, data } = error.response;
     const message = data?.message || '请求失败';

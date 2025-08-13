@@ -4,6 +4,7 @@ import usePageTitle from '../../hooks/usePageTitle';
 import { useApiCall } from '../../hooks/useApiCall';
 import { useAuthStore, useUserStore } from '../../store';
 import { safeParseFloat, formatNumber } from '../../utils/format';
+import { orderService } from '../../services';
 import Modal from '../../components/Modal';
 import PriceChart from '../../components/PriceChart';
 import pUSDIcon from '../../assets/icons/pUSD.png';
@@ -11,6 +12,7 @@ import upDownIcon from '../../assets/icons/up-down.png';
 import buyUpIcon from '../../assets/icons/buy-up.png';
 import buyDownIcon from '../../assets/icons/buy-down.png';
 import timeIcon from '../../assets/icons/time.png';
+import toast from 'react-hot-toast';
 import sliderIcon from '../../assets/icons/slider.png';
 
 const Trade = () => {
@@ -29,6 +31,7 @@ const Trade = () => {
   const [isTokenModalOpen, setIsTokenModalOpen] = useState(false);
   const [userBets, setUserBets] = useState([]); // 用户下注记录
   const [luckyUSDBalance, setLuckyUSDBalance] = useState(0); // LuckyUSD随机余额
+  const [isPlacingBet, setIsPlacingBet] = useState(false); // 下注加载状态
 
   // 使用 ref 来跟踪前一个价格，避免循环依赖
   const previousPriceRef = useRef(67234.56);
@@ -56,7 +59,7 @@ const Trade = () => {
 
   const userBalance = getCurrentTokenBalance();
   const isUp = priceChange > 0;
-  const isButtonsDisabled = tradeAmount === 0;
+  const isButtonsDisabled = tradeAmount === 0 || isPlacingBet || userBalance < tradeAmount;
 
   // 滑动条是否禁用（余额 <= 0）
   const isSliderDisabled = userBalance <= 0;
@@ -86,8 +89,8 @@ const Trade = () => {
     if (isSliderDisabled) return;
 
     const value = parseFloat(e.target.value) || 0;
-    // 确保输入值不超过用户余额
-    const clampedValue = Math.min(value, userBalance);
+    // 确保输入值在有效范围内：不超过用户余额，且不超过1000
+    const clampedValue = Math.min(value, userBalance, 1000);
     setTradeAmount(clampedValue);
     setSliderValue(clampedValue);
   };
@@ -128,25 +131,80 @@ const Trade = () => {
   };
 
   // 处理用户下注
-  const handlePlaceBet = (direction) => {
-    if (tradeAmount === 0 || !currentPrice) return;
+  const handlePlaceBet = async (direction) => {
+    if (tradeAmount === 0 || !currentPrice || isPlacingBet) return;
 
-    const now = Date.now();
-    const newBet = {
-      id: now, // 简单的ID生成
-      direction, // 'up' 或 'down'
-      amount: tradeAmount,
-      price: currentPrice,
-      timestamp: now,
-      settlementTime: now + 60000, // 60秒后结算
-      settlementPrice: null, // 结算时价格
-      isWin: null, // 是否猜中
-      profit: null, // 盈利金额
-      status: 'active' // active, settled
-    };
+    // 检查用户是否已认证
+    if (!isAuthenticated) {
+      toast.error('请先连接钱包并登录');
+      return;
+    }
 
-    setUserBets(prev => [...prev, newBet]);
-    console.log('🎯 用户下注:', newBet);
+    // 检查余额是否足够
+    const userBalance = getCurrentTokenBalance();
+    if (userBalance < tradeAmount) {
+      toast.error('余额不足');
+      return;
+    }
+
+    setIsPlacingBet(true);
+
+    try {
+      const now = Date.now();
+
+      // 准备API请求数据
+      const orderData = {
+        orderType: direction === 'up' ? 'CALL' : 'PUT',
+        amount: tradeAmount,
+        frontendSubmitTime: now
+      };
+
+      console.log('🎯 发送下注请求:', orderData);
+
+      // 调用API创建订单
+      const result = await orderService.createOrder(orderData);
+
+      if (result.success) {
+        // API调用成功，显示成功消息
+        toast.success(result.message || '下单成功');
+
+        // 创建本地下注记录（用于图表显示）
+        const newBet = {
+          id: result.data.orderId,
+          direction,
+          amount: tradeAmount,
+          price: result.data.entryPrice || currentPrice,
+          timestamp: result.data.entryTime || now,
+          settlementTime: result.data.expiryTime || (now + 60000),
+          settlementPrice: null,
+          isWin: null,
+          profit: null,
+          status: 'active',
+          // 保存API返回的完整数据
+          apiData: result.data
+        };
+
+        setUserBets(prev => [...prev, newBet]);
+        console.log('✅ 下注成功:', newBet);
+
+        // 刷新用户余额
+        if (fetchBalance) {
+          fetchBalance();
+        }
+
+        // 重置交易金额
+        setTradeAmount(0);
+        setSliderValue(0);
+      }
+    } catch (error) {
+      console.error('❌ 下注失败:', error);
+
+      // 显示错误消息
+      const errorMessage = error.message || '下注失败，请重试';
+      toast.error(errorMessage);
+    } finally {
+      setIsPlacingBet(false);
+    }
   };
 
   // 处理价格更新的回调函数，使用useCallback稳定引用
@@ -333,6 +391,9 @@ const Trade = () => {
                 value={tradeAmount}
                 onChange={handleInputChange}
                 disabled={isSliderDisabled}
+                min="0"
+                max="1000"
+                step="0.01"
                 className="w-full h-[40vw] md:h-10 bg-transparent border-none outline-none text-[#c5ff33] text-size-[34vw] md:text-2xl font-semibold"
                 style={{ appearance: 'none' }}
               />
@@ -408,8 +469,14 @@ const Trade = () => {
             }}
             onClick={() => !isButtonsDisabled && handlePlaceBet('up')}
           >
-            <img src={buyUpIcon} alt="Up" className="w-[24vw] md:w-6 h-[24vw] md:h-6" />
-            <span className="text-white text-size-[17vw] md:text-lg font-semibold">{t('trade.up')}</span>
+            {isPlacingBet ? (
+              <div className="w-[24vw] md:w-6 h-[24vw] md:h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+            ) : (
+              <img src={buyUpIcon} alt="Up" className="w-[24vw] md:w-6 h-[24vw] md:h-6" />
+            )}
+            <span className="text-white text-size-[17vw] md:text-lg font-semibold">
+              {isPlacingBet ? '下注中...' : t('trade.up')}
+            </span>
           </div>
 
           {/* 中间时间显示 */}
@@ -427,8 +494,14 @@ const Trade = () => {
             }}
             onClick={() => !isButtonsDisabled && handlePlaceBet('down')}
           >
-            <img src={buyDownIcon} alt="Down" className="w-[24vw] md:w-6 h-[24vw] md:h-6" />
-            <span className="text-white text-size-[17vw] md:text-lg font-semibold">{t('trade.down')}</span>
+            {isPlacingBet ? (
+              <div className="w-[24vw] md:w-6 h-[24vw] md:h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+            ) : (
+              <img src={buyDownIcon} alt="Down" className="w-[24vw] md:w-6 h-[24vw] md:h-6" />
+            )}
+            <span className="text-white text-size-[17vw] md:text-lg font-semibold">
+              {isPlacingBet ? '下注中...' : t('trade.down')}
+            </span>
           </div>
         </div>
       </div>
