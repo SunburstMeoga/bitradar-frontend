@@ -11,6 +11,7 @@ import {
   Filler
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
+import { priceService } from '../../services';
 
 
 ChartJS.register(
@@ -411,13 +412,17 @@ ChartJS.register(customDrawPlugin, userBetsPlugin);
 const PriceChart = ({ onPriceUpdate, userBets = [] }) => {
   const chartRef = useRef(null);
 
-  const [mockData, setMockData] = useState([]);
+  const [priceData, setPriceData] = useState([]); // 存储价格数据（120个数据点）
   const [currentPrice, setCurrentPrice] = useState(null);
   const [priceChanged, setPriceChanged] = useState(false);
   const [timeUpdate, setTimeUpdate] = useState(0); // 用于强制更新时间
+  const [isLoading, setIsLoading] = useState(true); // 加载状态
+  const [isHistoryLoaded, setIsHistoryLoaded] = useState(false); // 历史数据是否已加载
   const animationRef = useRef(null);
   const previousPriceRef = useRef(null);
   const blinkStartTimeRef = useRef(null); // 记录闪烁开始时间
+  const wsRef = useRef(null); // WebSocket连接引用
+  const reconnectTimeoutRef = useRef(null); // 重连定时器引用
 
 
 
@@ -439,117 +444,173 @@ const PriceChart = ({ onPriceUpdate, userBets = [] }) => {
     };
   }, []);
 
-  // 生成模拟历史数据（2分钟，每秒一个数据点）- 只在组件初始化时执行一次
+  // 获取历史价格数据（120秒，119个数据点）- 只在组件初始化时执行一次
   useEffect(() => {
-    const generateMockData = () => {
-      const now = Date.now();
-      const data = [];
-      const basePrice = 67234.56; // 使用固定的初始价格，避免循环依赖
+    const fetchHistoryData = async () => {
+      try {
+        setIsLoading(true);
+        console.log('📊 开始获取历史价格数据...');
 
-      // 生成120个数据点（2分钟）
-      for (let i = 119; i >= 0; i--) {
-        const timestamp = now - (i * 1000);
-        // 生成随机价格变化（±0.3%）
-        const randomChange = (Math.random() - 0.5) * 0.006; // ±0.3%
-        const price = basePrice * (1 + randomChange * (i / 120)); // 早期数据变化更大
+        const response = await priceService.getHistoryPrice(120);
 
-        data.push([
-          timestamp,
-          price + (Math.random() - 0.5) * 50 // 添加一些噪音
-        ]);
+        if (response.success && response.data && Array.isArray(response.data)) {
+          // API返回的数据格式: [[timestamp, price], ...]
+          // 取最新的119个数据点（保留1个位置给当前价格）
+          const historyData = response.data.slice(-119);
+
+          console.log('📊 历史价格数据获取成功:', {
+            totalPoints: response.data.length,
+            usedPoints: historyData.length,
+            firstPrice: historyData[0] ? historyData[0][1].toFixed(2) : 'N/A',
+            lastPrice: historyData[historyData.length - 1] ? historyData[historyData.length - 1][1].toFixed(2) : 'N/A',
+            timeRange: historyData.length > 0 ?
+              `${new Date(historyData[0][0]).toLocaleTimeString()} - ${new Date(historyData[historyData.length - 1][0]).toLocaleTimeString()}` : 'N/A'
+          });
+
+          setPriceData(historyData);
+          setIsHistoryLoaded(true);
+          setIsLoading(false);
+        } else {
+          throw new Error('历史价格数据格式错误');
+        }
+      } catch (error) {
+        console.error('❌ 获取历史价格数据失败:', error);
+        // 如果是频率限制错误，等待更长时间再重试
+        const retryDelay = error.message && error.message.includes('頻繁') ? 5000 : 2000;
+        console.log(`⏰ ${retryDelay/1000}秒后重试获取历史数据...`);
+        setTimeout(fetchHistoryData, retryDelay);
       }
-
-      // 返回新的数据格式
-      return { data };
     };
 
-    // 只在组件初始化时生成一次数据
-    if (!mockData || !mockData.data || mockData.data.length === 0) {
-      const initialData = generateMockData();
-      console.log('📊 初始化Mock数据:', {
-        dataPoints: initialData.data.length,
-        firstPrice: initialData.data[0][1].toFixed(2),
-        lastPrice: initialData.data[initialData.data.length - 1][1].toFixed(2),
-        timeRange: `${new Date(initialData.data[0][0]).toLocaleTimeString()} - ${new Date(initialData.data[initialData.data.length - 1][0]).toLocaleTimeString()}`
-      });
-      setMockData(initialData);
+    // 只在组件初始化时获取一次历史数据
+    if (!isHistoryLoaded) {
+      fetchHistoryData();
     }
-  }, []); // 移除currentPrice依赖，避免循环依赖
+  }, [isHistoryLoaded]); // 依赖历史数据加载状态
 
   // 用于存储最新的价格数据，供父组件回调使用
   const latestPriceDataRef = useRef(null);
 
-  // 模拟WebSocket数据推送（每秒更新）- 滑动窗口
+  // WebSocket连接管理 - 历史数据加载完成后开始
   useEffect(() => {
-    const interval = setInterval(() => {
-      setMockData(prevMockData => {
-        // 检查是否有数据
-        if (!prevMockData || !prevMockData.data || prevMockData.data.length === 0) {
-          return prevMockData;
-        }
+    if (!isHistoryLoaded) return; // 等待历史数据加载完成
 
-        // 模拟新的价格数据
-        const lastDataPoint = prevMockData.data[prevMockData.data.length - 1];
-        const lastPrice = lastDataPoint ? lastDataPoint[1] : 67234.56;
-        const priceChange = (Math.random() - 0.5) * 0.002; // ±0.1%
-        const newPrice = lastPrice * (1 + priceChange);
+    const connectWebSocket = () => {
+      try {
+        console.log('🔌 正在连接WebSocket到: wss://crypto.nickwongon99.top');
+        wsRef.current = new WebSocket('wss://crypto.nickwongon99.top');
 
-        const newTimestamp = Date.now();
-        const newDataPoint = [newTimestamp, newPrice];
-
-        // 更新mock数据 - 滑动窗口：新数据进来，最老数据移出
-        const newData = [...prevMockData.data, newDataPoint];
-        // 保持120个数据点
-        const updatedData = newData.slice(-120);
-
-        // 检查价格是否变化来决定是否闪烁
-        if (previousPriceRef.current !== null && previousPriceRef.current !== newPrice) {
-          setPriceChanged(true);
-          blinkStartTimeRef.current = Date.now(); // 记录闪烁开始时间
-
-          // 700ms后停止闪烁状态
-          setTimeout(() => {
-            setPriceChanged(false);
-          }, 700);
-        }
-
-        previousPriceRef.current = newPrice;
-        setCurrentPrice(newPrice);
-
-        // 触发时间更新
-        setTimeUpdate(prev => prev + 1);
-
-        // 存储最新价格数据到ref，供单独的useEffect使用
-        latestPriceDataRef.current = {
-          timestamp: newTimestamp,
-          price: newPrice,
-          time: new Date(newTimestamp).toLocaleTimeString('en-US', {
-            hour12: false,
-            minute: '2-digit',
-            second: '2-digit'
-          })
+        wsRef.current.onopen = () => {
+          console.log('✅ WebSocket连接成功');
+          // 清除重连定时器
+          if (reconnectTimeoutRef.current) {
+            clearTimeout(reconnectTimeoutRef.current);
+            reconnectTimeoutRef.current = null;
+          }
         };
 
-        // 打印模拟的WebSocket数据
-        // console.log('🚀 Mock WebSocket Data:', {
-        //   timestamp: newTimestamp,
-        //   price: newPrice.toFixed(2),
-        //   time: new Date(newTimestamp).toLocaleTimeString('en-US', {
-        //     hour12: false,
-        //     hour: '2-digit',
-        //     minute: '2-digit',
-        //     second: '2-digit'
-        //   }),
-        //   priceChange: ((newPrice - lastPrice) / lastPrice * 100).toFixed(4) + '%',
-        //   dataPointsCount: updatedData.length
-        // });
+        wsRef.current.onmessage = (event) => {
+          try {
+            const message = JSON.parse(event.data);
 
-        return { data: updatedData };
-      });
-    }, 1000);
+            // 只处理价格更新消息
+            if (message.type === 'price_update') {
+              const newPrice = parseFloat(message.price);
+              const newTimestamp = new Date(message.timestamp).getTime();
 
-    return () => clearInterval(interval);
-  }, []); // 移除onPriceUpdate依赖，避免循环依赖
+              // 检查价格是否变化来决定是否闪烁
+              if (previousPriceRef.current !== null && previousPriceRef.current !== newPrice) {
+                setPriceChanged(true);
+                blinkStartTimeRef.current = Date.now(); // 记录闪烁开始时间
+
+                // 700ms后停止闪烁状态
+                setTimeout(() => {
+                  setPriceChanged(false);
+                }, 700);
+              }
+
+              previousPriceRef.current = newPrice;
+              setCurrentPrice(newPrice);
+
+              // 更新价格数据 - 滑动窗口：新数据进来，最老数据移出
+              let dataPointsCount = 0;
+              setPriceData(prevData => {
+                const newDataPoint = [newTimestamp, newPrice];
+                const updatedData = [...prevData, newDataPoint];
+                // 保持120个数据点
+                const finalData = updatedData.slice(-120);
+                dataPointsCount = finalData.length;
+                return finalData;
+              });
+
+              // 触发时间更新
+              setTimeUpdate(prev => prev + 1);
+
+              // 存储最新价格数据到ref，供单独的useEffect使用
+              latestPriceDataRef.current = {
+                timestamp: newTimestamp,
+                price: newPrice,
+                time: new Date(newTimestamp).toLocaleTimeString('en-US', {
+                  hour12: false,
+                  minute: '2-digit',
+                  second: '2-digit'
+                })
+              };
+
+              console.log('💰 WebSocket价格更新:', {
+                symbol: message.symbol,
+                price: newPrice.toFixed(2),
+                timestamp: newTimestamp,
+                time: new Date(newTimestamp).toLocaleTimeString(),
+                dataPointsCount: dataPointsCount
+              });
+            }
+          } catch (error) {
+            console.error('❌ WebSocket消息解析失败:', error);
+          }
+        };
+
+        wsRef.current.onerror = (error) => {
+          console.error('❌ WebSocket连接错误:', error);
+        };
+
+        wsRef.current.onclose = (event) => {
+          console.log('🔌 WebSocket连接关闭:', {
+            code: event.code,
+            reason: event.reason,
+            wasClean: event.wasClean
+          });
+
+          // 只有在组件还存在时才重连
+          if (wsRef.current !== null) {
+            console.log('🔄 1秒后重连WebSocket...');
+            reconnectTimeoutRef.current = setTimeout(connectWebSocket, 1000);
+          }
+        };
+
+      } catch (error) {
+        console.error('❌ WebSocket连接失败:', error.message);
+        // 连接失败时也要重连
+        console.log('🔄 1秒后重试连接WebSocket...');
+        reconnectTimeoutRef.current = setTimeout(connectWebSocket, 1000);
+      }
+    };
+
+    // 建立WebSocket连接
+    connectWebSocket();
+
+    return () => {
+      // 清理WebSocket连接和重连定时器
+      if (wsRef.current) {
+        wsRef.current.close();
+        wsRef.current = null;
+      }
+      if (reconnectTimeoutRef.current) {
+        clearTimeout(reconnectTimeoutRef.current);
+        reconnectTimeoutRef.current = null;
+      }
+    };
+  }, [isHistoryLoaded]); // 依赖历史数据加载状态
 
   // 单独的useEffect来处理父组件回调，避免在渲染过程中调用
   useEffect(() => {
@@ -559,14 +620,14 @@ const PriceChart = ({ onPriceUpdate, userBets = [] }) => {
     }
   }, [currentPrice, onPriceUpdate]); // 当currentPrice变化时触发回调
 
-  // 处理模拟数据（新格式）
+  // 处理价格数据
   const combinedData = useMemo(() => {
-    if (!mockData || !mockData.data || mockData.data.length === 0) {
+    if (!priceData || priceData.length === 0) {
       return [];
     }
 
-    // 将新格式的数据转换为组件内部使用的格式
-    return mockData.data.map(([timestamp, price]) => ({
+    // 将API数据转换为组件内部使用的格式
+    return priceData.map(([timestamp, price]) => ({
       timestamp,
       price,
       time: new Date(timestamp).toLocaleTimeString('en-US', {
@@ -575,7 +636,7 @@ const PriceChart = ({ onPriceUpdate, userBets = [] }) => {
         second: '2-digit'
       })
     }));
-  }, [mockData]);
+  }, [priceData]);
 
   // 计算Y轴范围
   const yAxisRange = useMemo(() => {
@@ -733,14 +794,14 @@ const PriceChart = ({ onPriceUpdate, userBets = [] }) => {
     userBets: userBets, // 传递用户下注数据给插件
     // 动画配置 - 滑动窗口平滑动画
     animation: {
-      duration: 800, // 800ms动画时长
+      duration: 1000, // 1000ms动画时长
       easing: 'easeInOutQuart', // 平滑的缓动函数
     },
     // 数据更新时的动画
     transitions: {
       active: {
         animation: {
-          duration: 800, // 数据更新时使用800ms动画
+          duration: 1000, // 数据更新时使用1000ms动画
           easing: 'easeInOutQuart',
         }
       }
@@ -917,7 +978,7 @@ const PriceChart = ({ onPriceUpdate, userBets = [] }) => {
 
   return (
     <div className="w-[375vw] md:w-full h-[346vw] md:h-80 relative" style={{ backgroundColor: '#121212' }}>
-      {!hasEnoughData ? (
+      {isLoading || !hasEnoughData ? (
         // Loading状态
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-white text-size-[16vw] md:text-base">Loading...</div>
