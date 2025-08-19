@@ -8,7 +8,7 @@
     "connect_wallet": "连接钱包",
     "disconnect": "断开连接",
     "retry": "重试",
-    "app_name": "BitRadar"
+    "app_name": "BitRocket"
   },
   "page_titles": {
     "trade": "交易",
@@ -21,8 +21,8 @@
     "not_found": "页面未找到"
   },
   "home": {
-    "title": "你好 BitRadar",
-    "welcome": "欢迎来到 BitRadar DApp",
+    "title": "你好 BitRocket",
+    "welcome": "欢迎来到 BitRocket DApp",
     "description": "您的去中心化金融门户"
   },
   "wallet": {
@@ -40,8 +40,8 @@
     "referrer": "推荐人",
     "add_referrer": "添加推荐地址",
     "generate_referral_link": "生成推荐链接",
-    "join_community": "加入BitRadar社区",
-    "referrer_description": "填写推荐地址连接BitRadar网络并解锁额外奖励",
+    "join_community": "加入BitRocket社区",
+    "referrer_description": "填写推荐地址连接BitRocket网络并解锁额外奖励",
     "referrer_address": "推荐地址",
     "rewards_title": "额外获得",
     "staking_rewards": "质押奖励",

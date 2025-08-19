@@ -1,4 +1,4 @@
-# BitRadar API 集成测试指南
+# BitRocket API 集成测试指南
 
 ## 🚀 快速开始
 

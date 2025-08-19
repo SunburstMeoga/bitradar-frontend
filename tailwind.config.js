@@ -5,7 +5,7 @@ export default {
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
-    // 响应式断点配置 - 针对BitRadar项目优化
+    // 响应式断点配置 - 针对BitRocket项目优化
     screens: {
       'sm': '640px',   // 小屏设备
       'md': '768px',   // 平板端开始 - 这是我们切换到428px容器的断点

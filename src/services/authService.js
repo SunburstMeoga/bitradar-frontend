@@ -123,7 +123,7 @@ class AuthService extends ApiService {
   async web3Login(account, customMessage = null) {
     try {
       // 使用自定义消息或默认消息
-      const message = customMessage || `欢迎使用 BitRadar 二元期权交易平台！\n\n时间戳: ${Date.now()}`;
+      const message = customMessage || `欢迎使用 BitRocket 二元期权交易平台！\n\n时间戳: ${Date.now()}`;
       
       // 签名消息
       const signature = await this.signMessage(message, account);

@@ -1,6 +1,6 @@
-# BitRadar Frontend
+# BitRocket Frontend
 
-BitRadar is a decentralized finance (DeFi) application built with React and Vite, featuring Web3 wallet integration and mobile-first responsive design. This frontend application serves as the user interface for the BitRadar ecosystem, providing users with a gateway to decentralized finance services.
+BitRocket is a decentralized finance (DeFi) application built with React and Vite, featuring Web3 wallet integration and mobile-first responsive design. This frontend application serves as the user interface for the BitRocket ecosystem, providing users with a gateway to decentralized finance services.
 
 ## 🚀 Features
 
@@ -173,7 +173,7 @@ className = "font-bold"; // 700
 
    ```bash
    git clone <repository-url>
-   cd bitradar-frontend
+   cd bitrocket-frontend
    ```
 
 2. **Install dependencies**
@@ -228,15 +228,15 @@ VITE_BSC_RPC_URL=https://data-seed-prebsc-1-s1.binance.org:8545/
 VITE_BSC_BLOCK_EXPLORER=https://testnet.bscscan.com
 
 # API Configuration
-VITE_API_BASE_URL=https://api-dev.bitradar.com
-VITE_WS_URL=wss://ws-dev.bitradar.com
+VITE_API_BASE_URL=https://api-dev.bitrocket.com
+VITE_WS_URL=wss://ws-dev.bitrocket.com
 ```
 
 ### Production (.env.production)
 
 ```env
 VITE_APP_ENV=production
-VITE_BASE_URL=https://bitradar.com
+VITE_BASE_URL=https://bitrocket.com
 
 # BSC Mainnet Configuration
 VITE_BSC_CHAIN_ID=56
@@ -244,8 +244,8 @@ VITE_BSC_RPC_URL=https://bsc-dataseed1.binance.org/
 VITE_BSC_BLOCK_EXPLORER=https://bscscan.com
 
 # API Configuration
-VITE_API_BASE_URL=https://api.bitradar.com
-VITE_WS_URL=wss://ws.bitradar.com
+VITE_API_BASE_URL=https://api.bitrocket.com
+VITE_WS_URL=wss://ws.bitrocket.com
 ```
 
 ## 📁 Project Structure
@@ -384,7 +384,7 @@ The build output will be in the `dist/` directory, ready for deployment to any s
 
 ## 📄 License
 
-This project is private and proprietary to BitRadar.
+This project is private and proprietary to BitRocket.
 
 ## 🆘 Support
 
@@ -392,4 +392,4 @@ For support and questions, please contact the development team or create an issu
 
 ---
 
-**Built with ❤️ by the BitRadar Team**
+**Built with ❤️ by the BitRocket Team**

@@ -70,7 +70,7 @@ const PageTitleTest = () => {
   };
 
   const getExpectedTitle = (pageKey, langCode) => {
-    const appName = 'BitRadar';
+    const appName = 'BitRocket';
     const pageTitles = {
       en: {
         trade: 'Trade',

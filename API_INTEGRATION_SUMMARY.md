@@ -1,4 +1,4 @@
-# BitRadar Frontend API 集成总结
+# BitRocket Frontend API 集成总结
 
 ## 📋 已完成的功能
 

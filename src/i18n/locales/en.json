@@ -8,7 +8,7 @@
     "connect_wallet": "Connect Wallet",
     "disconnect": "Disconnect",
     "retry": "Retry",
-    "app_name": "BitRadar"
+    "app_name": "BitRocket"
   },
   "page_titles": {
     "trade": "Trade",
@@ -21,8 +21,8 @@
     "not_found": "Page Not Found"
   },
   "home": {
-    "title": "Hello BitRadar",
-    "welcome": "Welcome to BitRadar DApp",
+    "title": "Hello BitRocket",
+    "welcome": "Welcome to BitRocket DApp",
     "description": "Your gateway to decentralized finance"
   },
   "wallet": {
@@ -40,8 +40,8 @@
     "referrer": "Referrer",
     "add_referrer": "Add Referrer Address",
     "generate_referral_link": "Generate Referral Link",
-    "join_community": "Join BitRadar Community",
-    "referrer_description": "Fill in referrer address to connect BitRadar network and unlock additional rewards",
+    "join_community": "Join BitRocket Community",
+    "referrer_description": "Fill in referrer address to connect BitRocket network and unlock additional rewards",
     "referrer_address": "Referrer Address",
     "rewards_title": "Additional Rewards",
     "staking_rewards": "Staking Rewards",

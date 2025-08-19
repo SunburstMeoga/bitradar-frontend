@@ -124,7 +124,7 @@ const Header = () => {
       <div className="flex justify-between items-center px-[16vw] py-[11vw] md:hidden">
         {/* 左侧Logo */}
         <div>
-          <img src={logoImg} alt="BitRadar" className="w-[104vw] h-[24vw] object-contain" />
+          <img src={logoImg} alt="BitRocket" className="w-[104vw] h-[24vw] object-contain" />
         </div>
 
         {/* 右侧钱包连接按钮 */}
@@ -154,7 +154,7 @@ const Header = () => {
       <div className="hidden md:flex md:justify-between md:items-center md:px-4 md:py-3">
         {/* 左侧Logo */}
         <div>
-          <img src={logoImg} alt="BitRadar" className="w-26 h-6 object-contain" />
+          <img src={logoImg} alt="BitRocket" className="w-26 h-6 object-contain" />
         </div>
 
         {/* 右侧钱包连接按钮 */}
