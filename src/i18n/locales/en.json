@@ -131,7 +131,17 @@
     "usdr_to_usdt": "USDR to USDT",
     "fiat_to_usdt": "Fiat to USDT",
     "confirm_swap": "Confirm Swap",
-    "withdraw_usdr": "Withdraw USDR"
+    "withdraw_usdr": "Withdraw USDR",
+    "withdraw_to_wallet": "Withdraw to Wallet",
+    "withdraw_title": "Withdraw to Wallet",
+    "platform_balance": "Rocket",
+    "wallet_balance": "Wallet Balance",
+    "withdraw_amount": "Withdraw Amount",
+    "confirm_withdraw": "Confirm Withdraw",
+    "min_withdraw_amount": "Min Withdraw Amount",
+    "withdraw_success": "Withdraw Successful!",
+    "rocket_platform_balance": "Rocket",
+    "web3_wallet_balance": "Wallet Balance"
   },
   "trade": {
     "trade_amount": "Trade Amount",
@@ -163,7 +173,10 @@
       "exchange": "Exchange",
       "deposit": "Deposit",
       "distribution": "Distribution",
-      "withdraw": "Withdraw"
+      "withdraw": "Withdraw",
+      "rocket_reward": "Rocket Reward",
+      "rocket_withdraw": "Rocket Withdraw",
+      "rocket_bonus": "Rocket Bonus"
     }
   }
 }

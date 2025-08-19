@@ -27,7 +27,7 @@ const Trade = () => {
   const [sliderValue, setSliderValue] = useState(0);
   const [currentPrice, setCurrentPrice] = useState(67234.56);
   const [priceChange, setPriceChange] = useState(2.34);
-  const [selectedToken, setSelectedToken] = useState('USDT');
+  const [selectedToken, setSelectedToken] = useState('USDR');
   const [isTokenModalOpen, setIsTokenModalOpen] = useState(false);
   const [userBets, setUserBets] = useState([]); // 用户下注记录
   const [luckyUSDBalance, setLuckyUSDBalance] = useState(0); // LuckyUSD随机余额
@@ -48,7 +48,7 @@ const Trade = () => {
 
   // 获取当前选中币种的余额
   const getCurrentTokenBalance = () => {
-    if (selectedToken === 'USDT') {
+    if (selectedToken === 'USDR') {
       // USDT余额，如果余额数据为null/undefined或网络请求失败，返回0
       return safeParseFloat(balance?.usdtBalance, 0);
     } else if (selectedToken === 'LuckyUSD') {
@@ -69,7 +69,7 @@ const Trade = () => {
 
   // 可选择的币种列表
   const tokenOptions = [
-    { name: 'USDT', icon: pUSDIcon },
+    { name: 'USDR', icon: pUSDIcon },
     { name: 'LuckyUSD', icon: pUSDIcon }
   ];
 

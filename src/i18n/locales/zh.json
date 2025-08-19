@@ -131,7 +131,17 @@
     "usdr_to_usdt": "USDR兑换USDT",
     "fiat_to_usdt": "法币兑换USDT",
     "confirm_swap": "确认兑换",
-    "withdraw_usdr": "提现USDR"
+    "withdraw_usdr": "提现USDR",
+    "withdraw_to_wallet": "提现至钱包",
+    "withdraw_title": "提现至钱包",
+    "platform_balance": "Rocket",
+    "wallet_balance": "钱包余额",
+    "withdraw_amount": "提现金额",
+    "confirm_withdraw": "确认提现",
+    "min_withdraw_amount": "最小提现金额",
+    "withdraw_success": "提现成功！",
+    "rocket_platform_balance": "Rocket",
+    "web3_wallet_balance": "钱包余额"
   },
   "trade": {
     "trade_amount": "交易金额",
@@ -163,7 +173,10 @@
       "exchange": "兑换",
       "deposit": "充值",
       "distribution": "发放",
-      "withdraw": "提现"
+      "withdraw": "提现",
+      "rocket_reward": "Rocket奖励",
+      "rocket_withdraw": "Rocket提现",
+      "rocket_bonus": "Rocket红利"
     }
   }
 }

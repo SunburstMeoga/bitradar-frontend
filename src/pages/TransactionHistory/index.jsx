@@ -119,13 +119,65 @@ const TransactionHistory = () => {
         amount: '+80',
         timestamp: new Date(Date.now() - 25200000).toISOString(), // 7小时前
       },
+    ],
+    Rocket: [
+      {
+        id: 1,
+        type: 'Rocket Reward',
+        category: 'reward',
+        amount: '+250',
+        timestamp: new Date(Date.now() - 3600000).toISOString(), // 1小时前
+      },
+      {
+        id: 2,
+        type: 'Rocket Withdraw',
+        category: 'withdraw',
+        amount: '-100',
+        timestamp: new Date(Date.now() - 7200000).toISOString(), // 2小时前
+      },
+      {
+        id: 3,
+        type: 'Rocket Bonus',
+        category: 'reward',
+        amount: '+75',
+        timestamp: new Date(Date.now() - 10800000).toISOString(), // 3小时前
+      },
+      {
+        id: 4,
+        type: 'Rocket Withdraw',
+        category: 'withdraw',
+        amount: '-50',
+        timestamp: new Date(Date.now() - 14400000).toISOString(), // 4小时前
+      },
+      {
+        id: 5,
+        type: 'Rocket Reward',
+        category: 'reward',
+        amount: '+300',
+        timestamp: new Date(Date.now() - 18000000).toISOString(), // 5小时前
+      },
+      {
+        id: 6,
+        type: 'Rocket Withdraw',
+        category: 'withdraw',
+        amount: '-200',
+        timestamp: new Date(Date.now() - 21600000).toISOString(), // 6小时前
+      },
+      {
+        id: 7,
+        type: 'Rocket Bonus',
+        category: 'reward',
+        amount: '+120',
+        timestamp: new Date(Date.now() - 25200000).toISOString(), // 7小时前
+      },
     ]
   };
 
   // 筛选选项配置
   const filterOptions = {
     USDR: ['all', 'deposit', 'withdraw', 'trade'],
-    LuckyUSD: ['all', 'reward', 'trade']
+    LuckyUSD: ['all', 'reward', 'trade'],
+    Rocket: ['all', 'reward', 'withdraw']
   };
 
   // 筛选交易数据
@@ -230,7 +282,10 @@ const TransactionHistory = () => {
       'Bonus': t('transaction_history.transaction_types.bonus'),
       'Exchange': t('transaction_history.transaction_types.exchange'),
       'Deposit': t('transaction_history.transaction_types.deposit'),
-      'Distribution': t('transaction_history.transaction_types.distribution')
+      'Distribution': t('transaction_history.transaction_types.distribution'),
+      'Rocket Reward': t('transaction_history.transaction_types.rocket_reward'),
+      'Rocket Withdraw': t('transaction_history.transaction_types.rocket_withdraw'),
+      'Rocket Bonus': t('transaction_history.transaction_types.rocket_bonus')
     };
     return typeMap[type] || type;
   };
@@ -240,7 +295,7 @@ const TransactionHistory = () => {
       {/* Tab选择器 */}
       <div className="pb-[16vw] md:pb-4">
         <div className="flex gap-[12vw] md:gap-3">
-          {['USDR', 'LuckyUSD'].map((tab) => (
+          {['USDR', 'LuckyUSD', 'Rocket'].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}

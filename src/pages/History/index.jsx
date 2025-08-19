@@ -287,7 +287,7 @@ const History = () => {
               {/* 第一行：投注金额和盈亏 */}
               <div className="flex justify-between items-center">
                 <span className="text-white font-size-[16vw] md:text-lg font-semibold" style={{ fontWeight: 600 }}>
-                  {item.amount} pUSD
+                  {item.amount} USDR
                 </span>
                 <span
                   className="font-size-[16vw] md:text-lg font-semibold"
@@ -296,7 +296,7 @@ const History = () => {
                     color: item.profit > 0 ? 'rgb(197, 255, 51)' : '#f5384e'
                   }}
                 >
-                  {item.profit > 0 ? '+' : ''}{item.profit} pUSD
+                  {item.profit > 0 ? '+' : ''}{item.profit} USDR
                 </span>
               </div>
 

@@ -18,7 +18,7 @@ const Account = () => {
 
   // 设置页面标题
   usePageTitle('account');
-  const [activeTab, setActiveTab] = useState('USDT');
+  const [activeTab, setActiveTab] = useState('USDR');
   const [countdown, setCountdown] = useState(86400); // 24小时倒计时（秒）
   const balanceFetchedRef = useRef(false);
 
@@ -40,7 +40,8 @@ const Account = () => {
   // 余额数据（优先使用API数据，否则使用默认值）
   const balances = {
     USDT: safeParseFloat(balance?.usdtBalance, 0),
-    LuckyUSD: safeParseFloat(balance?.usdtBalance, 0) // 暂时使用同一个余额
+    LuckyUSD: safeParseFloat(balance?.usdtBalance, 0), // 暂时使用同一个余额
+    Rocket: 1500.00 // Rocket币模拟余额
   };
 
 
@@ -103,11 +104,11 @@ const Account = () => {
       {/* 第二部分：Tabs */}
       <div className="px-[16vw] md:px-4 pb-[24vw] md:pb-6">
         <div className="flex gap-[12vw] md:gap-3">
-          {['USDT', 'LuckyUSD'].map((tab) => (
+          {['USDR', 'LuckyUSD', 'Rocket'].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`flex items-center gap-[8vw] md:gap-2 px-[20vw] md:px-5 py-[16vw] md:py-4 rounded-[34vw] md:rounded-full text-size-[16vw] md:text-lg transition-all ${
+              className={`flex items-center gap-[8vw] md:gap-2 px-[10vw] md:px-3 py-[8vw] md:py-3 rounded-[34vw] md:rounded-full text-size-[16vw] md:text-lg transition-all ${
                 activeTab === tab
                   ? 'text-black'
                   : 'text-white'
@@ -117,7 +118,7 @@ const Account = () => {
                 backgroundImage: activeTab === tab ? 'linear-gradient(rgb(143, 143, 143), rgb(217, 217, 217))' : 'none',
               }}
             >
-              <img src={btcIcon} alt={tab} className="w-[24vw] md:w-6 h-[24vw] md:h-6" />
+              <img src={btcIcon} alt={tab} className="w-[14vw] md:w-5 h-[14vw] md:h-5" />
               <span>{tab}</span>
             </button>
           ))}
@@ -146,8 +147,8 @@ const Account = () => {
               </>
             )}
           </div>
-          {/* 只在选中USDT时显示兑换按钮 */}
-          {activeTab === 'USDT' && (
+          {/* 只在选中USDR时显示兑换按钮 */}
+          {activeTab === 'USDR' && (
             <div
               onClick={handleExchangeClick}
               className="px-[24vw] md:px-6 py-[12vw] md:py-3 rounded-[34vw] md:rounded-full cursor-pointer hover:opacity-80 transition-opacity"
@@ -155,6 +156,18 @@ const Account = () => {
             >
               <span className="text-black text-size-[16vw] md:text-base font-medium">
                 {t('account.exchange')}
+              </span>
+            </div>
+          )}
+          {/* 在选中Rocket时显示提现按钮 */}
+          {activeTab === 'Rocket' && (
+            <div
+              onClick={handleExchangeClick}
+              className="px-[24vw] md:px-6 py-[12vw] md:py-3 rounded-[34vw] md:rounded-full cursor-pointer hover:opacity-80 transition-opacity"
+              style={{ backgroundColor: '#c5ff33' }}
+            >
+              <span className="text-black text-size-[16vw] md:text-base font-medium">
+                {t('exchange.withdraw_to_wallet')}
               </span>
             </div>
           )}
