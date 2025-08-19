@@ -71,7 +71,11 @@
     "up": "상승",
     "down": "하락",
     "win": "수익",
-    "lose": "손실"
+    "lose": "손실",
+    "trading_asset": "Trading Asset",
+    "select_trading_asset": "Select Trading Asset",
+    "real": "REAL",
+    "demo": "DEMO"
   },
   "account": {
     "wallet_not_connected": "지갑이 연결되지 않음",

@@ -71,7 +71,11 @@
     "up": "涨",
     "down": "跌",
     "win": "盈利",
-    "lose": "亏损"
+    "lose": "亏损",
+    "trading_asset": "Trading Asset",
+    "select_trading_asset": "Select Trading Asset",
+    "real": "REAL",
+    "demo": "DEMO"
   },
   "account": {
     "wallet_not_connected": "未连接钱包",

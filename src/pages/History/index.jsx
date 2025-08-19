@@ -7,6 +7,7 @@ import { ErrorDisplay, LoadingSpinner } from '../../components/ErrorBoundary';
 import historyUpIcon from '../../assets/icons/history-up.png';
 import historyDownIcon from '../../assets/icons/history-down.png';
 import toast from 'react-hot-toast';
+import Modal from '../../components/Modal';
 
 // 右上45度箭头SVG组件（表示涨）- 加大尺寸
 const UpArrowIcon = ({ color = '#00bc4b' }) => (
@@ -33,6 +34,103 @@ const DownArrowIcon = ({ color = '#f5384e' }) => (
     />
   </svg>
 );
+
+// 下拉箭头SVG组件
+const DropdownArrowIcon = ({ color = '#fff' }) => (
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+    <path
+      d="M4 6L8 10L12 6"
+      stroke={color}
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
+// Trading Asset选择组件
+const TradingAssetSelector = () => {
+  const { t } = useTranslation();
+  const [selectedAsset, setSelectedAsset] = useState(null); // null表示未选择
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const assets = [
+    { value: 'USDR', label: t('history.real'), displayName: 'USDR' },
+    { value: 'LuckyUSD', label: t('history.demo'), displayName: 'LuckyUSD' }
+  ];
+
+  const handleAssetSelect = (asset) => {
+    setSelectedAsset(asset);
+    setIsModalOpen(false);
+  };
+
+  const getDisplayText = () => {
+    if (!selectedAsset) return t('history.trading_asset');
+    return selectedAsset.label;
+  };
+
+  const getButtonStyle = () => {
+    if (!selectedAsset) {
+      return {
+        backgroundColor: '#292929',
+        color: '#fff'
+      };
+    } else {
+      return {
+        backgroundColor: '#fff',
+        color: '#292929'
+      };
+    }
+  };
+
+  return (
+    <>
+      {/* 选择按钮 */}
+      <div
+        onClick={() => setIsModalOpen(true)}
+        className="h-[34px] rounded-full flex items-center cursor-pointer gap-[8px] inline-flex"
+        style={{
+          ...getButtonStyle(),
+          padding: '0 12px 0 16px',
+          fontSize: '15px',
+          fontWeight: 600,
+          minWidth: 'fit-content',
+          whiteSpace: 'nowrap',
+          width: 'auto'
+        }}
+      >
+        <span>{getDisplayText()}</span>
+        <DropdownArrowIcon color={selectedAsset ? '#292929' : '#fff'} />
+      </div>
+
+      {/* 选择弹窗 */}
+      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
+        <div className="p-[20px]">
+          <h3 className="text-white text-[18px] font-semibold mb-[20px]">
+            {t('history.select_trading_asset')}
+          </h3>
+          <div className="space-y-[12px]">
+            {assets.map((asset) => (
+              <div
+                key={asset.value}
+                onClick={() => handleAssetSelect(asset)}
+                className="w-full h-[44px] rounded-[8px] flex items-center justify-center cursor-pointer transition-colors"
+                style={{
+                  backgroundColor: selectedAsset?.value === asset.value ? '#fff' : '#292929',
+                  color: selectedAsset?.value === asset.value ? '#292929' : '#fff',
+                  fontSize: '15px',
+                  fontWeight: 600
+                }}
+              >
+                {asset.displayName}
+              </div>
+            ))}
+          </div>
+        </div>
+      </Modal>
+    </>
+  );
+};
 
 
 
@@ -208,9 +306,10 @@ const History = () => {
     <div className="min-h-screen pb-[86vw] md:pb-20" style={{ backgroundColor: 'rgb(18,18,18)' }}>
       {/* 标题 */}
       <div className="px-[16vw] md:px-4 pt-[20vw] md:pt-5 pb-[16vw] md:pb-4">
-        <h1 className="text-white font-size-[28vw] md:text-2xl font-semibold" style={{ fontWeight: 600 }}>
+        <h1 className="text-white font-size-[28vw] md:text-2xl font-semibold mb-[12vw] md:mb-3" style={{ fontWeight: 600 }}>
           {t('history.title')}
         </h1>
+        <TradingAssetSelector />
       </div>
 
       {/* 历史记录列表 */}

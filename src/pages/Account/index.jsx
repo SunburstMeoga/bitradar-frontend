@@ -82,6 +82,11 @@ const Account = () => {
     navigate('/exchange');
   };
 
+  // 处理提现按钮点击
+  const handleWithdrawClick = () => {
+    navigate('/withdraw');
+  };
+
   // 处理交易记录点击
   const handleTransactionHistoryClick = () => {
     navigate('/transaction-history');
@@ -162,12 +167,12 @@ const Account = () => {
           {/* 在选中Rocket时显示提现按钮 */}
           {activeTab === 'Rocket' && (
             <div
-              onClick={handleExchangeClick}
+              onClick={handleWithdrawClick}
               className="px-[24vw] md:px-6 py-[12vw] md:py-3 rounded-[34vw] md:rounded-full cursor-pointer hover:opacity-80 transition-opacity"
               style={{ backgroundColor: '#c5ff33' }}
             >
               <span className="text-black text-size-[16vw] md:text-base font-medium">
-                {t('exchange.withdraw_to_wallet')}
+                提现
               </span>
             </div>
           )}

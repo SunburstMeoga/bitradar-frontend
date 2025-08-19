@@ -71,7 +71,11 @@
     "up": "Up",
     "down": "Down",
     "win": "Win",
-    "lose": "Lose"
+    "lose": "Lose",
+    "trading_asset": "Trading Asset",
+    "select_trading_asset": "Select Trading Asset",
+    "real": "REAL",
+    "demo": "DEMO"
   },
   "account": {
     "wallet_not_connected": "Wallet not connected",

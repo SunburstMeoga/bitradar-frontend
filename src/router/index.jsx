@@ -8,6 +8,7 @@ import History from '../pages/History';
 import Account from '../pages/Account';
 import NetworkDetails from '../pages/NetworkDetails';
 import Exchange from '../pages/Exchange';
+import Withdraw from '../pages/Withdraw';
 import TransactionHistory from '../pages/TransactionHistory';
 import NotFound from '../pages/NotFound';
 import PageTitleTest from '../components/PageTitleTest';
@@ -29,6 +30,15 @@ const ExchangeWrapper = () => {
   return (
     <SecondaryLayout title={t('exchange.title')}>
       <Exchange />
+    </SecondaryLayout>
+  );
+};
+
+// 提现页面包装组件
+const WithdrawWrapper = () => {
+  return (
+    <SecondaryLayout title="提现">
+      <Withdraw />
     </SecondaryLayout>
   );
 };
@@ -73,6 +83,10 @@ export const router = createBrowserRouter([
   {
     path: '/exchange',
     element: <ExchangeWrapper />,
+  },
+  {
+    path: '/withdraw',
+    element: <WithdrawWrapper />,
   },
   {
     path: '/transaction-history',
