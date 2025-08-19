@@ -305,7 +305,7 @@ const TransactionHistory = () => {
                   : 'text-white'
               }`}
               style={{
-                backgroundColor: activeTab === tab ? '#c5ff33' : 'rgb(41, 41, 41)',
+                backgroundColor: activeTab === tab ? 'rgb(200, 200, 200)' : 'rgb(41, 41, 41)',
               }}
             >
               {tab}
@@ -327,7 +327,7 @@ const TransactionHistory = () => {
                   : 'text-[#8f8f8f]'
               }`}
               style={{
-                backgroundColor: activeFilter === filter ? '#c5ff33' : 'rgb(31, 31, 31)',
+                backgroundColor: activeFilter === filter ? 'rgb(200, 200, 200)' : 'rgb(31, 31, 31)',
               }}
             >
               {t(`transaction_history.filters.${filter}`)}

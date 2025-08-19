@@ -128,7 +128,7 @@ const NetworkDetails = () => {
   // 格式化数字显示，带跳动效果（整数）
   const formatNumber = (number, fontSize = '16vw') => {
     return (
-      <span className={`text-[#c5ff33] text-size-[${fontSize}] font-medium`}>
+      <span className={`text-white text-size-[${fontSize}] font-medium`}>
         <CountUp
           start={0}
           end={number}
@@ -144,14 +144,14 @@ const NetworkDetails = () => {
       <div className="px-[16vw] md:px-4 pt-[20vw] md:pt-5 pb-[20vw] md:pb-5">
         {/* 推荐总览 */}
         <div className="mb-[24vw] md:mb-6">
-          <h2 className="text-[#c5ff33] text-size-[18vw] md:text-xl font-semibold mb-[16vw] md:mb-4" style={{ fontWeight: 600 }}>
+          <h2 className="text-white text-size-[18vw] md:text-xl font-semibold mb-[16vw] md:mb-4" style={{ fontWeight: 600 }}>
             {t('network_details.referral_overview')}
           </h2>
 
           {/* 团队总人数 */}
           <div
-            className="w-full h-[50vw] md:h-12 flex items-center px-[16vw] md:px-4 mb-[12vw] md:mb-3 rounded-[8vw] md:rounded-lg border border-[#c5ff33]"
-            style={{ backgroundColor: 'rgba(197, 255, 51, 0.1)' }}
+            className="w-full h-[50vw] md:h-12 flex items-center px-[16vw] md:px-4 mb-[12vw] md:mb-3 rounded-[8vw] md:rounded-lg border border-gray-400"
+            style={{ backgroundColor: 'rgba(64, 64, 64, 0.3)' }}
           >
             <span className="text-white text-size-[16vw] md:text-lg">{t('network_details.team_members')}</span>
             <div className="ml-auto">{formatNumber(overviewData.teamMembers, '16vw')}</div>
@@ -182,7 +182,7 @@ const NetworkDetails = () => {
 
         {/* 推荐关系 */}
         <div>
-          <h2 className="text-[#c5ff33] text-size-[18vw] md:text-xl font-semibold mb-[16vw] md:mb-4" style={{ fontWeight: 600 }}>
+          <h2 className="text-white text-size-[18vw] md:text-xl font-semibold mb-[16vw] md:mb-4" style={{ fontWeight: 600 }}>
             {t('network_details.referral_system')}
           </h2>
 

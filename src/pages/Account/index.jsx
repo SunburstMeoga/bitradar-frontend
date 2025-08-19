@@ -156,10 +156,10 @@ const Account = () => {
           {activeTab === 'USDR' && (
             <div
               onClick={handleExchangeClick}
-              className="px-[24vw] md:px-6 py-[12vw] md:py-3 rounded-[34vw] md:rounded-full cursor-pointer hover:opacity-80 transition-opacity"
-              style={{ backgroundColor: '#c5ff33' }}
+              className="px-[24vw] md:px-6 py-[12vw] md:py-3 rounded-[34vw] md:rounded-full cursor-pointer hover:opacity-80 transition-opacity border border-white"
+              style={{ backgroundColor: 'transparent' }}
             >
-              <span className="text-black text-size-[16vw] md:text-base font-medium">
+              <span className="text-white text-size-[16vw] md:text-base font-medium">
                 {t('account.exchange')}
               </span>
             </div>
@@ -168,10 +168,10 @@ const Account = () => {
           {activeTab === 'Rocket' && (
             <div
               onClick={handleWithdrawClick}
-              className="px-[24vw] md:px-6 py-[12vw] md:py-3 rounded-[34vw] md:rounded-full cursor-pointer hover:opacity-80 transition-opacity"
-              style={{ backgroundColor: '#c5ff33' }}
+              className="px-[24vw] md:px-6 py-[12vw] md:py-3 rounded-[34vw] md:rounded-full cursor-pointer hover:opacity-80 transition-opacity border border-white"
+              style={{ backgroundColor: 'transparent' }}
             >
-              <span className="text-black text-size-[16vw] md:text-base font-medium">
+              <span className="text-white text-size-[16vw] md:text-base font-medium">
                 提现
               </span>
             </div>
@@ -183,8 +183,8 @@ const Account = () => {
       {activeTab === 'LuckyUSD' && (
         <div className="px-[16vw] md:px-4 pb-[24vw] md:pb-6">
           <div
-            className="w-[343vw] md:w-full h-[50vw] md:h-12 flex items-center justify-center rounded-[8vw] md:rounded-lg"
-            style={{ backgroundColor: '#c5ff33' }}
+            className="w-[343vw] md:w-full h-[50vw] md:h-12 flex items-center justify-center rounded-[8vw] md:rounded-lg border border-gray-400"
+            style={{ backgroundColor: 'rgb(64, 64, 64)' }}
           >
             <span className="text-white text-size-[18vw] md:text-lg font-medium">
               {t('account.next_distribution')}: {formatCountdown(countdown)}
