@@ -66,7 +66,7 @@ const TradingAssetSelector = () => {
 
   const getDisplayText = () => {
     if (!selectedAsset) return t('history.trading_asset');
-    return selectedAsset.label;
+    return selectedAsset.displayName;
   };
 
   const getButtonStyle = () => {

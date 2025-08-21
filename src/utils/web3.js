@@ -152,16 +152,16 @@ export const removeListeners = () => {
 
 // 获取BNB余额
 export const getBNBBalance = async (address) => {
-  if (!address || !isMetaMaskInstalled()) return '0.000';
+  if (!address || !isMetaMaskInstalled()) return '0.00';
 
   try {
     const web3 = new Web3(window.ethereum);
     const balance = await web3.eth.getBalance(address);
     const balanceInBNB = web3.utils.fromWei(balance, 'ether');
-    return parseFloat(balanceInBNB).toFixed(3);
+    return parseFloat(balanceInBNB).toFixed(2);
   } catch (error) {
     console.error('获取BNB余额失败:', error);
-    return '0.000';
+    return '0.00';
   }
 };
 

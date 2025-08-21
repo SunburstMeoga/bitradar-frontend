@@ -70,13 +70,35 @@ const CopyIcon = ({ color = "#e4e7e7" }) => (
   </svg>
 );
 
+// 格式化余额显示组件（小数点后字体较小）
+const FormattedBalance = ({ balance, className = "text-[16px] md:text-base", style = {} }) => {
+  if (!balance || balance === '0.00') {
+    return (
+      <span className={className} style={style}>
+        0.00 BNB
+      </span>
+    );
+  }
 
+  const [integerPart, decimalPart] = balance.split('.');
+  const smallerFontSize = className.includes('[16px]') ? 'text-[12px]' : 'text-xs';
+
+  return (
+    <span className={className} style={style}>
+      {integerPart}
+      <span className={`${smallerFontSize} align-baseline`}>
+        .{decimalPart}
+      </span>
+      {' BNB'}
+    </span>
+  );
+};
 
 const WalletCard = ({ onClose, onSendClick, onActivityClick, onAddReferrerClick }) => {
   const { account, reset } = useWeb3Store();
   const { isAuthenticated, logout } = useAuthStore();
   const { i18n, t } = useTranslation();
-  const [bnbBalance, setBnbBalance] = useState('0.000');
+  const [bnbBalance, setBnbBalance] = useState('0.00');
   const [isLanguageExpanded, setIsLanguageExpanded] = useState(false);
 
 
@@ -252,7 +274,7 @@ const WalletCard = ({ onClose, onSendClick, onActivityClick, onAddReferrerClick 
             className="text-[20px] md:text-xl"
             style={{ color: '#E4E7E7', fontWeight: 600 }}
           >
-            {formatAddress(account)}
+            {formatAddress(account, 3, 3)}
           </span>
           <button onClick={handleCopyAddress} className="w-[16px] h-[16px] md:w-4 md:h-4">
             <CopyIcon />
@@ -272,12 +294,11 @@ const WalletCard = ({ onClose, onSendClick, onActivityClick, onAddReferrerClick 
 
         {/* BNB余额 */}
         <div className="text-center mb-[20px] md:mb-5">
-          <span
+          <FormattedBalance
+            balance={bnbBalance}
             className="text-[16px] md:text-base"
             style={{ color: '#949E9E', fontWeight: 500 }}
-          >
-            {bnbBalance} BNB
-          </span>
+          />
         </div>
 
         {/* 菜单项 */}

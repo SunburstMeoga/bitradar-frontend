@@ -72,8 +72,8 @@
     "down": "하락",
     "win": "수익",
     "lose": "손실",
-    "trading_asset": "Trading Asset",
-    "select_trading_asset": "Select Trading Asset",
+    "trading_asset": "거래 자산",
+    "select_trading_asset": "거래 자산 선택",
     "real": "REAL",
     "demo": "DEMO"
   },

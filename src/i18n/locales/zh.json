@@ -72,8 +72,8 @@
     "down": "跌",
     "win": "盈利",
     "lose": "亏损",
-    "trading_asset": "Trading Asset",
-    "select_trading_asset": "Select Trading Asset",
+    "trading_asset": "交易资产",
+    "select_trading_asset": "选择交易资产",
     "real": "REAL",
     "demo": "DEMO"
   },
