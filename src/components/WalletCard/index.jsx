@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useWeb3Store, useAuthStore } from '../../store';
 import { formatAddress, getBNBBalance } from '../../utils/web3';
+import { MEMBERSHIP_LEVELS, MEMBERSHIP_COLORS } from '../MembershipCard';
 import toast from 'react-hot-toast';
 
 
@@ -25,6 +26,13 @@ const LinkIcon = () => (
     <path d="M13.5 18.5L18.5 13.5" stroke="#9D9D9D" strokeWidth="2" strokeLinecap="round"/>
     <path d="M15 11H11C9.343 11 8 12.343 8 14V18C8 19.657 9.343 21 11 21H15" stroke="#9D9D9D" strokeWidth="2" strokeLinecap="round"/>
     <path d="M17 21H21C22.657 21 24 19.657 24 18V14C24 12.343 22.657 11 21 11H17" stroke="#9D9D9D" strokeWidth="2" strokeLinecap="round"/>
+  </svg>
+);
+
+// 会员图标SVG组件
+const MembershipIcon = () => (
+  <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+    <path d="M16 2L20.5 11L31 11L22.5 18L27 27L16 21L5 27L9.5 18L1 11L11.5 11L16 2Z" stroke="#9D9D9D" strokeWidth="2" fill="none"/>
   </svg>
 );
 
@@ -94,12 +102,13 @@ const FormattedBalance = ({ balance, className = "text-[16px] md:text-base", sty
   );
 };
 
-const WalletCard = ({ onClose, onSendClick, onActivityClick, onAddReferrerClick }) => {
+const WalletCard = ({ onClose, onSendClick, onActivityClick, onAddReferrerClick, onBuyMembershipClick }) => {
   const { account, reset } = useWeb3Store();
   const { isAuthenticated, logout } = useAuthStore();
   const { i18n, t } = useTranslation();
   const [bnbBalance, setBnbBalance] = useState('0.00');
   const [isLanguageExpanded, setIsLanguageExpanded] = useState(false);
+  const [membershipLevel, setMembershipLevel] = useState(MEMBERSHIP_LEVELS.NONE);
 
 
   // 从URL参数获取推荐人地址
@@ -122,6 +131,13 @@ const WalletCard = ({ onClose, onSendClick, onActivityClick, onAddReferrerClick 
   };
 
   const [selectedLanguage, setSelectedLanguage] = useState(getLanguageDisplayName(i18n.language));
+
+  // 随机生成会员等级（每次打开钱包弹窗时重新生成）
+  useEffect(() => {
+    const levels = [MEMBERSHIP_LEVELS.NONE, MEMBERSHIP_LEVELS.SILVER, MEMBERSHIP_LEVELS.GOLD];
+    const randomLevel = levels[Math.floor(Math.random() * levels.length)];
+    setMembershipLevel(randomLevel);
+  }, []);
 
   // 获取BNB余额
   useEffect(() => {
@@ -211,6 +227,37 @@ const WalletCard = ({ onClose, onSendClick, onActivityClick, onAddReferrerClick 
     }
   };
 
+  // 处理购买会员点击
+  const handleBuyMembershipClick = () => {
+    // 如果语言选项展开，先关闭它
+    if (isLanguageExpanded) {
+      setIsLanguageExpanded(false);
+    }
+    // 然后调用原始的回调
+    if (onBuyMembershipClick) {
+      onBuyMembershipClick();
+    }
+  };
+
+  // 获取会员等级显示信息
+  const getMembershipDisplayInfo = () => {
+    const configs = {
+      [MEMBERSHIP_LEVELS.GOLD]: {
+        text: t('wallet.membership_level_gold'),
+        color: MEMBERSHIP_COLORS[MEMBERSHIP_LEVELS.GOLD]
+      },
+      [MEMBERSHIP_LEVELS.SILVER]: {
+        text: t('wallet.membership_level_silver'),
+        color: MEMBERSHIP_COLORS[MEMBERSHIP_LEVELS.SILVER]
+      },
+      [MEMBERSHIP_LEVELS.NONE]: {
+        text: t('wallet.membership_level_none'),
+        color: MEMBERSHIP_COLORS[MEMBERSHIP_LEVELS.NONE]
+      }
+    };
+    return configs[membershipLevel] || configs[MEMBERSHIP_LEVELS.NONE];
+  };
+
   // 语言选项
   const languageOptions = [
     { code: 'zh', label: '简体中文' },
@@ -236,6 +283,14 @@ const WalletCard = ({ onClose, onSendClick, onActivityClick, onAddReferrerClick 
       textColor: '#9D9D9D',
       showArrow: false,
       onClick: handleGenerateReferralLink
+    },
+    {
+      id: 'buy-membership',
+      label: t('wallet.membership_buy'),
+      icon: MembershipIcon,
+      textColor: '#9D9D9D',
+      showArrow: true,
+      onClick: handleBuyMembershipClick
     },
     {
       id: 'language',
@@ -281,14 +336,17 @@ const WalletCard = ({ onClose, onSendClick, onActivityClick, onAddReferrerClick 
           </button>
         </div>
 
-        {/* 认证状态 */}
+        {/* 会员等级状态 */}
         <div className="flex items-center justify-center gap-[4px] md:gap-1 mb-[12px] md:mb-3">
-          <div className={`w-[8px] h-[8px] md:w-2 md:h-2 rounded-full ${isAuthenticated ? 'bg-[#c5ff33]' : 'bg-[#8f8f8f]'}`}></div>
+          <div
+            className="w-[8px] h-[8px] md:w-2 md:h-2 rounded-full"
+            style={{ backgroundColor: getMembershipDisplayInfo().color }}
+          />
           <span
             className="text-[14px] md:text-sm"
-            style={{ color: isAuthenticated ? '#c5ff33' : '#8f8f8f', fontWeight: 500 }}
+            style={{ color: getMembershipDisplayInfo().color, fontWeight: 500 }}
           >
-            {isAuthenticated ? t('wallet.authenticated') : t('wallet.not_authenticated')}
+            {getMembershipDisplayInfo().text}
           </span>
         </div>
 

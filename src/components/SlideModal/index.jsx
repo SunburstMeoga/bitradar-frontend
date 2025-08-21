@@ -39,7 +39,6 @@ const SlideModal = ({
   showBackButton = [],
   onBack
 }) => {
-  const [translateX, setTranslateX] = useState(0);
   const [modalHeight, setModalHeight] = useState(() => {
     // 根据当前卡片索引预估初始高度，避免闪烁
     const estimatedHeights = {
@@ -47,7 +46,9 @@ const SlideModal = ({
       1: '400px', // AddReferrer卡片 - 中等
       2: '450px', // Send卡片 - 中等偏高
       3: '600px', // Activity卡片 - 很高
-      4: '350px'  // SelectToken卡片 - 较低
+      4: '350px', // SelectToken卡片 - 较低
+      5: '450px', // Membership卡片 - 中等偏高
+      6: '400px'  // PaymentConfirm卡片 - 中等
     };
     return estimatedHeights[currentIndex] || '70vh';
   });
@@ -73,23 +74,21 @@ const SlideModal = ({
     };
   }, [isOpen, onClose]);
 
-  // 根据当前索引更新translateX和预估高度
+  // 根据当前索引更新预估高度
   useEffect(() => {
-    // 计算正确的滑动距离：每个卡片占用滑动容器的 (100/totalCards)%
-    // 所以移动到第n个卡片需要移动 n * (100/totalCards)%
-    setTranslateX(-currentIndex * (100 / totalCards));
-
     // 当切换卡片时，先设置预估高度，减少闪烁
     const estimatedHeights = {
       0: '500px', // 钱包卡片 - 较高
       1: '400px', // AddReferrer卡片 - 中等
       2: '450px', // Send卡片 - 中等偏高
       3: '600px', // Activity卡片 - 很高
-      4: '350px'  // SelectToken卡片 - 较低
+      4: '350px', // SelectToken卡片 - 较低
+      5: '450px', // Membership卡片 - 中等偏高
+      6: '400px'  // PaymentConfirm卡片 - 中等
     };
     const estimatedHeight = estimatedHeights[currentIndex] || '70vh';
     setModalHeight(estimatedHeight);
-  }, [currentIndex, totalCards]);
+  }, [currentIndex]);
 
   // 计算弹窗高度
   useEffect(() => {
@@ -202,54 +201,22 @@ const SlideModal = ({
           </button>
         </div>
 
-        {/* 内容滑动容器 */}
-        <div
-          className="flex transition-transform duration-300 ease-in-out"
-          style={{
-            transform: `translateX(${translateX}%)`,
-            width: `${totalCards * 100}%`,
-            overflowX: 'hidden',
-            overflowY: 'visible'
-          }}
-        >
-          {Array.isArray(children) ? children.map((child, index) => (
+        {/* 内容容器 - 只渲染当前卡片 */}
+        <div className="w-full h-full">
+          <div
+            data-card-index={currentIndex}
+            className="w-full h-full"
+          >
             <div
-              key={index}
-              data-card-index={index}
-              className="flex-shrink-0"
+              className="modal-content overflow-y-auto scrollbar-hide px-[20vw] md:px-8 h-full"
               style={{
-                width: `${100 / totalCards}%`
+                scrollbarWidth: 'none', /* Firefox */
+                msOverflowStyle: 'none' /* IE and Edge */
               }}
             >
-              <div
-                className="modal-content overflow-y-auto scrollbar-hide px-[20vw] md:px-8"
-                style={{
-                  scrollbarWidth: 'none', /* Firefox */
-                  msOverflowStyle: 'none' /* IE and Edge */
-                }}
-              >
-                {child}
-              </div>
+              {Array.isArray(children) ? children[currentIndex] : children}
             </div>
-          )) : (
-            <div
-              data-card-index={0}
-              className="flex-shrink-0"
-              style={{
-                width: `${100 / totalCards}%`
-              }}
-            >
-              <div
-                className="modal-content overflow-y-auto scrollbar-hide px-[20vw] md:px-8"
-                style={{
-                  scrollbarWidth: 'none', /* Firefox */
-                  msOverflowStyle: 'none' /* IE and Edge */
-                }}
-              >
-                {children}
-              </div>
-            </div>
-          )}
+          </div>
         </div>
       </div>
     </div>
