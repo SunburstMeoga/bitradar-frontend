@@ -10,6 +10,7 @@ import NetworkDetails from '../pages/NetworkDetails';
 import Exchange from '../pages/Exchange';
 import Withdraw from '../pages/Withdraw';
 import TransactionHistory from '../pages/TransactionHistory';
+import TestLayout from '../pages/TestLayout';
 import NotFound from '../pages/NotFound';
 import PageTitleTest from '../components/PageTitleTest';
 
@@ -73,6 +74,10 @@ export const router = createBrowserRouter([
       {
         path: 'account',
         element: <Account />,
+      },
+      {
+        path: 'test-layout',
+        element: <TestLayout />,
       },
     ],
   },

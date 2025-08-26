@@ -977,7 +977,7 @@ const PriceChart = ({ onPriceUpdate, userBets = [] }) => {
   const hasEnoughData = combinedData.length > 10;
 
   return (
-    <div className="w-[375vw] md:w-full h-[346vw] md:h-80 relative" style={{ backgroundColor: '#121212' }}>
+    <div className="w-[375vw] md:w-full h-full relative" style={{ backgroundColor: '#121212' }}>
       {isLoading || !hasEnoughData ? (
         // Loading状态
         <div className="absolute inset-0 flex items-center justify-center">

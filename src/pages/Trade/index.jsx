@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import usePageTitle from '../../hooks/usePageTitle';
+import useViewportHeight from '../../hooks/useViewportHeight';
 import { useApiCall } from '../../hooks/useApiCall';
 import { useAuthStore, useUserStore } from '../../store';
 import { safeParseFloat, formatNumber } from '../../utils/format';
@@ -20,6 +21,9 @@ const Trade = () => {
   const { isAuthenticated } = useAuthStore();
   const { balance, fetchBalance } = useUserStore();
 
+  // 获取视口高度信息
+  const { mainAreaHeight, isMobile } = useViewportHeight();
+
   // 设置页面标题
   usePageTitle('trade');
 
@@ -32,6 +36,54 @@ const Trade = () => {
   const [userBets, setUserBets] = useState([]); // 用户下注记录
   const [luckyUSDBalance, setLuckyUSDBalance] = useState(0); // LuckyUSD随机余额
   const [isPlacingBet, setIsPlacingBet] = useState(false); // 下注加载状态
+
+  // 计算PriceChart的动态高度
+  const calculateChartHeight = () => {
+    if (mainAreaHeight === 0) {
+      // 如果还没有计算出可用高度，使用默认值
+      return isMobile ? '346vw' : '320px';
+    }
+
+    // 计算其他固定元素的高度
+    let fixedElementsHeight = 0;
+
+    if (isMobile) {
+      // 移动端计算（基于375px设计稿）
+      const windowWidth = window.innerWidth;
+
+      // 价格信息栏：h-[64vw] + mt-[10vw] + mb-[10vw]（图表的margin）
+      const priceBarHeight = (64 / 375) * windowWidth;
+      const priceBarMargins = (10 / 375) * windowWidth + (10 / 375) * windowWidth;
+
+      // 交易卡片：估算高度（包含所有子元素）
+      // 第一部分：h-[116vw] + 第二部分：h-[50vw] + 第三部分：h-[50vw] + 间距
+      const tradingCard1 = (116 / 375) * windowWidth;
+      const tradingCard2 = (50 / 375) * windowWidth;
+      const tradingCard3 = (50 / 375) * windowWidth;
+      const cardMargins = (17 / 375) * windowWidth + (12 / 375) * windowWidth; // -mt-[17vw] + mt-[12vw]
+      const tradingCardHeight = tradingCard1 + tradingCard2 + tradingCard3 + cardMargins;
+
+      fixedElementsHeight = priceBarHeight + priceBarMargins + tradingCardHeight;
+    } else {
+      // PC端计算
+      // 价格信息栏：h-16 + mt-3 + mb-3
+      const priceBarHeight = 64; // 16 * 4 = 64px
+      const priceBarMargins = 12 + 12; // 3 * 4 = 12px each
+
+      // 交易卡片：估算高度（h-auto的情况）
+      // 第一部分：约120px + 第二部分：48px + 第三部分：48px + 间距
+      const tradingCardHeight = 120 + 48 + 48 + 16 + 12; // 约244px
+
+      fixedElementsHeight = priceBarHeight + priceBarMargins + tradingCardHeight;
+    }
+
+    // 计算图表可用高度，确保最小高度
+    const chartHeight = Math.max(mainAreaHeight - fixedElementsHeight, isMobile ? 200 : 250);
+
+    return `${chartHeight}px`;
+  };
+
+  const dynamicChartHeight = calculateChartHeight();
 
   // 使用 ref 来跟踪前一个价格，避免循环依赖
   const previousPriceRef = useRef(67234.56);
@@ -324,7 +376,7 @@ const Trade = () => {
   }, []);
 
   return (
-    <div className="min-h-screen pb-[86vw] md:pb-20" style={{ backgroundColor: '#121212' }}>
+    <div className="h-full flex flex-col" style={{ backgroundColor: '#121212' }}>
       {/* 价格信息栏 */}
       <div
         className="w-full h-[64vw] md:h-16 px-[16vw] md:px-4 flex items-center justify-between border-t border-b mt-[10vw] md:mt-3"
@@ -371,7 +423,10 @@ const Trade = () => {
 
     
       {/* 价格图表 */}
-      <div className='w-full h-[346vw] md:h-80 mb-[10vw] md:mb-3'>
+      <div
+        className='w-full mb-[10vw] md:mb-3'
+        style={{ height: dynamicChartHeight }}
+      >
         <PriceChart
           userBets={userBets}
           onPriceUpdate={handlePriceUpdate}
@@ -379,7 +434,7 @@ const Trade = () => {
       </div>
 
       {/* 交易卡片 */}
-      <div className="w-[375vw] md:w-full h-[246vw] md:h-auto flex flex-col items-center justify-center px-[16vw] md:px-4">
+      <div className="w-[375vw] md:w-full flex-shrink-0 flex flex-col items-center justify-center px-[16vw] md:px-4">
         {/* 第一部分：Trade Amount */}
         <div
           className="w-[343vw] md:w-full h-[116vw] md:h-auto pt-[16vw] md:pt-4 pr-[16vw] md:pr-4 pb-[14vw] md:pb-4 pl-[16vw] md:pl-4 rounded-[12vw] md:rounded-lg"
