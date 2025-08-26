@@ -88,9 +88,17 @@ const Trade = () => {
     // 如果滑动条被禁用，不处理变化
     if (isSliderDisabled) return;
 
-    const value = parseFloat(e.target.value) || 0;
+    // 只允许输入整数，过滤掉小数点和非数字字符
+    let inputValue = e.target.value;
+
+    // 移除所有非数字字符（包括小数点）
+    inputValue = inputValue.replace(/[^\d]/g, '');
+
+    // 转换为整数，如果为空则为0
+    const value = inputValue === '' ? 0 : parseInt(inputValue, 10);
+
     // 确保输入值在有效范围内：不超过用户余额，且不超过1000
-    const clampedValue = Math.min(value, userBalance, 1000);
+    const clampedValue = Math.min(value, Math.floor(userBalance), 1000);
     setTradeAmount(clampedValue);
     setSliderValue(clampedValue);
   };
@@ -119,9 +127,9 @@ const Trade = () => {
       setSliderValue(1);
       setTradeAmount(1);
     } else {
-      // 余额在0-1之间时，设置为余额值
-      setSliderValue(newBalance);
-      setTradeAmount(newBalance);
+      // 余额在0-1之间时，设置为0（因为只能输入整数）
+      setSliderValue(0);
+      setTradeAmount(0);
     }
   };
 
@@ -393,7 +401,9 @@ const Trade = () => {
                 disabled={isSliderDisabled}
                 min="0"
                 max="1000"
-                step="0.01"
+                step="1"
+                pattern="[0-9]*"
+                inputMode="numeric"
                 className="w-full h-[40vw] md:h-10 bg-transparent border-none outline-none text-[#c5ff33] text-size-[34vw] md:text-2xl font-semibold"
                 style={{ appearance: 'none' }}
               />

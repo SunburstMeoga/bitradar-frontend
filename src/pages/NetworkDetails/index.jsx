@@ -51,9 +51,9 @@ const AnimatedAmount = ({ amount, fontSize = '14vw', mdFontSize = 'text-sm', cla
   const [integerPart, decimalPart] = currentValue.toFixed(2).split('.');
 
   return (
-    <span className={`${className} text-size-[${fontSize}] ${mdFontSize} font-medium`}>
+    <span className={`${className} text-size-[${fontSize}] md:${mdFontSize} font-medium`}>
       {integerPart}
-      <span className={`text-size-[${smallerFontSize}] text-xs align-baseline`}>
+      <span className={`text-size-[${smallerFontSize}] md:text-xs align-baseline`}>
         .{decimalPart}
       </span>
     </span>
@@ -126,9 +126,9 @@ const NetworkDetails = () => {
   };
 
   // 格式化数字显示，带跳动效果（整数）
-  const formatNumber = (number, fontSize = '16vw') => {
+  const formatNumber = (number, fontSize = '16vw', mdFontSize = 'text-lg') => {
     return (
-      <span className={`text-white text-size-[${fontSize}] font-medium`}>
+      <span className={`text-white text-size-[${fontSize}] md:${mdFontSize} font-medium`}>
         <CountUp
           start={0}
           end={number}
@@ -140,103 +140,101 @@ const NetworkDetails = () => {
   };
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#121212' }}>
-      <div className="px-[16vw] md:px-4 pt-[20vw] md:pt-5 pb-[20vw] md:pb-5">
-        {/* 推荐总览 */}
-        <div className="mb-[24vw] md:mb-6">
-          <h2 className="text-white text-size-[18vw] md:text-xl font-semibold mb-[16vw] md:mb-4" style={{ fontWeight: 600 }}>
-            {t('network_details.referral_overview')}
-          </h2>
+    <div className="px-[16vw] md:px-4 pt-[20vw] md:pt-5 pb-[20vw] md:pb-5">
+      {/* 推荐总览 */}
+      <div className="mb-[24vw] md:mb-6">
+        <h2 className="text-white text-size-[18vw] md:text-xl font-semibold mb-[16vw] md:mb-4" style={{ fontWeight: 600 }}>
+          {t('network_details.referral_overview')}
+        </h2>
 
-          {/* 团队总人数 */}
+        {/* 团队总人数 */}
+        <div
+          className="w-full h-[50vw] md:h-12 flex items-center px-[16vw] md:px-4 mb-[12vw] md:mb-3 rounded-[8vw] md:rounded-lg border border-gray-400"
+          style={{ backgroundColor: 'rgba(64, 64, 64, 0.3)' }}
+        >
+          <span className="text-white text-size-[16vw] md:text-lg">{t('network_details.team_members')}</span>
+          <div className="ml-auto">{formatNumber(overviewData.teamMembers, '16vw', 'text-lg')}</div>
+        </div>
+
+        {/* 总质押金额和总提现金额 */}
+        <div className="flex gap-[12vw] md:gap-3">
           <div
-            className="w-full h-[50vw] md:h-12 flex items-center px-[16vw] md:px-4 mb-[12vw] md:mb-3 rounded-[8vw] md:rounded-lg border border-gray-400"
-            style={{ backgroundColor: 'rgba(64, 64, 64, 0.3)' }}
+            className="flex-1 flex items-center px-[16vw] md:px-4 py-[16vw] md:py-4 rounded-[8vw] md:rounded-lg"
+            style={{ backgroundColor: 'rgb(41, 41, 41)' }}
           >
-            <span className="text-white text-size-[16vw] md:text-lg">{t('network_details.team_members')}</span>
-            <div className="ml-auto">{formatNumber(overviewData.teamMembers, '16vw')}</div>
-          </div>
-
-          {/* 总质押金额和总提现金额 */}
-          <div className="flex gap-[12vw] md:gap-3">
-            <div
-              className="flex-1 flex items-center px-[16vw] md:px-4 py-[16vw] md:py-4 rounded-[8vw] md:rounded-lg"
-              style={{ backgroundColor: 'rgb(41, 41, 41)' }}
-            >
-              <div className="flex flex-col">
-                <span className="text-white text-size-[16vw] md:text-lg">{t('network_details.total_deposit')}</span>
-                <div className="mt-[4vw] md:mt-1">{formatAmount(overviewData.totalDeposit, '14vw', 'text-white')}</div>
-              </div>
+            <div className="flex flex-col">
+              <span className="text-white text-size-[16vw] md:text-lg">{t('network_details.total_deposit')}</span>
+              <div className="mt-[4vw] md:mt-1">{formatAmount(overviewData.totalDeposit, '14vw', 'text-white')}</div>
             </div>
-            <div
-              className="flex-1 flex items-center px-[16vw] md:px-4 py-[16vw] md:py-4 rounded-[8vw] md:rounded-lg"
-              style={{ backgroundColor: 'rgb(41, 41, 41)' }}
-            >
-              <div className="flex flex-col">
-                <span className="text-white text-size-[16vw] md:text-lg">{t('network_details.total_withdrawal')}</span>
-                <div className="mt-[4vw] md:mt-1">{formatAmount(overviewData.totalWithdrawal, '14vw', 'text-white')}</div>
-              </div>
+          </div>
+          <div
+            className="flex-1 flex items-center px-[16vw] md:px-4 py-[16vw] md:py-4 rounded-[8vw] md:rounded-lg"
+            style={{ backgroundColor: 'rgb(41, 41, 41)' }}
+          >
+            <div className="flex flex-col">
+              <span className="text-white text-size-[16vw] md:text-lg">{t('network_details.total_withdrawal')}</span>
+              <div className="mt-[4vw] md:mt-1">{formatAmount(overviewData.totalWithdrawal, '14vw', 'text-white')}</div>
             </div>
           </div>
         </div>
+      </div>
 
-        {/* 推荐关系 */}
-        <div>
-          <h2 className="text-white text-size-[18vw] md:text-xl font-semibold mb-[16vw] md:mb-4" style={{ fontWeight: 600 }}>
-            {t('network_details.referral_system')}
-          </h2>
+      {/* 推荐关系 */}
+      <div>
+        <h2 className="text-white text-size-[18vw] md:text-xl font-semibold mb-[16vw] md:mb-4" style={{ fontWeight: 600 }}>
+          {t('network_details.referral_system')}
+        </h2>
 
-          <div className="space-y-[2vw] md:space-y-1">
-            {levelData.map((level) => (
-              <div key={level.level}>
-                {/* 层级标题 */}
-                <button
-                  onClick={() => handleLevelToggle(level.level)}
-                  className="w-full h-[50vw] md:h-12 flex items-center justify-between px-[16vw] md:px-4 rounded-[8vw] md:rounded-lg hover:opacity-80 transition-opacity"
-                  style={{ backgroundColor: 'rgb(41, 41, 41)' }}
-                >
-                  <span className="text-white text-size-[16vw] md:text-lg">
-                    {t(`network_details.level_${level.level}`)}
-                  </span>
-                  <ArrowDownIcon isExpanded={expandedLevel === level.level} />
-                </button>
+        <div className="space-y-[2vw] md:space-y-1">
+          {levelData.map((level) => (
+            <div key={level.level}>
+              {/* 层级标题 */}
+              <button
+                onClick={() => handleLevelToggle(level.level)}
+                className="w-full h-[50vw] md:h-12 flex items-center justify-between px-[16vw] md:px-4 rounded-[8vw] md:rounded-lg hover:opacity-80 transition-opacity"
+                style={{ backgroundColor: 'rgb(41, 41, 41)' }}
+              >
+                <span className="text-white text-size-[16vw] md:text-lg">
+                  {t(`network_details.level_${level.level}`)}
+                </span>
+                <ArrowDownIcon isExpanded={expandedLevel === level.level} />
+              </button>
 
-                {/* 展开的用户列表 */}
-                {expandedLevel === level.level && (
-                  <div className="mt-[2vw] md:mt-1 space-y-[1vw] md:space-y-1">
-                    {mockUsers.map((user, index) => (
-                      <div
-                        key={index}
-                        className="px-[16vw] md:px-4 py-[12vw] md:py-3 rounded-[8vw] md:rounded-lg"
-                        style={{ backgroundColor: 'rgb(31, 31, 31)' }}
-                      >
-                        {/* 用户地址 */}
-                        <div className="text-white text-size-[14vw] md:text-sm font-medium mb-[8vw] md:mb-2">
-                          {formatAddress(user.address)}
+              {/* 展开的用户列表 */}
+              {expandedLevel === level.level && (
+                <div className="mt-[2vw] md:mt-1 space-y-[1vw] md:space-y-1">
+                  {mockUsers.map((user, index) => (
+                    <div
+                      key={index}
+                      className="px-[16vw] md:px-4 py-[12vw] md:py-3 rounded-[8vw] md:rounded-lg"
+                      style={{ backgroundColor: 'rgb(31, 31, 31)' }}
+                    >
+                      {/* 用户地址 */}
+                      <div className="text-white text-size-[14vw] md:text-sm font-medium mb-[8vw] md:mb-2">
+                        {formatAddress(user.address)}
+                      </div>
+
+                      {/* 用户数据 */}
+                      <div className="flex justify-between text-size-[12vw] md:text-xs">
+                        <div className="flex flex-col items-center">
+                          <span className="text-[#8f8f8f] mb-[4vw] md:mb-1">{t('network_details.trading_amount')}</span>
+                          {formatAmount(user.tradingAmount, '12vw', 'text-white')}
                         </div>
-
-                        {/* 用户数据 */}
-                        <div className="flex justify-between text-size-[12vw] md:text-xs">
-                          <div className="flex flex-col items-center">
-                            <span className="text-[#8f8f8f] mb-[4vw] md:mb-1">{t('network_details.trading_amount')}</span>
-                            {formatAmount(user.tradingAmount, '12vw', 'text-white')}
-                          </div>
-                          <div className="flex flex-col items-center">
-                            <span className="text-[#8f8f8f] mb-[4vw] md:mb-1">{t('network_details.fee_amount')}</span>
-                            {formatAmount(user.feeAmount, '12vw', 'text-white')}
-                          </div>
-                          <div className="flex flex-col items-center">
-                            <span className="text-[#8f8f8f] mb-[4vw] md:mb-1">{t('network_details.withdrawal_amount')}</span>
-                            {formatAmount(user.withdrawalAmount, '12vw', 'text-white')}
-                          </div>
+                        <div className="flex flex-col items-center">
+                          <span className="text-[#8f8f8f] mb-[4vw] md:mb-1">{t('network_details.fee_amount')}</span>
+                          {formatAmount(user.feeAmount, '12vw', 'text-white')}
+                        </div>
+                        <div className="flex flex-col items-center">
+                          <span className="text-[#8f8f8f] mb-[4vw] md:mb-1">{t('network_details.withdrawal_amount')}</span>
+                          {formatAmount(user.withdrawalAmount, '12vw', 'text-white')}
                         </div>
                       </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
         </div>
       </div>
     </div>
