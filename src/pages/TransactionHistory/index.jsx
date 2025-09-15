@@ -8,7 +8,7 @@ const TransactionHistory = () => {
 
   // 设置页面标题
   usePageTitle('transaction_history');
-  const [activeTab, setActiveTab] = useState('USDR');
+  const [activeTab, setActiveTab] = useState('USDT');
   const [activeFilter, setActiveFilter] = useState('all');
   const [transactions, setTransactions] = useState([]);
   const [page, setPage] = useState(1);
@@ -18,7 +18,7 @@ const TransactionHistory = () => {
 
   // 模拟交易数据
   const mockTransactions = {
-    USDR: [
+    USDT: [
       {
         id: 1,
         type: 'Deposit',
@@ -120,6 +120,57 @@ const TransactionHistory = () => {
         timestamp: new Date(Date.now() - 25200000).toISOString(), // 7小时前
       },
     ],
+    USDR: [
+      {
+        id: 1,
+        type: 'Reward',
+        category: 'reward',
+        amount: '+200',
+        timestamp: new Date(Date.now() - 3600000).toISOString(), // 1小时前
+      },
+      {
+        id: 2,
+        type: 'Exchange',
+        category: 'trade',
+        amount: '-100',
+        timestamp: new Date(Date.now() - 7200000).toISOString(), // 2小时前
+      },
+      {
+        id: 3,
+        type: 'Withdraw',
+        category: 'withdraw',
+        amount: '-50',
+        timestamp: new Date(Date.now() - 10800000).toISOString(), // 3小时前
+      },
+      {
+        id: 4,
+        type: 'Reward',
+        category: 'reward',
+        amount: '+150',
+        timestamp: new Date(Date.now() - 14400000).toISOString(), // 4小时前
+      },
+      {
+        id: 5,
+        type: 'Trade',
+        category: 'trade',
+        amount: '-80',
+        timestamp: new Date(Date.now() - 18000000).toISOString(), // 5小时前
+      },
+      {
+        id: 6,
+        type: 'Withdraw',
+        category: 'withdraw',
+        amount: '-120',
+        timestamp: new Date(Date.now() - 21600000).toISOString(), // 6小时前
+      },
+      {
+        id: 7,
+        type: 'Reward',
+        category: 'reward',
+        amount: '+300',
+        timestamp: new Date(Date.now() - 25200000).toISOString(), // 7小时前
+      },
+    ],
     Rocket: [
       {
         id: 1,
@@ -175,7 +226,8 @@ const TransactionHistory = () => {
 
   // 筛选选项配置
   const filterOptions = {
-    USDR: ['all', 'deposit', 'withdraw', 'trade'],
+    USDT: ['all', 'deposit', 'withdraw', 'trade'],
+    USDR: ['all', 'reward', 'trade', 'withdraw'],
     LuckyUSD: ['all', 'reward', 'trade'],
     Rocket: ['all', 'reward', 'withdraw']
   };
@@ -294,12 +346,12 @@ const TransactionHistory = () => {
     <div className="px-[16vw] md:px-4 pt-[20vw] md:pt-5 pb-[24vw] md:pb-6">
       {/* Tab选择器 */}
       <div className="pb-[16vw] md:pb-4">
-        <div className="flex gap-[12vw] md:gap-3">
-          {['USDR', 'LuckyUSD', 'Rocket'].map((tab) => (
+        <div className="flex gap-[8vw] md:gap-2">
+          {['USDT', 'USDR', 'LuckyUSD', 'Rocket'].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`px-[20vw] md:px-5 py-[12vw] md:py-3 rounded-[34vw] md:rounded-full text-size-[16vw] md:text-base font-medium transition-all ${
+              className={`px-[14vw] md:px-3.5 py-[12vw] md:py-3 rounded-[34vw] md:rounded-full text-size-[14vw] md:text-sm font-medium transition-all flex-1 text-center ${
                 activeTab === tab
                   ? 'text-black'
                   : 'text-white'

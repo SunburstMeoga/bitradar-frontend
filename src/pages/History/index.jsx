@@ -55,6 +55,7 @@ const TradingAssetSelector = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const assets = [
+    { value: 'USDT', label: t('history.real'), displayName: 'USDT' },
     { value: 'USDR', label: t('history.real'), displayName: 'USDR' },
     { value: 'LuckyUSD', label: t('history.demo'), displayName: 'LuckyUSD' }
   ];

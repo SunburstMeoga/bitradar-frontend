@@ -204,7 +204,8 @@
       "withdraw": "Withdraw",
       "rocket_reward": "Rocket Reward",
       "rocket_withdraw": "Rocket Withdraw",
-      "rocket_bonus": "Rocket Bonus"
+      "rocket_bonus": "Rocket Bonus",
+      "trade": "Trade"
     }
   }
 }

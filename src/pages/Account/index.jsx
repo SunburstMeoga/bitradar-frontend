@@ -18,7 +18,7 @@ const Account = () => {
 
   // 设置页面标题
   usePageTitle('account');
-  const [activeTab, setActiveTab] = useState('USDR');
+  const [activeTab, setActiveTab] = useState('USDT');
   const [countdown, setCountdown] = useState(86400); // 24小时倒计时（秒）
   const balanceFetchedRef = useRef(false);
 
@@ -40,6 +40,7 @@ const Account = () => {
   // 余额数据（优先使用API数据，否则使用默认值）
   const balances = {
     USDT: safeParseFloat(balance?.usdtBalance, 0),
+    USDR: safeParseFloat(balance?.usdtBalance, 0), // 暂时使用同一个余额
     LuckyUSD: safeParseFloat(balance?.usdtBalance, 0), // 暂时使用同一个余额
     Rocket: 1500.00 // Rocket币模拟余额
   };
@@ -108,12 +109,12 @@ const Account = () => {
 
       {/* 第二部分：Tabs */}
       <div className="px-[16vw] md:px-4 pb-[24vw] md:pb-6">
-        <div className="flex gap-[12vw] md:gap-3">
-          {['USDR', 'LuckyUSD', 'Rocket'].map((tab) => (
+        <div className="flex gap-[8vw] md:gap-2">
+          {['USDT', 'USDR', 'LuckyUSD', 'Rocket'].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`flex items-center gap-[8vw] md:gap-2 px-[10vw] md:px-3 py-[8vw] md:py-3 rounded-[34vw] md:rounded-full text-size-[16vw] md:text-lg transition-all ${
+              className={`flex items-center gap-[6vw] md:gap-1.5 px-[8vw] md:px-2.5 py-[8vw] md:py-3 rounded-[34vw] md:rounded-full text-size-[14vw] md:text-base transition-all flex-1 justify-center ${
                 activeTab === tab
                   ? 'text-black'
                   : 'text-white'
@@ -123,8 +124,8 @@ const Account = () => {
                 backgroundImage: activeTab === tab ? 'linear-gradient(rgb(143, 143, 143), rgb(217, 217, 217))' : 'none',
               }}
             >
-              <img src={btcIcon} alt={tab} className="w-[14vw] md:w-5 h-[14vw] md:h-5" />
-              <span>{tab}</span>
+              <img src={btcIcon} alt={tab} className="w-[12vw] md:w-4 h-[12vw] md:h-4" />
+              <span className="text-size-[14vw] md:text-sm">{tab}</span>
             </button>
           ))}
         </div>
@@ -152,8 +153,9 @@ const Account = () => {
               </>
             )}
           </div>
-          {/* 只在选中USDR时显示兑换按钮 */}
-          {activeTab === 'USDR' && (
+
+          {/* 在选中USDT时显示兑换按钮 */}
+          {activeTab === 'USDT' && (
             <div
               onClick={handleExchangeClick}
               className="px-[24vw] md:px-6 py-[12vw] md:py-3 rounded-[34vw] md:rounded-full cursor-pointer hover:opacity-80 transition-opacity border border-white"
@@ -164,8 +166,9 @@ const Account = () => {
               </span>
             </div>
           )}
-          {/* 在选中Rocket时显示提现按钮 */}
-          {activeTab === 'Rocket' && (
+
+          {/* 在选中Rocket或USDR时显示提现按钮 */}
+          {(activeTab === 'Rocket' || activeTab === 'USDR') && (
             <div
               onClick={handleWithdrawClick}
               className="px-[24vw] md:px-6 py-[12vw] md:py-3 rounded-[34vw] md:rounded-full cursor-pointer hover:opacity-80 transition-opacity border border-white"

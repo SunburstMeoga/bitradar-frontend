@@ -204,7 +204,8 @@
       "withdraw": "출금",
       "rocket_reward": "Rocket 보상",
       "rocket_withdraw": "Rocket 출금",
-      "rocket_bonus": "Rocket 보너스"
+      "rocket_bonus": "Rocket 보너스",
+      "trade": "거래"
     }
   }
 }
