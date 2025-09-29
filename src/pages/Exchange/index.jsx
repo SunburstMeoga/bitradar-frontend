@@ -119,7 +119,7 @@ const ExchangeCard = ({
             value={fromAmount}
             onChange={(e) => onFromAmountChange(e.target.value)}
             placeholder="0.00"
-            className="bg-transparent text-white text-size-[16vw] md:text-base lg:text-lg text-right outline-none w-[120vw] md:w-32 lg:w-40"
+            className="bg-transparent text-white text-size-[16vw] md:text-base lg:text-lg text-right outline-none w-[80vw] md:w-32 lg:w-40"
           />
         </div>
 
@@ -155,7 +155,7 @@ const ExchangeCard = ({
             value={toAmount}
             onChange={(e) => onToAmountChange(e.target.value)}
             placeholder="0.00"
-            className="bg-transparent text-white text-size-[16vw] md:text-base lg:text-lg text-right outline-none w-[120vw] md:w-32 lg:w-40"
+            className="bg-transparent text-white text-size-[16vw] md:text-base lg:text-lg text-right outline-none w-[80vw] md:w-32 lg:w-40"
           />
         </div>
       </div>

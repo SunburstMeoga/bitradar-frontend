@@ -108,7 +108,7 @@ const WithdrawCard = ({
             onChange={(e) => onWithdrawAmountChange(e.target.value)}
             placeholder="0.00"
             min={minAmount}
-            className="bg-transparent text-white text-size-[16vw] md:text-base lg:text-lg text-right outline-none w-[120vw] md:w-32 lg:w-40"
+            className="bg-transparent text-white text-size-[16vw] md:text-base lg:text-lg text-right outline-none w-[80vw] md:w-32 lg:w-40"
           />
         </div>
       </div>

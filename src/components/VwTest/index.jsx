@@ -39,11 +39,11 @@ const VwTest = () => {
               <div className="w-[100vw] h-[100vw] bg-blue-500 text-white flex items-center justify-center text-[12vw]">
                 100×100
               </div>
-              <div className="w-[150vw] h-[80vw] bg-green-500 text-white flex items-center justify-center text-[12vw]">
-                150×80
+              <div className="w-[100vw] h-[80vw] bg-green-500 text-white flex items-center justify-center text-[12vw]">
+                100×80
               </div>
-              <div className="w-[120vw] h-[120vw] bg-red-500 text-white flex items-center justify-center text-[12vw]">
-                120×120
+              <div className="w-[100vw] h-[100vw] bg-red-500 text-white flex items-center justify-center text-[12vw]">
+                100×100
               </div>
             </div>
           </section>

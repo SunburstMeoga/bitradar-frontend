@@ -137,7 +137,7 @@ const Account = () => {
           <div className="flex items-baseline">
             {isLoading ? (
               <div className="flex items-center">
-                <div className="animate-pulse bg-gray-600 h-[44vw] md:h-10 w-[120vw] md:w-32 rounded"></div>
+                <div className="animate-pulse bg-gray-600 h-[44vw] md:h-10 w-[80vw] md:w-32 rounded"></div>
                 <span className="text-[rgb(87,87,87)] text-size-[28vw] md:text-2xl font-semibold ml-2" style={{ fontWeight: 600 }}>
                   {activeTab}
                 </span>

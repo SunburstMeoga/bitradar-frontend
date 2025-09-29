@@ -533,10 +533,10 @@ const Trade = () => {
         </div>
 
         {/* 第三部分：按钮和时间 */}
-        <div className="w-[343vw] md:w-full flex items-center justify-between mt-[12vw] md:mt-3">
+        <div className="w-full md:w-full flex items-center justify-between mt-[12vw] md:mt-3">
           {/* Up按钮 */}
           <div
-            className={`w-[127vw] md:w-32 h-[50vw] md:h-12 rounded-[12vw] md:rounded-lg flex items-center justify-center gap-[8vw] md:gap-2 ${isButtonsDisabled ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+            className={`w-[100vw] md:w-32 h-[50vw] md:h-12 rounded-[12vw] md:rounded-lg flex items-center justify-center gap-[8vw] md:gap-2 ${isButtonsDisabled ? 'cursor-not-allowed' : 'cursor-pointer'}`}
             style={{
               backgroundColor: '#00bc4b',
               filter: isButtonsDisabled ? 'brightness(0.3)' : 'brightness(1)'
@@ -561,7 +561,7 @@ const Trade = () => {
 
           {/* Down按钮 */}
           <div
-            className={`w-[127vw] md:w-32 h-[50vw] md:h-12 rounded-[12vw] md:rounded-lg flex items-center justify-center gap-[8vw] md:gap-2 ${isButtonsDisabled ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+            className={`w-[100vw] md:w-32 h-[50vw] md:h-12 rounded-[12vw] md:rounded-lg flex items-center justify-center gap-[8vw] md:gap-2 ${isButtonsDisabled ? 'cursor-not-allowed' : 'cursor-pointer'}`}
             style={{
               backgroundColor: '#f5384e',
               filter: isButtonsDisabled ? 'brightness(0.3)' : 'brightness(1)'

@@ -61,6 +61,8 @@ body {
   html {
     // 防止根字体大小被 postcss-px-to-viewport 转换
     font-size: 16px !important;
+    // 防止横向滚动
+    overflow-x: hidden;
   }
 
   body {
@@ -72,6 +74,8 @@ body {
       "Helvetica Neue", sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    // 防止横向滚动
+    overflow-x: hidden;
   }
 
   * {

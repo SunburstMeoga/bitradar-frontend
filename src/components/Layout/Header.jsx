@@ -132,7 +132,7 @@ const Header = () => {
           {isConnected ? (
             <button
               onClick={handleWalletClick}
-              className="w-[112vw] h-[36vw] flex items-center gap-[4vw] bg-transparent border border-[#3D3D3D] rounded-[34vw] p-[9vw] hover:border-[#3D3D3D] transition-all"
+              className="w-[90vw] h-[36vw] flex items-center gap-[4vw] bg-transparent border border-[#3D3D3D] rounded-[34vw] p-[9vw] hover:border-[#3D3D3D] transition-all"
             >
               <img src={binanceIcon} alt="BSC" className="w-[16vw] h-[16vw] object-contain" />
               <span className="text-white text-size-[13vw] font-medium">{formatAddress(account, 3, 3)}</span>
@@ -142,7 +142,7 @@ const Header = () => {
             <button
               onClick={handleWalletClick}
               disabled={isConnecting || authLoading}
-              className="w-[130vw] h-[34vw] bg-white text-black text-size-[15vw] font-semibold rounded-[34vw] flex items-center justify-center hover:bg-gray-100 disabled:opacity-60 disabled:cursor-not-allowed transition-all"
+              className="w-[100vw] h-[34vw] bg-white text-black text-size-[15vw] font-semibold rounded-[34vw] flex items-center justify-center hover:bg-gray-100 disabled:opacity-60 disabled:cursor-not-allowed transition-all"
             >
               {(isConnecting || authLoading) ? t('wallet.connecting') : t('common.connect_wallet')}
             </button>

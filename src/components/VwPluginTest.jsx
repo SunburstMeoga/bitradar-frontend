@@ -42,8 +42,8 @@ const VwPluginTest = () => {
           <div className="w-[104vw] h-[24vw] bg-purple-500 text-white flex items-center justify-center text-size-[12vw]">
             104×24 (Logo尺寸)
           </div>
-          <div className="w-[130vw] h-[34vw] bg-blue-500 text-white flex items-center justify-center text-size-[12vw] mt-[8vw]">
-            130×34 (按钮尺寸)
+          <div className="w-[100vw] h-[34vw] bg-blue-500 text-white flex items-center justify-center text-size-[12vw] mt-[8vw]">
+            100×34 (按钮尺寸)
           </div>
         </div>
         
