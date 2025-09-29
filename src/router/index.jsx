@@ -136,7 +136,6 @@ export const router = createBrowserRouter([
     path: '/test-active-orders',
     element: <TestActiveOrders />,
   },
-
   {
     path: '*',
     element: <NotFound />,
