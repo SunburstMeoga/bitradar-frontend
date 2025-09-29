@@ -18,6 +18,8 @@
     "network_details": "네트워크 세부정보",
     "exchange": "교환",
     "transaction_history": "거래 내역",
+    "active_orders": "활성 주문",
+    "order_detail": "주문 상세",
     "not_found": "페이지를 찾을 수 없음"
   },
   "home": {
@@ -221,5 +223,31 @@
       "rocket_bonus": "Rocket 보너스",
       "trade": "거래"
     }
+  },
+  "active_orders": {
+    "title": "활성 주문",
+    "pending": "진행 중",
+    "loading": "로딩 중...",
+    "no_more_data": "더 이상 데이터가 없습니다",
+    "no_data": "활성 주문 없음",
+    "no_data_description": "현재 진행 중인 주문이 없습니다",
+    "created_at": "생성 시간",
+    "expires_at": "만료 시간"
+  },
+  "order_detail": {
+    "title": "주문 상세",
+    "order_id": "주문 번호",
+    "bet_amount": "베팅 금액",
+    "direction": "예측 방향",
+    "up": "상승",
+    "down": "하락",
+    "entry_price": "진입 가격",
+    "close_price": "종료 가격",
+    "profit": "손익",
+    "pending": "대기 중",
+    "win": "승리",
+    "lose": "패배",
+    "created_at": "생성 시간",
+    "expires_at": "만료 시간"
   }
 }

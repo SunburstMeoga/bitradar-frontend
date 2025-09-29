@@ -3,14 +3,14 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import usePageTitle from '../../hooks/usePageTitle';
 
-import { useAuthStore, useUserStore } from '../../store';
+import { useAuthStore } from '../../store';
+import orderService from '../../services/orderService';
 import { ErrorDisplay, LoadingSpinner } from '../../components/ErrorBoundary';
 import historyUpIcon from '../../assets/icons/history-up.png';
 import historyDownIcon from '../../assets/icons/history-down.png';
 import toast from 'react-hot-toast';
-import Modal from '../../components/Modal';
 
-// 右上45度箭头SVG组件（表示涨）- 加大尺寸
+// 右上45度箭头SVG组件（表示涨）
 const UpArrowIcon = ({ color = '#00bc4b' }) => (
   <svg width="24" height="24" viewBox="0 0 16 16" fill="none">
     <path
@@ -23,7 +23,7 @@ const UpArrowIcon = ({ color = '#00bc4b' }) => (
   </svg>
 );
 
-// 右下135度箭头SVG组件（表示跌）- 加大尺寸
+// 右下135度箭头SVG组件（表示跌）
 const DownArrowIcon = ({ color = '#f5384e' }) => (
   <svg width="24" height="24" viewBox="0 0 16 16" fill="none">
     <path
@@ -36,117 +36,20 @@ const DownArrowIcon = ({ color = '#f5384e' }) => (
   </svg>
 );
 
-// 下拉箭头SVG组件
-const DropdownArrowIcon = ({ color = '#fff' }) => (
-  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-    <path
-      d="M4 6L8 10L12 6"
-      stroke={color}
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </svg>
-);
-
-// 状态选择组件
-const StatusSelector = ({ selectedStatus, onStatusChange }) => {
-  const { t } = useTranslation();
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
-  const statusOptions = [
-    { value: 'all', label: t('history.all_status'), displayName: t('history.all') },
-    { value: 'pending', label: t('history.pending_status'), displayName: t('history.pending') },
-    { value: 'win', label: t('history.win_status'), displayName: t('history.win') },
-    { value: 'lose', label: t('history.lose_status'), displayName: t('history.lose') }
-  ];
-
-  const handleStatusSelect = (status) => {
-    onStatusChange(status.value);
-    setIsModalOpen(false);
-  };
-
-  const getDisplayText = () => {
-    const selected = statusOptions.find(option => option.value === selectedStatus);
-    return selected ? selected.displayName : t('history.all');
-  };
-
-  const getButtonStyle = () => {
-    return {
-      backgroundColor: selectedStatus === 'all' ? '#292929' : '#fff',
-      color: selectedStatus === 'all' ? '#fff' : '#292929'
-    };
-  };
-
-  return (
-    <>
-      {/* 选择按钮 */}
-      <div
-        onClick={() => setIsModalOpen(true)}
-        className="h-[34px] rounded-full flex items-center cursor-pointer gap-[8px] inline-flex"
-        style={{
-          ...getButtonStyle(),
-          padding: '0 12px 0 16px',
-          fontSize: '15px',
-          fontWeight: 600,
-          minWidth: 'fit-content',
-          whiteSpace: 'nowrap',
-          width: 'auto'
-        }}
-      >
-        <span>{getDisplayText()}</span>
-        <DropdownArrowIcon color={selectedStatus === 'all' ? '#fff' : '#292929'} />
-      </div>
-
-      {/* 选择弹窗 */}
-      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
-        <div className="p-[20px]">
-          <h3 className="text-white text-[18px] font-semibold mb-[20px]">
-            {t('history.select_status')}
-          </h3>
-          <div className="space-y-[12px]">
-            {statusOptions.map((option) => (
-              <div
-                key={option.value}
-                onClick={() => handleStatusSelect(option)}
-                className="w-full h-[44px] rounded-[8px] flex items-center justify-center cursor-pointer transition-colors"
-                style={{
-                  backgroundColor: selectedStatus === option.value ? '#fff' : '#292929',
-                  color: selectedStatus === option.value ? '#292929' : '#fff',
-                  fontSize: '15px',
-                  fontWeight: 600
-                }}
-              >
-                {option.displayName}
-              </div>
-            ))}
-          </div>
-        </div>
-      </Modal>
-    </>
-  );
-};
-
-
-
-const History = () => {
+const ActiveOrders = () => {
   const { t, i18n } = useTranslation();
   const { isAuthenticated, token } = useAuthStore();
-  const { fetchOrders } = useUserStore();
   const navigate = useNavigate();
 
   // 设置页面标题
-  usePageTitle('history');
-  const [historyData, setHistoryData] = useState([]);
+  usePageTitle('active_orders');
+  const [activeOrders, setActiveOrders] = useState([]);
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState(1);
   const [error, setError] = useState(null);
   const [pagination, setPagination] = useState(null);
-  const [status, setStatus] = useState('all');
   const initialLoadRef = useRef(false);
-
-  // 直接使用fetchOrders，不需要防重复调用包装
 
   // 格式化时间
   const formatTime = (isoString) => {
@@ -176,6 +79,14 @@ const History = () => {
     return parseFloat(amount).toFixed(2);
   };
 
+  // 格式化剩余时间
+  const formatRemainingTime = (remainingTime) => {
+    if (!remainingTime || remainingTime <= 0) return '00:00';
+    const minutes = Math.floor(remainingTime / 60);
+    const seconds = remainingTime % 60;
+    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+  };
+
   // 加载数据
   const loadData = useCallback(async (pageNum = 1, isRefresh = false) => {
     if (loading) return;
@@ -184,16 +95,15 @@ const History = () => {
     setError(null);
 
     try {
-      // 使用真实API
-      const result = await fetchOrders(pageNum, 20, status, false);
+      const result = await orderService.getActiveOrders(pageNum, 20);
 
-      console.log('📋 loadData收到结果:', result);
+      console.log('📋 loadData收到活跃订单结果:', result);
 
       if (result && result.success) {
         const newData = result.data || [];
         const paginationData = result.pagination;
 
-        console.log('📋 处理数据:', {
+        console.log('📋 处理活跃订单数据:', {
           newDataLength: newData.length,
           paginationData,
           isRefresh
@@ -209,13 +119,13 @@ const History = () => {
           setHasMore(false);
         }
 
-        // 更新历史数据
+        // 更新活跃订单数据
         if (isRefresh) {
-          setHistoryData(newData);
+          setActiveOrders(newData);
           setPage(1);
           setHasMore(true);
         } else {
-          setHistoryData(prev => {
+          setActiveOrders(prev => {
             const prevArray = Array.isArray(prev) ? prev : [];
             const existingIds = new Set(prevArray.map(item => item.id));
             const filteredNewData = newData.filter(item => !existingIds.has(item.id));
@@ -224,22 +134,22 @@ const History = () => {
         }
       } else {
         console.error('❌ API调用结果无效:', result);
-        throw new Error(result?.message || '获取订单历史失败');
+        throw new Error(result?.message || '获取活跃订单失败');
       }
     } catch (err) {
-      console.error('Error loading data:', err);
+      console.error('Error loading active orders:', err);
       setError(err);
-      toast.error('加载数据失败');
+      toast.error('加载活跃订单失败');
     } finally {
       setLoading(false);
     }
-  }, [loading, status, fetchOrders]);
+  }, [loading]);
 
   // 初始加载
   useEffect(() => {
     if (!initialLoadRef.current) {
       initialLoadRef.current = true;
-      console.log('📋 History页面初始化:', {
+      console.log('📋 ActiveOrders页面初始化:', {
         isAuthenticated,
         hasToken: !!token,
         tokenPreview: token ? `${token.substring(0, 20)}...` : null
@@ -247,15 +157,6 @@ const History = () => {
       loadData(1, true);
     }
   }, []);
-
-  // 状态变化时重新加载数据
-  useEffect(() => {
-    if (initialLoadRef.current) {
-      setPage(1);
-      setHasMore(true);
-      loadData(1, true);
-    }
-  }, [status]);
 
   // 触底加载更多
   const handleScroll = useCallback(() => {
@@ -277,44 +178,49 @@ const History = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [handleScroll]);
 
+  // 点击订单项跳转到详情页
+  const handleOrderClick = (orderId) => {
+    navigate(`/order/${orderId}`);
+  };
+
   return (
     <div className="min-h-screen pb-[86vw] md:pb-20" style={{ backgroundColor: 'rgb(18,18,18)' }}>
       {/* 标题 */}
       <div className="px-[16vw] md:px-4 pt-[20vw] md:pt-5 pb-[16vw] md:pb-4">
         <div className="flex justify-between items-center mb-[12vw] md:mb-3">
           <h1 className="text-white font-size-[28vw] md:text-2xl font-semibold" style={{ fontWeight: 600 }}>
-            {t('history.title')}
+            {t('active_orders.title')}
           </h1>
           <button
-            onClick={() => navigate('/active-orders')}
-            className="h-[34px] px-[16px] rounded-full bg-[#fff] text-[#292929] font-semibold text-[15px] hover:bg-[#f0f0f0] transition-colors"
+            onClick={() => navigate('/history')}
+            className="h-[34px] px-[16px] rounded-full bg-[#292929] text-[#fff] font-semibold text-[15px] hover:bg-[#3d3d3d] transition-colors"
           >
-            {t('active_orders.title')}
+            {t('history.title')}
           </button>
         </div>
-        <StatusSelector selectedStatus={status} onStatusChange={setStatus} />
       </div>
 
-      {/* 历史记录列表 */}
+      {/* 活跃订单列表 */}
       <div className="px-[16vw] md:px-4">
         {/* 错误状态 */}
-        {error && !loading && historyData.length === 0 && (
+        {error && !loading && activeOrders.length === 0 && (
           <ErrorDisplay
             error={error}
             onRetry={() => loadData(1, true)}
-            message="加载交易历史失败"
+            message="加载活跃订单失败"
           />
         )}
 
         {/* 初始加载状态 */}
-        {loading && historyData.length === 0 && (
-          <LoadingSpinner message="加载交易历史中..." />
+        {loading && activeOrders.length === 0 && (
+          <LoadingSpinner message="加载活跃订单中..." />
         )}
 
-        {Array.isArray(historyData) && historyData.map((item) => (
+        {Array.isArray(activeOrders) && activeOrders.map((item) => (
           <div
             key={item.id}
-            className="w-[342vw] md:w-full h-[150vw] md:h-auto mb-[12vw] md:mb-3 rounded-[12vw] md:rounded-lg p-[16vw] md:p-4"
+            onClick={() => handleOrderClick(item.id)}
+            className="w-[342vw] md:w-full h-[150vw] md:h-auto mb-[12vw] md:mb-3 rounded-[12vw] md:rounded-lg p-[16vw] md:p-4 cursor-pointer hover:bg-[#252525] transition-colors"
             style={{
               backgroundColor: '#1f1f1f'
             }}
@@ -340,7 +246,7 @@ const History = () => {
                   alt={item.direction === 'up' ? 'Up' : 'Down'}
                   className="w-[24vw] md:w-6 h-[24vw] md:h-6 object-contain -ml-[8vw] md:-ml-2"
                 />
-                {/* 交易对和时间文案 */}
+                {/* 交易对和状态文案 */}
                 <div className="ml-[8vw] md:ml-2 flex items-center gap-[8vw] md:gap-2">
                   {/* 交易对文案 */}
                   <span className="text-white font-size-[13vw] md:text-sm font-semibold" style={{ fontWeight: 600 }}>
@@ -349,60 +255,36 @@ const History = () => {
 
                   {/* 状态文案 */}
                   <span className="text-[rgb(143,143,143)] font-size-[13vw] md:text-sm" style={{ fontWeight: 400 }}>
-                    · {item.status === 'pending' ? t('history.pending') : (item.status === 'win' ? t('history.win') : t('history.lose'))}
+                    · {t('active_orders.pending')}
                   </span>
                 </div>
               </div>
 
-              {/* 右侧箭头 */}
-              <div>
-                {item.status === 'win' ? (
-                  <UpArrowIcon color="#00bc4b" />
-                ) : item.status === 'lose' ? (
-                  <DownArrowIcon color="#f5384e" />
-                ) : (
-                  <div className="w-[24px] h-[24px] rounded-full bg-gray-500 flex items-center justify-center">
-                    <span className="text-white text-xs">?</span>
-                  </div>
-                )}
+              {/* 右侧剩余时间 */}
+              <div className="text-[#f5384e] font-size-[13vw] md:text-sm font-semibold">
+                {formatRemainingTime(item.remaining_time)}
               </div>
             </div>
 
             {/* 下半部分 - 三行数据 */}
             <div className="mt-[12vw] md:mt-3 space-y-[3vw] md:space-y-1">
-              {/* 第一行：投注金额和盈亏 */}
+              {/* 第一行：投注金额和入场价格 */}
               <div className="flex justify-between items-center">
                 <span className="text-white font-size-[16vw] md:text-lg font-semibold" style={{ fontWeight: 600 }}>
                   {formatAmount(item.bet_amount)} {item.token || 'USDT'}
                 </span>
-                <span
-                  className="font-size-[16vw] md:text-lg font-semibold"
-                  style={{
-                    fontWeight: 600,
-                    color: parseFloat(item.profit || 0) > 0 ? 'rgb(197, 255, 51)' : '#f5384e'
-                  }}
-                >
-                  {parseFloat(item.profit || 0) > 0 ? '+' : ''}{formatAmount(item.profit)} {item.token || 'USDT'}
+                <span className="text-white font-size-[16vw] md:text-lg font-semibold" style={{ fontWeight: 600 }}>
+                  {formatPrice(item.entry_price)}
                 </span>
               </div>
 
-              {/* 第二行：开盘价和收盘价 */}
+              {/* 第二行：创建时间和到期时间 */}
               <div className="flex justify-between items-center">
                 <span className="text-[#8f8f8f] font-size-[13vw] md:text-sm">
-                  {t('history.entry_price')}: {formatPrice(item.entry_price)}
+                  {t('active_orders.created_at')}: {formatTime(item.created_at)}
                 </span>
                 <span className="text-[#8f8f8f] font-size-[13vw] md:text-sm">
-                  {t('history.close_price')}: {formatPrice(item.close_price)}
-                </span>
-              </div>
-
-              {/* 第三行：开盘时间和封盘时间 */}
-              <div className="flex justify-between items-center">
-                <span className="text-[#8f8f8f] font-size-[13vw] md:text-sm">
-                  {t('history.created_at')}: {formatTime(item.created_at)}
-                </span>
-                <span className="text-[#8f8f8f] font-size-[13vw] md:text-sm">
-                  {item.settled_at ? `${t('history.settled_at')}: ${formatTime(item.settled_at)}` : t('history.pending')}
+                  {t('active_orders.expires_at')}: {formatTime(item.expires_at)}
                 </span>
               </div>
             </div>
@@ -412,19 +294,19 @@ const History = () => {
         {/* 加载状态 */}
         {loading && (
           <div className="text-center py-[20vw] md:py-5">
-            <span className="text-[#8f8f8f] font-size-[14vw] md:text-sm">{t('history.loading')}</span>
+            <span className="text-[#8f8f8f] font-size-[14vw] md:text-sm">{t('active_orders.loading')}</span>
           </div>
         )}
 
         {/* 没有更多数据 */}
-        {!hasMore && historyData.length > 0 && (
+        {!hasMore && activeOrders.length > 0 && (
           <div className="text-center py-[20vw] md:py-5">
-            <span className="text-[#8f8f8f] font-size-[14vw] md:text-sm">{t('history.no_more_data')}</span>
+            <span className="text-[#8f8f8f] font-size-[14vw] md:text-sm">{t('active_orders.no_more_data')}</span>
           </div>
         )}
 
         {/* 空状态 */}
-        {!loading && !error && historyData.length === 0 && (
+        {!loading && !error && activeOrders.length === 0 && (
           <div className="text-center py-[60vw] md:py-16">
             <div className="flex flex-col items-center gap-[16vw] md:gap-4">
               {/* 空状态图标 */}
@@ -443,13 +325,10 @@ const History = () => {
               {/* 空状态文字 */}
               <div className="flex flex-col items-center gap-[8vw] md:gap-2">
                 <span className="text-white font-size-[18vw] md:text-xl font-semibold">
-                  {t('history.no_data')}
+                  {t('active_orders.no_data')}
                 </span>
                 <span className="text-[#8f8f8f] font-size-[14vw] md:text-sm text-center max-w-[280vw] md:max-w-80">
-                  {status === 'all'
-                    ? t('history.no_data_description')
-                    : t('history.no_data_filtered_description', { status: t(`history.${status}`) })
-                  }
+                  {t('active_orders.no_data_description')}
                 </span>
               </div>
             </div>
@@ -460,4 +339,4 @@ const History = () => {
   );
 };
 
-export default History;
+export default ActiveOrders;

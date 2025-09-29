@@ -10,6 +10,9 @@ import NetworkDetails from '../pages/NetworkDetails';
 import Exchange from '../pages/Exchange';
 import Withdraw from '../pages/Withdraw';
 import TransactionHistory from '../pages/TransactionHistory';
+import ActiveOrders from '../pages/ActiveOrders';
+import OrderDetail from '../pages/OrderDetail';
+import TestActiveOrders from '../pages/TestActiveOrders';
 import TestLayout from '../pages/TestLayout';
 import NotFound from '../pages/NotFound';
 import PageTitleTest from '../components/PageTitleTest';
@@ -50,6 +53,26 @@ const TransactionHistoryWrapper = () => {
   return (
     <SecondaryLayout title={t('transaction_history.title')}>
       <TransactionHistory />
+    </SecondaryLayout>
+  );
+};
+
+// 活跃订单页面包装组件
+const ActiveOrdersWrapper = () => {
+  const { t } = useTranslation();
+  return (
+    <SecondaryLayout title={t('active_orders.title')}>
+      <ActiveOrders />
+    </SecondaryLayout>
+  );
+};
+
+// 订单详情页面包装组件
+const OrderDetailWrapper = () => {
+  const { t } = useTranslation();
+  return (
+    <SecondaryLayout title={t('order_detail.title')}>
+      <OrderDetail />
     </SecondaryLayout>
   );
 };
@@ -98,8 +121,20 @@ export const router = createBrowserRouter([
     element: <TransactionHistoryWrapper />,
   },
   {
+    path: '/active-orders',
+    element: <ActiveOrdersWrapper />,
+  },
+  {
+    path: '/order/:id',
+    element: <OrderDetailWrapper />,
+  },
+  {
     path: '/test-page-titles',
     element: <PageTitleTest />,
+  },
+  {
+    path: '/test-active-orders',
+    element: <TestActiveOrders />,
   },
 
   {

@@ -118,7 +118,7 @@ class OrderService extends ApiService {
       }
 
       const response = await this.get(url);
-      
+
       if (response.success && response.data) {
         return {
           success: true,
@@ -134,6 +134,66 @@ class OrderService extends ApiService {
       throw new Error(response.message || '获取订单列表失败');
     } catch (error) {
       console.error('获取订单列表失败:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * 获取用户当前活跃的订单列表
+   * @param {number} page - 页码，默认1
+   * @param {number} limit - 每页数量，默认20
+   * @returns {Promise<Object>} 活跃订单列表
+   */
+  async getActiveOrders(page = 1, limit = 20) {
+    try {
+      let url = `/orders/active/list?page=${page}&limit=${limit}`;
+
+      console.log('🎯 请求活跃订单列表:', {
+        url,
+        page,
+        limit
+      });
+
+      const response = await this.get(url);
+
+      console.log('🎯 活跃订单列表响应:', response);
+      console.log('🎯 响应分析:', {
+        hasSuccess: 'success' in response,
+        successValue: response.success,
+        hasData: 'data' in response,
+        dataValue: response.data,
+        responseType: typeof response,
+        responseKeys: Object.keys(response || {})
+      });
+
+      // 检查响应是否成功 - 更宽松的条件判断
+      if (response && (response.success === true || response.success === undefined)) {
+        // 处理数据
+        const responseData = response.data || response;
+        const orders = responseData.orders || responseData || [];
+        const pagination = response.pagination || responseData.pagination;
+
+        console.log('🎯 处理后的数据:', {
+          ordersLength: Array.isArray(orders) ? orders.length : 0,
+          hasPagination: !!pagination,
+          pagination
+        });
+
+        return {
+          success: true,
+          data: Array.isArray(orders) ? orders : [],
+          pagination: pagination || {
+            current_page: page,
+            per_page: limit,
+            total: Array.isArray(orders) ? orders.length : 0,
+            last_page: Math.ceil((Array.isArray(orders) ? orders.length : 0) / limit)
+          }
+        };
+      }
+
+      throw new Error(response?.message || '获取活跃订单列表失败');
+    } catch (error) {
+      console.error('获取活跃订单列表失败:', error);
       throw error;
     }
   }

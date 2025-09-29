@@ -18,6 +18,8 @@
     "network_details": "网体详情",
     "exchange": "兑换",
     "transaction_history": "交易记录",
+    "active_orders": "活跃订单",
+    "order_detail": "订单详情",
     "not_found": "页面未找到"
   },
   "home": {
@@ -221,5 +223,31 @@
       "rocket_bonus": "Rocket红利",
       "trade": "交易"
     }
+  },
+  "active_orders": {
+    "title": "活跃订单",
+    "pending": "进行中",
+    "loading": "加载中...",
+    "no_more_data": "没有更多数据",
+    "no_data": "暂无活跃订单",
+    "no_data_description": "您当前没有进行中的订单",
+    "created_at": "创建时间",
+    "expires_at": "到期时间"
+  },
+  "order_detail": {
+    "title": "订单详情",
+    "order_id": "订单编号",
+    "bet_amount": "投注金额",
+    "direction": "预测方向",
+    "up": "看涨",
+    "down": "看跌",
+    "entry_price": "入场价格",
+    "close_price": "收盘价格",
+    "profit": "盈亏",
+    "pending": "待结算",
+    "win": "盈利",
+    "lose": "亏损",
+    "created_at": "创建时间",
+    "expires_at": "到期时间"
   }
 }

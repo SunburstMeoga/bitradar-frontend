@@ -18,6 +18,8 @@
     "network_details": "Network Details",
     "exchange": "Exchange",
     "transaction_history": "Transaction History",
+    "active_orders": "Active Orders",
+    "order_detail": "Order Detail",
     "not_found": "Page Not Found"
   },
   "home": {
@@ -221,5 +223,31 @@
       "rocket_bonus": "Rocket Bonus",
       "trade": "Trade"
     }
+  },
+  "active_orders": {
+    "title": "Active Orders",
+    "pending": "Pending",
+    "loading": "Loading...",
+    "no_more_data": "No more data",
+    "no_data": "No Active Orders",
+    "no_data_description": "You have no active orders currently",
+    "created_at": "Created At",
+    "expires_at": "Expires At"
+  },
+  "order_detail": {
+    "title": "Order Detail",
+    "order_id": "Order ID",
+    "bet_amount": "Bet Amount",
+    "direction": "Direction",
+    "up": "Up",
+    "down": "Down",
+    "entry_price": "Entry Price",
+    "close_price": "Close Price",
+    "profit": "Profit/Loss",
+    "pending": "Pending",
+    "win": "Win",
+    "lose": "Lose",
+    "created_at": "Created At",
+    "expires_at": "Expires At"
   }
 }
