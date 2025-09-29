@@ -1,5 +1,7 @@
 import { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import { referralService } from '../../services';
+import toast from 'react-hot-toast';
 
 // 返回按钮SVG组件
 const BackIcon = () => (
@@ -49,27 +51,63 @@ const PasteIcon = () => (
 
 const AddReferrerCard = ({ onBack, onClose, onSuccess }) => {
   const { t } = useTranslation();
-  const [referrerAddress, setReferrerAddress] = useState('');
-  const [isAddressFocused, setIsAddressFocused] = useState(false);
+  const [inviteCode, setInviteCode] = useState('');
+  const [isCodeFocused, setIsCodeFocused] = useState(false);
+  const [isValidating, setIsValidating] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [validationResult, setValidationResult] = useState(null);
   const textareaRef = useRef(null);
+
+  // 验证邀请码
+  const validateInviteCode = async (code) => {
+    if (!code.trim()) {
+      setValidationResult(null);
+      return;
+    }
+
+    setIsValidating(true);
+    try {
+      const result = await referralService.validateInviteCode(code.trim());
+      if (result.success && result.data.is_valid) {
+        setValidationResult({
+          isValid: true,
+          inviter: result.data.inviter
+        });
+      } else {
+        setValidationResult({
+          isValid: false,
+          message: '邀请码无效'
+        });
+      }
+    } catch (error) {
+      setValidationResult({
+        isValid: false,
+        message: error.message || '验证失败'
+      });
+    } finally {
+      setIsValidating(false);
+    }
+  };
 
   // 处理粘贴功能
   const handlePaste = async () => {
     try {
       const text = await navigator.clipboard.readText();
-      setReferrerAddress(text);
-      setIsAddressFocused(true);
+      setInviteCode(text);
+      setIsCodeFocused(true);
       if (textareaRef.current) {
         textareaRef.current.focus();
       }
+      // 自动验证粘贴的邀请码
+      await validateInviteCode(text);
     } catch (err) {
       console.error('粘贴失败:', err);
     }
   };
 
-  // 处理地址输入区域点击
-  const handleAddressAreaClick = () => {
-    setIsAddressFocused(true);
+  // 处理邀请码输入区域点击
+  const handleCodeAreaClick = () => {
+    setIsCodeFocused(true);
     if (textareaRef.current) {
       textareaRef.current.focus();
     }
@@ -77,19 +115,46 @@ const AddReferrerCard = ({ onBack, onClose, onSuccess }) => {
 
   // 处理textarea失焦
   const handleTextareaBlur = () => {
-    if (!referrerAddress.trim()) {
-      setIsAddressFocused(false);
+    if (!inviteCode.trim()) {
+      setIsCodeFocused(false);
+    }
+  };
+
+  // 处理邀请码输入变化
+  const handleCodeChange = async (e) => {
+    const code = e.target.value;
+    setInviteCode(code);
+
+    // 延迟验证，避免频繁请求
+    if (code.trim()) {
+      setTimeout(() => {
+        if (code === inviteCode) { // 确保是最新的输入
+          validateInviteCode(code);
+        }
+      }, 500);
+    } else {
+      setValidationResult(null);
     }
   };
 
   // 处理确认按钮点击
-  const handleConfirm = () => {
-    if (referrerAddress.trim()) {
-      // 这里可以添加地址验证逻辑
-      // 暂时跳转到推荐人地址，实际项目中应该保存到本地存储或发送到后端
-      const currentUrl = window.location.origin + window.location.pathname;
-      const newUrl = `${currentUrl}?ref=${referrerAddress.trim()}`;
-      window.location.href = newUrl;
+  const handleConfirm = async () => {
+    if (!inviteCode.trim() || !validationResult?.isValid) {
+      toast.error('请输入有效的邀请码');
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const result = await referralService.useInviteCode(inviteCode.trim());
+      if (result.success) {
+        toast.success('成功使用邀请码！');
+        onSuccess && onSuccess();
+      }
+    } catch (error) {
+      toast.error(error.message || '使用邀请码失败');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -105,27 +170,27 @@ const AddReferrerCard = ({ onBack, onClose, onSuccess }) => {
         {/* 描述文字 */}
         <div className="mb-[20px] md:mb-5">
           <p className="text-[12px] md:text-xs text-[#e4e7e7] leading-[18px] md:leading-relaxed">
-            {t('wallet.referrer_description')}
+            {t('wallet.invite_code_description')}
           </p>
         </div>
 
-        {/* 推荐地址标签 */}
+        {/* 邀请码标签 */}
         <div className="mb-[8px] md:mb-2">
           <span className="text-[14px] md:text-sm text-[#e4e7e7] font-medium">
-            {t('wallet.referrer_address')}
+            {t('wallet.invite_code')}
           </span>
         </div>
 
-        {/* 地址输入卡片 */}
+        {/* 邀请码输入卡片 */}
         <div
           className="w-[290px] md:w-full h-[102px] md:h-24 bg-[#1B1C1C] border border-[#171818] rounded-[20px] md:rounded-2xl relative mb-[20px] md:mb-5"
           style={{ padding: '11px 18px 11px 12px', boxSizing: 'border-box' }}
         >
-          {!isAddressFocused && !referrerAddress.trim() ? (
+          {!isCodeFocused && !inviteCode.trim() ? (
             /* 提示文案层 */
             <div
               className="absolute inset-0 flex items-center justify-center cursor-text"
-              onClick={handleAddressAreaClick}
+              onClick={handleCodeAreaClick}
               style={{ padding: '11px 18px 11px 12px', boxSizing: 'border-box' }}
             >
               <div className="flex items-center gap-2 text-[#e4e7e7] text-[14px] md:text-sm">
@@ -140,21 +205,44 @@ const AddReferrerCard = ({ onBack, onClose, onSuccess }) => {
                   <PasteIcon />
                   <span>Paste</span>
                 </div>
-                <span>address</span>
+                <span>invite code</span>
               </div>
             </div>
           ) : (
             /* Textarea */
-            <textarea
-              ref={textareaRef}
-              value={referrerAddress}
-              onChange={(e) => setReferrerAddress(e.target.value)}
-              onFocus={() => setIsAddressFocused(true)}
-              onBlur={handleTextareaBlur}
-              className="w-full h-[46px] md:h-12 bg-transparent text-white text-[14px] md:text-sm resize-none outline-none border-none"
-              style={{ caretColor: '#5671FB' }}
-              placeholder=""
-            />
+            <div className="w-full h-full flex flex-col">
+              <textarea
+                ref={textareaRef}
+                value={inviteCode}
+                onChange={handleCodeChange}
+                onFocus={() => setIsCodeFocused(true)}
+                onBlur={handleTextareaBlur}
+                className="w-full h-[46px] md:h-12 bg-transparent text-white text-[14px] md:text-sm resize-none outline-none border-none"
+                style={{ caretColor: '#5671FB' }}
+                placeholder=""
+              />
+              {/* 验证状态显示 */}
+              {inviteCode.trim() && (
+                <div className="flex items-center gap-1 mt-1">
+                  {isValidating ? (
+                    <span className="text-[10px] text-[#949E9E]">验证中...</span>
+                  ) : validationResult ? (
+                    validationResult.isValid ? (
+                      <div className="flex items-center gap-1">
+                        <span className="text-[10px] text-green-400">✓ 有效邀请码</span>
+                        {validationResult.inviter && (
+                          <span className="text-[10px] text-[#949E9E]">
+                            (VIP{validationResult.inviter.vip_level})
+                          </span>
+                        )}
+                      </div>
+                    ) : (
+                      <span className="text-[10px] text-red-400">✗ {validationResult.message}</span>
+                    )
+                  ) : null}
+                </div>
+              )}
+            </div>
           )}
         </div>
 
@@ -182,10 +270,10 @@ const AddReferrerCard = ({ onBack, onClose, onSuccess }) => {
           {/* 确认按钮 */}
           <button
             onClick={handleConfirm}
-            disabled={!referrerAddress.trim()}
+            disabled={!inviteCode.trim() || !validationResult?.isValid || isSubmitting}
             className="flex-1 h-[48px] md:h-12 bg-[#5671FB] rounded-[24px] md:rounded-2xl text-white text-[16px] md:text-base font-medium hover:bg-[#4A63E8] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
-            {t('wallet.confirm')}
+            {isSubmitting ? t('wallet.submitting') : t('wallet.confirm')}
           </button>
         </div>
       </div>

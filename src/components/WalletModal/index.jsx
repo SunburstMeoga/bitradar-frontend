@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useWeb3Store } from '../../store';
+import { useWeb3Store, useAuthStore } from '../../store';
+import { referralService } from '../../services';
 import SlideModal from '../SlideModal';
 import SendCard from '../SendCard';
 import ActivityCard from '../ActivityCard';
@@ -9,12 +10,18 @@ import SelectTokenCard from '../SelectTokenCard';
 import AddReferrerCard from '../AddReferrerCard';
 import MembershipCard from '../MembershipCard';
 import PaymentConfirmCard from '../PaymentConfirmCard';
+import ReferralStatsCard from '../ReferralStatsCard';
+import ReferralTreeCard from '../ReferralTreeCard';
 
 const WalletModal = ({ isOpen, onClose }) => {
   const { account } = useWeb3Store();
+  const { isAuthenticated } = useAuthStore();
   const { t } = useTranslation();
-  const [currentCardIndex, setCurrentCardIndex] = useState(0); // 0: 钱包卡片, 1: AddReferrer卡片, 2: Send卡片, 3: Activity卡片, 4: SelectToken卡片, 5: Membership卡片, 6: PaymentConfirm卡片
+  const [currentCardIndex, setCurrentCardIndex] = useState(0); // 0: 钱包卡片, 1: AddReferrer卡片, 2: Send卡片, 3: Activity卡片, 4: SelectToken卡片, 5: Membership卡片, 6: PaymentConfirm卡片, 7: ReferralStats卡片, 8: ReferralTree卡片
   const [selectedMembershipLevel, setSelectedMembershipLevel] = useState(null);
+  const [hasReferralRelation, setHasReferralRelation] = useState(false);
+  const [isCheckingReferral, setIsCheckingReferral] = useState(true);
+  const [shouldAutoShowInvite, setShouldAutoShowInvite] = useState(false);
 
   // 处理卡片切换
   const handleCardChange = (index) => {
@@ -67,11 +74,78 @@ const WalletModal = ({ isOpen, onClose }) => {
     setCurrentCardIndex(0);
   };
 
+  // 跳转到推荐统计卡片
+  const handleViewReferralStats = () => {
+    console.log('跳转到推荐统计卡片，当前索引：', currentCardIndex, '目标索引：7');
+    setCurrentCardIndex(7); // ReferralStats卡片现在是索引7
+  };
+
+  // 跳转到推荐树卡片
+  const handleViewReferralTree = () => {
+    console.log('跳转到推荐树卡片，当前索引：', currentCardIndex, '目标索引：8');
+    setCurrentCardIndex(8); // ReferralTree卡片现在是索引8
+  };
+
+  // 检查用户推荐关系
+  const checkReferralRelation = async () => {
+    if (!isAuthenticated) {
+      setIsCheckingReferral(false);
+      return;
+    }
+
+    try {
+      const result = await referralService.getMyInviteCode();
+      if (result.success && result.data) {
+        // 用户已有推荐关系
+        setHasReferralRelation(true);
+        setShouldAutoShowInvite(false);
+      }
+    } catch (error) {
+      // 用户可能还没有推荐关系
+      console.log('用户可能还没有推荐关系:', error.message);
+      setHasReferralRelation(false);
+
+      // 检查URL中是否有推荐参数，如果没有则自动显示邀请码输入
+      const urlParams = new URLSearchParams(window.location.search);
+      const hasRefParam = urlParams.has('ref');
+      setShouldAutoShowInvite(!hasRefParam);
+    } finally {
+      setIsCheckingReferral(false);
+    }
+  };
+
+  // 当弹窗打开且用户已认证时检查推荐关系
+  useEffect(() => {
+    if (isOpen && isAuthenticated && !isCheckingReferral) {
+      checkReferralRelation();
+    }
+  }, [isOpen, isAuthenticated]);
+
+  // 根据检查结果自动显示邀请码输入界面
+  useEffect(() => {
+    if (isOpen && !isCheckingReferral && shouldAutoShowInvite && currentCardIndex === 0) {
+      // 延迟一下，让用户看到钱包界面再跳转
+      const timer = setTimeout(() => {
+        setCurrentCardIndex(1); // 跳转到AddReferrer卡片
+      }, 500);
+
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen, isCheckingReferral, shouldAutoShowInvite, currentCardIndex]);
+
   // 处理关闭弹窗
   const handleClose = () => {
     setCurrentCardIndex(0); // 重置到第一个卡片
     setSelectedMembershipLevel(null); // 重置选中的会员等级
+    setShouldAutoShowInvite(false); // 重置自动显示状态
     onClose();
+  };
+
+  // 处理邀请码使用成功
+  const handleInviteCodeSuccess = () => {
+    setHasReferralRelation(true);
+    setShouldAutoShowInvite(false);
+    handleBackToWallet();
   };
 
   // 配置每个卡片的标题
@@ -82,7 +156,9 @@ const WalletModal = ({ isOpen, onClose }) => {
     t('wallet.activity'), // Activity卡片
     'Select Token', // SelectToken卡片
     t('wallet.membership_buy'), // Membership卡片
-    selectedMembershipLevel === 'silver' ? t('wallet.membership_payment_title_silver') : t('wallet.membership_payment_title_gold') // PaymentConfirm卡片
+    selectedMembershipLevel === 'silver' ? t('wallet.membership_payment_title_silver') : t('wallet.membership_payment_title_gold'), // PaymentConfirm卡片
+    t('wallet.referral_stats'), // ReferralStats卡片
+    t('wallet.referral_tree') // ReferralTree卡片
   ];
 
   // 配置每个卡片是否显示返回按钮
@@ -93,7 +169,9 @@ const WalletModal = ({ isOpen, onClose }) => {
     true,  // Activity卡片显示返回按钮
     true,  // SelectToken卡片显示返回按钮
     true,  // Membership卡片显示返回按钮
-    true   // PaymentConfirm卡片显示返回按钮
+    true,  // PaymentConfirm卡片显示返回按钮
+    true,  // ReferralStats卡片显示返回按钮
+    true   // ReferralTree卡片显示返回按钮
   ];
 
   // 处理返回按钮点击
@@ -101,6 +179,9 @@ const WalletModal = ({ isOpen, onClose }) => {
     if (currentCardIndex === 6) {
       // 从PaymentConfirm返回到Membership
       handleBackToMembership();
+    } else if (currentCardIndex === 8) {
+      // 从ReferralTree返回到ReferralStats
+      setCurrentCardIndex(7);
     } else {
       // 其他情况返回到钱包卡片
       handleBackToWallet();
@@ -115,7 +196,7 @@ const WalletModal = ({ isOpen, onClose }) => {
       onClose={handleClose}
       currentIndex={currentCardIndex}
       onIndexChange={handleCardChange}
-      totalCards={7}
+      totalCards={9}
       titles={cardTitles}
       showBackButton={showBackButtons}
       onBack={handleBackClick}
@@ -127,13 +208,14 @@ const WalletModal = ({ isOpen, onClose }) => {
         onActivityClick={() => setCurrentCardIndex(3)} // Activity卡片现在是索引3
         onAddReferrerClick={handleAddReferrer}
         onBuyMembershipClick={handleBuyMembership}
+        onViewReferralStatsClick={handleViewReferralStats}
       />
 
       {/* AddReferrer卡片 */}
       <AddReferrerCard
         onBack={handleBackToWallet}
         onClose={handleClose}
-        onSuccess={handleBackToWallet}
+        onSuccess={handleInviteCodeSuccess}
       />
 
       {/* Send卡片 */}
@@ -168,6 +250,19 @@ const WalletModal = ({ isOpen, onClose }) => {
         onBack={handleBackToMembership}
         onClose={handleClose}
         onPaymentSuccess={handlePaymentSuccess}
+      />
+
+      {/* ReferralStats卡片 */}
+      <ReferralStatsCard
+        onBack={handleBackToWallet}
+        onClose={handleClose}
+        onViewTree={handleViewReferralTree}
+      />
+
+      {/* ReferralTree卡片 */}
+      <ReferralTreeCard
+        onBack={() => setCurrentCardIndex(7)} // 返回到ReferralStats卡片
+        onClose={handleClose}
       />
     </SlideModal>
   );

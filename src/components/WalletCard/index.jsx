@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useWeb3Store, useAuthStore, useUserStore } from '../../store';
 import { formatAddress, getBNBBalance } from '../../utils/web3';
 import { MEMBERSHIP_LEVELS, MEMBERSHIP_COLORS } from '../MembershipCard';
+import { referralService } from '../../services';
 import toast from 'react-hot-toast';
 
 
@@ -102,13 +103,15 @@ const FormattedBalance = ({ balance, className = "text-[16px] md:text-base", sty
   );
 };
 
-const WalletCard = ({ onClose, onSendClick, onActivityClick, onAddReferrerClick, onBuyMembershipClick }) => {
+const WalletCard = ({ onClose, onSendClick, onActivityClick, onAddReferrerClick, onBuyMembershipClick, onViewReferralStatsClick }) => {
   const { account, reset } = useWeb3Store();
   const { isAuthenticated, logout } = useAuthStore();
   const { profile, fetchProfile } = useUserStore();
   const { i18n, t } = useTranslation();
   const [bnbBalance, setBnbBalance] = useState('0.00');
   const [isLanguageExpanded, setIsLanguageExpanded] = useState(false);
+  const [hasReferralRelation, setHasReferralRelation] = useState(false);
+  const [isCheckingReferral, setIsCheckingReferral] = useState(true);
 
 
   // 从URL参数获取推荐人地址
@@ -119,6 +122,28 @@ const WalletCard = ({ onClose, onSendClick, onActivityClick, onAddReferrerClick,
   
   const referrerAddress = getReferrerFromUrl();
   const hasReferrer = !!referrerAddress;
+
+  // 检查用户是否已有推荐关系
+  const checkReferralRelation = async () => {
+    if (!isAuthenticated) {
+      setIsCheckingReferral(false);
+      return;
+    }
+
+    try {
+      const result = await referralService.getMyInviteCode();
+      if (result.success && result.data) {
+        // 如果用户有邀请码且有推荐数据，说明已建立推荐关系
+        setHasReferralRelation(true);
+      }
+    } catch (error) {
+      // 如果获取失败，可能是用户还没有推荐关系
+      console.log('用户可能还没有推荐关系:', error.message);
+      setHasReferralRelation(false);
+    } finally {
+      setIsCheckingReferral(false);
+    }
+  };
 
   // 根据当前语言设置显示的语言名称
   const getLanguageDisplayName = (langCode) => {
@@ -156,6 +181,11 @@ const WalletCard = ({ onClose, onSendClick, onActivityClick, onAddReferrerClick,
       });
     }
   }, [isAuthenticated, profile, fetchProfile]);
+
+  // 检查推荐关系
+  useEffect(() => {
+    checkReferralRelation();
+  }, [isAuthenticated]);
 
   // 获取BNB余额
   useEffect(() => {
@@ -285,15 +315,29 @@ const WalletCard = ({ onClose, onSendClick, onActivityClick, onAddReferrerClick,
 
   // 菜单项配置
   const menuItems = [
-    {
-      id: 'referrer',
-      label: hasReferrer ? t('wallet.referrer') : t('wallet.add_referrer'),
-      icon: ReferrerIcon,
-      textColor: '#9D9D9D',
-      showArrow: !hasReferrer,
-      showReferrerInfo: hasReferrer,
-      onClick: hasReferrer ? () => {} : handleAddReferrerClick
-    },
+    // 根据用户推荐关系状态显示不同的推荐选项
+    ...(hasReferralRelation ? [
+      // 已有推荐关系：显示推荐统计入口
+      {
+        id: 'referral-stats',
+        label: t('wallet.referral_stats'),
+        icon: ReferrerIcon,
+        textColor: '#9D9D9D',
+        showArrow: true,
+        onClick: onViewReferralStatsClick
+      }
+    ] : [
+      // 无推荐关系：显示添加推荐人入口
+      {
+        id: 'referrer',
+        label: hasReferrer ? t('wallet.referrer') : t('wallet.add_referrer'),
+        icon: ReferrerIcon,
+        textColor: '#9D9D9D',
+        showArrow: !hasReferrer,
+        showReferrerInfo: hasReferrer,
+        onClick: hasReferrer ? () => {} : handleAddReferrerClick
+      }
+    ]),
     {
       id: 'generate-referral',
       label: t('wallet.generate_referral_link'),
