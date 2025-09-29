@@ -8,8 +8,22 @@ class UserService extends ApiService {
   async getProfile() {
     try {
       const response = await this.get('/users/profile');
-      
+
       if (response.success && response.data) {
+        // 在控制台打印用户信息
+        console.log('=== 用户信息 ===');
+        console.log('用户ID:', response.data.id);
+        console.log('钱包地址:', response.data.wallet_address);
+        console.log('VIP等级:', response.data.vip_level);
+        console.log('邀请码:', response.data.invite_code);
+        console.log('邀请人ID:', response.data.inviter_id);
+        console.log('总投注金额:', response.data.total_bet_amount);
+        console.log('总盈利:', response.data.total_profit);
+        console.log('总亏损:', response.data.total_loss);
+        console.log('创建时间:', response.data.created_at);
+        console.log('更新时间:', response.data.updated_at);
+        console.log('===============');
+
         return {
           success: true,
           data: response.data
@@ -30,8 +44,22 @@ class UserService extends ApiService {
   async getBalance() {
     try {
       const response = await this.get('/users/balance');
-      
+
       if (response.success && response.data) {
+        // 在控制台打印余额信息
+        console.log('=== 用户余额信息 ===');
+        if (response.data.balances && Array.isArray(response.data.balances)) {
+          response.data.balances.forEach((balance, index) => {
+            console.log(`代币 ${index + 1}:`);
+            console.log('  代币符号:', balance.token_symbol);
+            console.log('  可用余额:', balance.available_balance);
+            console.log('  冻结余额:', balance.frozen_balance);
+            console.log('  总余额:', balance.total_balance);
+            console.log('  ---');
+          });
+        }
+        console.log('==================');
+
         return {
           success: true,
           data: response.data

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useWeb3Store, useAuthStore } from '../../store';
+import { useWeb3Store, useAuthStore, useUserStore } from '../../store';
 import { connectWallet, formatAddress, autoReconnectWallet, onAccountsChanged, onChainChanged } from '../../utils/web3';
 import logoImg from '../../assets/images/logo.png';
 import binanceIcon from '../../assets/icons/binance.png';
@@ -12,6 +12,7 @@ const Header = () => {
   const { t } = useTranslation();
   const { account, isConnected, isConnecting, setAccount, setIsConnected, setIsConnecting, setChainId, setWeb3, setProvider } = useWeb3Store();
   const { isAuthenticated, user, login, logout, checkAuth, isLoading: authLoading } = useAuthStore();
+  const { fetchUserInfo, fetchBalance } = useUserStore();
   const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
 
   // 页面加载时自动重连钱包
@@ -94,6 +95,22 @@ const Header = () => {
       try {
         await login(result.account);
         toast.success('钱包连接并登录成功！');
+
+        // 3. 登录成功后获取用户信息和余额
+        try {
+          console.log('开始获取用户信息和余额...');
+
+          // 并行获取用户信息和余额
+          await Promise.all([
+            fetchUserInfo(),
+            fetchBalance()
+          ]);
+
+          console.log('用户信息和余额获取完成');
+        } catch (fetchError) {
+          console.error('获取用户数据失败:', fetchError);
+          // 不影响登录流程，只是数据获取失败
+        }
       } catch (authError) {
         console.error('Web3登录失败:', authError);
         toast.error(`登录失败: ${authError.message}`);

@@ -39,10 +39,10 @@ const Account = () => {
 
   // 余额数据（优先使用API数据，否则使用默认值）
   const balances = {
-    USDT: safeParseFloat(balance?.usdtBalance, 0),
-    USDR: safeParseFloat(balance?.usdtBalance, 0), // 暂时使用同一个余额
-    LuckyUSD: safeParseFloat(balance?.usdtBalance, 0), // 暂时使用同一个余额
-    Rocket: 1500.00 // Rocket币模拟余额
+    USDT: safeParseFloat(balance?.balanceMap?.USDT?.total || balance?.usdtBalance, 0),
+    USDR: safeParseFloat(balance?.balanceMap?.USDR?.total, 0),
+    LuckyUSD: safeParseFloat(balance?.balanceMap?.LuckyUSD?.total, 0),
+    Rocket: safeParseFloat(balance?.balanceMap?.Rocket?.total, 1500.00) // 默认值
   };
 
 

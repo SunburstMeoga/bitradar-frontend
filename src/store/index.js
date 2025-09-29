@@ -181,7 +181,31 @@ export const useUserStore = create(
           const result = await userService.getBalance();
 
           if (result.success) {
-            set({ balance: result.data });
+            // 处理新的余额数据结构
+            const balanceData = result.data;
+
+            // 如果有balances数组，转换为更易用的格式
+            if (balanceData.balances && Array.isArray(balanceData.balances)) {
+              const balanceMap = {};
+              balanceData.balances.forEach(balance => {
+                balanceMap[balance.token_symbol] = {
+                  available: balance.available_balance,
+                  frozen: balance.frozen_balance,
+                  total: balance.total_balance
+                };
+              });
+
+              // 保存原始数据和转换后的数据
+              set({
+                balance: {
+                  ...balanceData,
+                  balanceMap // 添加便于使用的映射
+                }
+              });
+            } else {
+              set({ balance: balanceData });
+            }
+
             return result;
           }
 

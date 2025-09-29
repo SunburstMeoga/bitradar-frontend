@@ -1,26 +1,26 @@
 import { ApiService, TokenManager } from './api.js';
-import Web3 from 'web3';
+import i18n from '../i18n';
 
 class AuthService extends ApiService {
   /**
    * Web3钱包签名登录
-   * @param {string} walletAddress - 钱包地址
    * @param {string} message - 签名消息
    * @param {string} signature - 签名结果
    * @returns {Promise<Object>} 登录结果
    */
-  async login(walletAddress, message, signature) {
+  async login(message, signature) {
     try {
       const response = await this.post('/auth/login', {
-        signature,
-        message
+        message,
+        signature
       });
 
       if (response.success && response.data) {
         const { token, refreshToken, user } = response.data;
-        
+
         // 保存tokens
-        TokenManager.setToken(token);
+        const authToken = token;
+        TokenManager.setToken(authToken);
         if (refreshToken) {
           TokenManager.setRefreshToken(refreshToken);
         }
@@ -28,7 +28,7 @@ class AuthService extends ApiService {
         return {
           success: true,
           user,
-          token
+          token: authToken
         };
       }
 
@@ -104,14 +104,38 @@ class AuthService extends ApiService {
         throw new Error('请安装MetaMask钱包');
       }
 
-      const web3 = new Web3(window.ethereum);
-      const signature = await web3.eth.personal.sign(message, account, '');
-      
+      console.log('🖊️ 正在请求用户签名...');
+
+      // 使用 personal_sign 进行签名
+      const signature = await window.ethereum.request({
+        method: 'personal_sign',
+        params: [message, account]
+      });
+
+      console.log('✅ 签名成功:', signature);
       return signature;
     } catch (error) {
-      console.error('签名失败:', error);
+      console.error('❌ 签名失败:', error);
       throw error;
     }
+  }
+
+  /**
+   * 获取多语言签名消息
+   * @returns {string} 签名消息
+   */
+  getSignMessage() {
+    // 从localStorage获取当前语言，默认为英文
+    const currentLanguage = localStorage.getItem('i18nextLng') || 'en';
+
+    // 根据语言返回对应的签名消息
+    const messages = {
+      'en': 'Welcome to BitRocket Binary Options Trading Platform! 🚀',
+      'zh': '欢迎使用 BitRocket 二元期权交易平台！🚀',
+      'ko': 'BitRocket 바이너리 옵션 거래 플랫폼에 오신 것을 환영합니다! 🚀'
+    };
+
+    return messages[currentLanguage] || messages['en'];
   }
 
   /**
@@ -122,18 +146,27 @@ class AuthService extends ApiService {
    */
   async web3Login(account, customMessage = null) {
     try {
-      // 使用自定义消息或默认消息
-      const message = customMessage || `欢迎使用 BitRocket 二元期权交易平台！\n\n时间戳: ${Date.now()}`;
-      
-      // 签名消息
+      console.log('🚀 开始Web3登录流程...');
+
+      // 1. 获取签名消息（支持多语言）
+      const message = customMessage || this.getSignMessage();
+      console.log('📝 签名消息:', message);
+
+      // 2. 签名消息
       const signature = await this.signMessage(message, account);
-      
-      // 登录
-      const result = await this.login(account, message, signature);
-      
+
+      // 3. 登录
+      console.log('🔐 正在验证签名并登录...');
+      const result = await this.login(message, signature);
+
+      if (result.success) {
+        console.log('🎉 登录成功！');
+        console.log('用户信息:', result.user);
+      }
+
       return result;
     } catch (error) {
-      console.error('Web3登录失败:', error);
+      console.error('❌ Web3登录失败:', error);
       throw error;
     }
   }
