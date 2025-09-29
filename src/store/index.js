@@ -175,6 +175,24 @@ export const useUserStore = create(
         }
       },
 
+      // 获取用户资料
+      fetchProfile: async () => {
+        try {
+          const result = await userService.getProfile();
+
+          if (result.success) {
+            set({ profile: result.data });
+            console.log('✅ 用户资料获取成功:', result.data);
+            return result;
+          }
+
+          throw new Error('获取用户资料失败');
+        } catch (error) {
+          console.error('❌ 获取用户资料失败:', error);
+          throw error;
+        }
+      },
+
       // 获取用户余额
       fetchBalance: async () => {
         try {

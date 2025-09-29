@@ -4,33 +4,53 @@ class OrderService extends ApiService {
   /**
    * 创建新的二元期权订单
    * @param {Object} orderData - 订单数据
-   * @param {string} orderData.orderType - 订单类型 "CALL" (买升) 或 "PUT" (买跌)
-   * @param {number} orderData.amount - 下注金额 (USDT)，范围: 1-1000
-   * @param {number} orderData.frontendSubmitTime - 前端提交时间戳 (毫秒)
+   * @param {string} orderData.bet_amount - 下注金额 (字符串格式，如 "100.00")，最小 1.00
+   * @param {string} orderData.token - 下注代币 (USDT, LuckyUSD)
+   * @param {string} orderData.direction - 预测方向 (up, down)
+   * @param {string} orderData.trading_pair - 交易对 (BTC/USDT)
    * @returns {Promise<Object>} 订单创建结果
    */
   async createOrder(orderData) {
     try {
       // 验证参数
-      if (!orderData.orderType || !['CALL', 'PUT'].includes(orderData.orderType)) {
-        throw new Error('订单类型必须是 CALL 或 PUT');
+      if (!orderData.bet_amount) {
+        throw new Error('下注金额不能为空');
       }
 
-      if (!orderData.amount || orderData.amount < 1 || orderData.amount > 1000) {
-        throw new Error('下注金额必须在 1-1000 USDT 范围内');
+      const betAmount = parseFloat(orderData.bet_amount);
+      if (isNaN(betAmount) || betAmount < 1.00) {
+        throw new Error('下注金额必须大于等于 1.00');
       }
 
-      if (!orderData.frontendSubmitTime) {
-        throw new Error('前端提交时间戳不能为空');
+      if (!orderData.token || !['USDT', 'LuckyUSD', 'USDR'].includes(orderData.token)) {
+        throw new Error('代币类型必须是 USDT, LuckyUSD 或 USDR');
       }
 
-      const response = await this.post('/orders', {
-        orderType: orderData.orderType,
-        amount: orderData.amount,
-        frontendSubmitTime: orderData.frontendSubmitTime
+      if (!orderData.direction || !['up', 'down'].includes(orderData.direction)) {
+        throw new Error('预测方向必须是 up 或 down');
+      }
+
+      if (!orderData.trading_pair) {
+        throw new Error('交易对不能为空');
+      }
+
+      console.log('🎯 发送订单创建请求:', orderData);
+
+      // 使用完整的URL路径，不带/api/v1前缀
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+      const fullUrl = `${API_BASE_URL}/orders`;
+
+      console.log('📡 API请求URL:', fullUrl);
+
+      const response = await this.client.post(fullUrl, {
+        bet_amount: orderData.bet_amount,
+        token: orderData.token,
+        direction: orderData.direction,
+        trading_pair: orderData.trading_pair
       });
 
       if (response.success && response.data) {
+        console.log('✅ 订单创建成功:', response.data);
         return {
           success: true,
           data: response.data,

@@ -19,7 +19,7 @@ import sliderIcon from '../../assets/icons/slider.png';
 const Trade = () => {
   const { t } = useTranslation();
   const { isAuthenticated } = useAuthStore();
-  const { balance, fetchBalance } = useUserStore();
+  const { balance, profile, fetchBalance, fetchProfile } = useUserStore();
 
   // 获取视口高度信息
   const { mainAreaHeight, isMobile } = useViewportHeight();
@@ -221,14 +221,15 @@ const Trade = () => {
     try {
       const now = Date.now();
 
-      // 准备API请求数据
+      // 准备API请求数据 - 使用新的API格式
       const orderData = {
-        orderType: direction === 'up' ? 'CALL' : 'PUT',
-        amount: tradeAmount,
-        frontendSubmitTime: now
+        bet_amount: tradeAmount.toFixed(2), // 转换为字符串格式，保留2位小数
+        token: selectedToken, // 使用当前选中的代币
+        direction: direction, // 直接使用 "up" 或 "down"
+        trading_pair: "BTC/USDT" // 默认交易对
       };
 
-      console.log('🎯 发送下注请求:', orderData);
+      console.log('🎯 发送下注请求 (新格式):', orderData);
 
       // 调用API创建订单
       const result = await orderService.createOrder(orderData);
@@ -238,19 +239,21 @@ const Trade = () => {
         toast.success(result.message || '下单成功');
 
         // 创建本地下注记录（用于图表显示）
+        // 适配新的API响应格式
+        const orderData = result.data.order || result.data;
         const newBet = {
-          id: result.data.orderId,
+          id: orderData.id,
           direction,
           amount: tradeAmount,
-          price: result.data.entryPrice || currentPrice,
-          timestamp: result.data.entryTime || now,
-          settlementTime: result.data.expiryTime || (now + 60000),
+          price: parseFloat(orderData.entry_price) || currentPrice,
+          timestamp: new Date(orderData.created_at).getTime() || now,
+          settlementTime: new Date(orderData.expires_at).getTime() || (now + 60000),
           settlementPrice: null,
           isWin: null,
           profit: null,
           status: 'active',
           // 保存API返回的完整数据
-          apiData: result.data
+          apiData: orderData
         };
 
         setUserBets(prev => [...prev, newBet]);
@@ -350,6 +353,15 @@ const Trade = () => {
       });
     }
   }, [isAuthenticated]); // 移除 safeFetchBalance 依赖，避免循环依赖
+
+  // 获取用户资料（包括总盈利等信息）
+  useEffect(() => {
+    if (isAuthenticated && !profile) {
+      fetchProfile().catch(error => {
+        console.error('获取用户资料失败:', error);
+      });
+    }
+  }, [isAuthenticated, profile, fetchProfile]);
 
   // 当余额数据更新时，设置滑动条默认值
   useEffect(() => {
@@ -529,7 +541,7 @@ const Trade = () => {
           className="w-[343vw] md:w-full h-[50vw] md:h-12 -mt-[17vw] md:-mt-4 border rounded-[12vw] md:rounded-lg flex items-center justify-center"
           style={{ borderColor: '#1f1f1f' }}
         >
-          <span className="text-[#8f8f8f] text-size-[13vw] md:text-sm pb-[2vw]"> <br /> {t('trade.payout')}: 456.45</span>
+          <span className="text-[#8f8f8f] text-size-[13vw] md:text-sm pb-[2vw]"> <br /> {t('trade.payout')}: {formatNumber(safeParseFloat(profile?.total_profit, 0), 2)}</span>
         </div>
 
         {/* 第三部分：按钮和时间 */}

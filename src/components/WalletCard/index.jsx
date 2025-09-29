@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useWeb3Store, useAuthStore } from '../../store';
+import { useWeb3Store, useAuthStore, useUserStore } from '../../store';
 import { formatAddress, getBNBBalance } from '../../utils/web3';
 import { MEMBERSHIP_LEVELS, MEMBERSHIP_COLORS } from '../MembershipCard';
 import toast from 'react-hot-toast';
@@ -105,10 +105,10 @@ const FormattedBalance = ({ balance, className = "text-[16px] md:text-base", sty
 const WalletCard = ({ onClose, onSendClick, onActivityClick, onAddReferrerClick, onBuyMembershipClick }) => {
   const { account, reset } = useWeb3Store();
   const { isAuthenticated, logout } = useAuthStore();
+  const { profile, fetchProfile } = useUserStore();
   const { i18n, t } = useTranslation();
   const [bnbBalance, setBnbBalance] = useState('0.00');
   const [isLanguageExpanded, setIsLanguageExpanded] = useState(false);
-  const [membershipLevel, setMembershipLevel] = useState(MEMBERSHIP_LEVELS.NONE);
 
 
   // 从URL参数获取推荐人地址
@@ -132,12 +132,30 @@ const WalletCard = ({ onClose, onSendClick, onActivityClick, onAddReferrerClick,
 
   const [selectedLanguage, setSelectedLanguage] = useState(getLanguageDisplayName(i18n.language));
 
-  // 随机生成会员等级（每次打开钱包弹窗时重新生成）
+  // 将API的vip_level转换为本地的MEMBERSHIP_LEVELS
+  const getMembershipLevelFromVip = (vipLevel) => {
+    switch (vipLevel) {
+      case 1:
+        return MEMBERSHIP_LEVELS.SILVER;
+      case 2:
+        return MEMBERSHIP_LEVELS.GOLD;
+      case 0:
+      default:
+        return MEMBERSHIP_LEVELS.NONE;
+    }
+  };
+
+  // 获取当前会员等级
+  const currentMembershipLevel = getMembershipLevelFromVip(profile?.vip_level);
+
+  // 获取用户资料数据
   useEffect(() => {
-    const levels = [MEMBERSHIP_LEVELS.NONE, MEMBERSHIP_LEVELS.SILVER, MEMBERSHIP_LEVELS.GOLD];
-    const randomLevel = levels[Math.floor(Math.random() * levels.length)];
-    setMembershipLevel(randomLevel);
-  }, []);
+    if (isAuthenticated && !profile) {
+      fetchProfile().catch(error => {
+        console.error('获取用户资料失败:', error);
+      });
+    }
+  }, [isAuthenticated, profile, fetchProfile]);
 
   // 获取BNB余额
   useEffect(() => {
@@ -255,7 +273,7 @@ const WalletCard = ({ onClose, onSendClick, onActivityClick, onAddReferrerClick,
         color: MEMBERSHIP_COLORS[MEMBERSHIP_LEVELS.NONE]
       }
     };
-    return configs[membershipLevel] || configs[MEMBERSHIP_LEVELS.NONE];
+    return configs[currentMembershipLevel] || configs[MEMBERSHIP_LEVELS.NONE];
   };
 
   // 语言选项
