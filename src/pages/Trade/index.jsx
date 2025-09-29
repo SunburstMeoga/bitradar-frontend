@@ -5,7 +5,7 @@ import useViewportHeight from '../../hooks/useViewportHeight';
 import { useApiCall } from '../../hooks/useApiCall';
 import { useAuthStore, useUserStore } from '../../store';
 import { safeParseFloat, formatNumber } from '../../utils/format';
-import { orderService } from '../../services';
+import { orderService, tokenService } from '../../services';
 import Modal from '../../components/Modal';
 import PriceChart from '../../components/PriceChart';
 import pUSDIcon from '../../assets/icons/pUSD.png';
@@ -31,11 +31,13 @@ const Trade = () => {
   const [sliderValue, setSliderValue] = useState(0);
   const [currentPrice, setCurrentPrice] = useState(67234.56);
   const [priceChange, setPriceChange] = useState(2.34);
-  const [selectedToken, setSelectedToken] = useState('USDT');
+  const [selectedToken, setSelectedToken] = useState('');
   const [isTokenModalOpen, setIsTokenModalOpen] = useState(false);
   const [userBets, setUserBets] = useState([]); // 用户下注记录
   const [luckyUSDBalance, setLuckyUSDBalance] = useState(0); // LuckyUSD随机余额
   const [isPlacingBet, setIsPlacingBet] = useState(false); // 下注加载状态
+  const [tokenOptions, setTokenOptions] = useState([]); // 可选择的币种列表
+  const [isLoadingTokens, setIsLoadingTokens] = useState(true); // 代币列表加载状态
 
   // 计算PriceChart的动态高度
   const calculateChartHeight = () => {
@@ -122,12 +124,63 @@ const Trade = () => {
   // 确保滑动条计算的安全性
   const safeUserBalance = Math.max(userBalance, 1); // 最小值为1，避免除零错误
 
-  // 可选择的币种列表
-  const tokenOptions = [
-    { name: 'USDT', icon: pUSDIcon },
-    { name: 'USDR', icon: pUSDIcon },
-    { name: 'LuckyUSD', icon: pUSDIcon }
-  ];
+  // 获取可用于下注的代币列表
+  const fetchBetTokens = async () => {
+    try {
+      setIsLoadingTokens(true);
+      console.log('🪙 开始获取代币列表...');
+
+      const result = await tokenService.getBetTokens();
+
+      if (result.success && result.data) {
+        // 将API返回的代币数据转换为UI需要的格式
+        const formattedTokens = result.data.map(token => ({
+          name: token.symbol,
+          displayName: token.name,
+          icon: pUSDIcon, // 暂时使用统一图标
+          minBet: parseFloat(token.min_bet),
+          maxBet: parseFloat(token.max_bet),
+          winRate: token.win_rate,
+          // 保存原始数据
+          originalData: token
+        }));
+
+        setTokenOptions(formattedTokens);
+        console.log('🪙 代币列表获取成功:', formattedTokens);
+
+        // 设置默认选中的代币
+        if (formattedTokens.length > 0) {
+          // 如果当前没有选中代币，或者选中的代币不在新列表中，选择第一个代币
+          const currentTokenExists = selectedToken && formattedTokens.some(token => token.name === selectedToken);
+          if (!currentTokenExists) {
+            setSelectedToken(formattedTokens[0].name);
+            console.log('🪙 设置默认选中代币:', formattedTokens[0].name);
+          }
+        }
+
+        if (result.isFallback) {
+          console.warn('🪙 使用了fallback代币列表');
+        }
+      }
+    } catch (error) {
+      console.error('🪙 获取代币列表失败:', error);
+      // 如果获取失败，使用默认列表
+      const defaultTokens = [
+        { name: 'USDT', displayName: 'Tether USD', icon: pUSDIcon, minBet: 1, maxBet: 10000, winRate: '80%' },
+        { name: 'USDR', displayName: 'USD Reserve', icon: pUSDIcon, minBet: 1, maxBet: 5000, winRate: '80%' },
+        { name: 'LuckyUSD', displayName: 'Lucky USD', icon: pUSDIcon, minBet: 1, maxBet: 5000, winRate: '80%' }
+      ];
+      setTokenOptions(defaultTokens);
+
+      // 设置默认选中的代币
+      if (defaultTokens.length > 0 && !selectedToken) {
+        setSelectedToken(defaultTokens[0].name);
+        console.log('🪙 使用fallback，设置默认选中代币:', defaultTokens[0].name);
+      }
+    } finally {
+      setIsLoadingTokens(false);
+    }
+  };
 
   // 处理滑块变化
   const handleSliderChange = (e) => {
@@ -337,6 +390,11 @@ const Trade = () => {
     previousPriceRef.current = newPrice;
   }, []); // 移除依赖，使用 ref 避免循环依赖
 
+  // 获取代币列表
+  useEffect(() => {
+    fetchBetTokens();
+  }, []); // 只在组件挂载时执行一次
+
   // 初始化LuckyUSD随机余额
   useEffect(() => {
     const initialLuckyUSDBalance = generateLuckyUSDBalance();
@@ -395,6 +453,8 @@ const Trade = () => {
 
     return () => clearInterval(interval);
   }, []);
+
+
 
   return (
     <div className="h-full flex flex-col" style={{ backgroundColor: '#121212' }}>
@@ -490,7 +550,9 @@ const Trade = () => {
               onClick={handleTokenSelectorClick}
             >
               <img src={pUSDIcon} alt="token" className="w-[14vw] md:w-3.5 h-[14vw] md:h-3.5 flex-shrink-0" />
-              <span className="text-white font-medium text-size-[12vw] md:text-xs whitespace-nowrap">{selectedToken}</span>
+              <span className="text-white font-medium text-size-[12vw] md:text-xs whitespace-nowrap">
+                {selectedToken || (isLoadingTokens ? '加载中...' : '选择代币')}
+              </span>
               <img src={upDownIcon} alt="up-down" className="w-[14vw] md:w-3.5 h-[14vw] md:h-3.5 flex-shrink-0" />
             </div>
           </div>
@@ -602,29 +664,43 @@ const Trade = () => {
 
           {/* 币种选项列表 */}
           <div className="space-y-[12vw] md:space-y-3">
-            {tokenOptions.map((token) => (
-              <div
-                key={token.name}
-                className={`w-full h-[50vw] md:h-12 rounded-[12vw] md:rounded-lg px-[16vw] md:px-4 flex items-center gap-[12vw] md:gap-3 cursor-pointer transition-colors ${
-                  selectedToken === token.name
-                    ? 'bg-[#c5ff33] bg-opacity-20 border border-[#c5ff33]'
-                    : 'bg-[#3d3d3d] hover:bg-[#4d4d4d]'
-                }`}
-                onClick={() => handleTokenSelect(token.name)}
-              >
-                <img src={token.icon} alt={token.name} className="w-[24vw] md:w-6 h-[24vw] md:h-6 flex-shrink-0" />
-                <span className={`text-size-[16vw] md:text-base font-medium ${
-                  selectedToken === token.name ? 'text-[#c5ff33]' : 'text-white'
-                }`}>
-                  {token.name}
-                </span>
-                {selectedToken === token.name && (
-                  <div className="ml-auto w-[16vw] md:w-4 h-[16vw] md:h-4 rounded-full bg-[#c5ff33] flex items-center justify-center">
-                    <div className="w-[8vw] md:w-2 h-[8vw] md:h-2 rounded-full bg-white"></div>
-                  </div>
-                )}
+            {isLoadingTokens ? (
+              // 加载状态
+              <div className="flex items-center justify-center py-[40vw] md:py-10">
+                <div className="w-[32vw] md:w-8 h-[32vw] md:h-8 border-2 border-[#c5ff33] border-t-transparent rounded-full animate-spin"></div>
+                <span className="ml-[12vw] md:ml-3 text-white text-size-[14vw] md:text-sm">加载代币列表...</span>
               </div>
-            ))}
+            ) : tokenOptions.length === 0 ? (
+              // 空状态
+              <div className="flex items-center justify-center py-[40vw] md:py-10">
+                <span className="text-[#8f8f8f] text-size-[14vw] md:text-sm">暂无可用代币</span>
+              </div>
+            ) : (
+              // 代币列表
+              tokenOptions.map((token) => (
+                <div
+                  key={token.name}
+                  className={`w-full h-[50vw] md:h-12 rounded-[12vw] md:rounded-lg px-[16vw] md:px-4 flex items-center gap-[12vw] md:gap-3 cursor-pointer transition-colors ${
+                    selectedToken === token.name
+                      ? 'bg-[#c5ff33] bg-opacity-20 border border-[#c5ff33]'
+                      : 'bg-[#3d3d3d] hover:bg-[#4d4d4d]'
+                  }`}
+                  onClick={() => handleTokenSelect(token.name)}
+                >
+                  <img src={token.icon} alt={token.name} className="w-[24vw] md:w-6 h-[24vw] md:h-6 flex-shrink-0" />
+                  <span className={`text-size-[16vw] md:text-base font-medium ${
+                    selectedToken === token.name ? 'text-[#c5ff33]' : 'text-white'
+                  }`}>
+                    {token.name}
+                  </span>
+                  {selectedToken === token.name && (
+                    <div className="ml-auto w-[16vw] md:w-4 h-[16vw] md:h-4 rounded-full bg-[#c5ff33] flex items-center justify-center">
+                      <div className="w-[8vw] md:w-2 h-[8vw] md:h-2 rounded-full bg-white"></div>
+                    </div>
+                  )}
+                </div>
+              ))
+            )}
           </div>
         </div>
       </Modal>
