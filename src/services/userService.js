@@ -99,20 +99,74 @@ class UserService extends ApiService {
    * 获取订单历史
    * @param {number} page - 页码，默认1
    * @param {number} limit - 每页数量，默认20
+   * @param {string} status - 订单状态过滤：pending, win, lose, all，默认all
    * @returns {Promise<Object>} 订单历史数据
    */
-  async getOrders(page = 1, limit = 20) {
+  async getOrders(page = 1, limit = 20, status = 'all') {
     try {
-      const response = await this.get(`/users/orders?page=${page}&limit=${limit}`);
-      
-      if (response.success && response.data) {
+      let url = `/users/orders?page=${page}&limit=${limit}`;
+      if (status && status !== 'all') {
+        url += `&status=${status}`;
+      }
+
+      console.log('📋 请求订单历史:', {
+        url,
+        page,
+        limit,
+        status
+      });
+
+      const response = await this.get(url);
+
+      console.log('📋 订单历史完整响应:', response);
+      console.log('📋 订单历史响应分析:', {
+        responseType: typeof response,
+        hasSuccess: 'success' in response,
+        successValue: response.success,
+        hasData: 'data' in response,
+        dataValue: response.data,
+        hasCount: 'count' in response,
+        countValue: response.count,
+        ordersCount: response.data?.orders?.length || response.data?.length || 0,
+        hasPagination: !!(response.data?.pagination || response.pagination)
+      });
+
+      // 检查响应是否成功
+      if (response && response.success === true) {
+        // 处理空状态：count为0或data为null
+        if (response.count === 0 || response.data === null) {
+          console.log('📋 检测到空状态:', { count: response.count, data: response.data });
+          return {
+            success: true,
+            data: [],
+            pagination: {
+              current_page: page,
+              per_page: limit,
+              total: 0,
+              last_page: 1
+            }
+          };
+        }
+
+        // 处理有数据的情况
+        const responseData = response.data || response;
+        const orders = responseData.orders || responseData;
+        const pagination = responseData.pagination || response.pagination;
+
+        console.log('📋 处理后的数据:', {
+          ordersLength: Array.isArray(orders) ? orders.length : 0,
+          hasPagination: !!pagination,
+          pagination
+        });
+
         return {
           success: true,
-          data: response.data,
-          pagination: response.pagination || {
-            page,
-            limit,
-            total: response.data.length
+          data: Array.isArray(orders) ? orders : [],
+          pagination: pagination || {
+            current_page: page,
+            per_page: limit,
+            total: Array.isArray(orders) ? orders.length : (response.count || 0),
+            last_page: Math.ceil((Array.isArray(orders) ? orders.length : (response.count || 0)) / limit)
           }
         };
       }
@@ -120,6 +174,9 @@ class UserService extends ApiService {
       throw new Error(response.message || '获取订单历史失败');
     } catch (error) {
       console.error('获取订单历史失败:', error);
+      if (error.response?.status === 401) {
+        console.error('❌ 401错误 - Token可能无效或已过期');
+      }
       throw error;
     }
   }

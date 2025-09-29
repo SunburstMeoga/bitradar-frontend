@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import usePageTitle from '../../hooks/usePageTitle';
-import { useApiCall } from '../../hooks/useApiCall';
+
 import { useAuthStore, useUserStore } from '../../store';
 import { ErrorDisplay, LoadingSpinner } from '../../components/ErrorBoundary';
 import historyUpIcon from '../../assets/icons/history-up.png';
@@ -48,40 +48,33 @@ const DropdownArrowIcon = ({ color = '#fff' }) => (
   </svg>
 );
 
-// Trading Asset选择组件
-const TradingAssetSelector = () => {
+// 状态选择组件
+const StatusSelector = ({ selectedStatus, onStatusChange }) => {
   const { t } = useTranslation();
-  const [selectedAsset, setSelectedAsset] = useState(null); // null表示未选择
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const assets = [
-    { value: 'USDT', label: t('history.real'), displayName: 'USDT' },
-    { value: 'USDR', label: t('history.real'), displayName: 'USDR' },
-    { value: 'LuckyUSD', label: t('history.demo'), displayName: 'LuckyUSD' }
+  const statusOptions = [
+    { value: 'all', label: t('history.all_status'), displayName: t('history.all') },
+    { value: 'pending', label: t('history.pending_status'), displayName: t('history.pending') },
+    { value: 'win', label: t('history.win_status'), displayName: t('history.win') },
+    { value: 'lose', label: t('history.lose_status'), displayName: t('history.lose') }
   ];
 
-  const handleAssetSelect = (asset) => {
-    setSelectedAsset(asset);
+  const handleStatusSelect = (status) => {
+    onStatusChange(status.value);
     setIsModalOpen(false);
   };
 
   const getDisplayText = () => {
-    if (!selectedAsset) return t('history.trading_asset');
-    return selectedAsset.displayName;
+    const selected = statusOptions.find(option => option.value === selectedStatus);
+    return selected ? selected.displayName : t('history.all');
   };
 
   const getButtonStyle = () => {
-    if (!selectedAsset) {
-      return {
-        backgroundColor: '#292929',
-        color: '#fff'
-      };
-    } else {
-      return {
-        backgroundColor: '#fff',
-        color: '#292929'
-      };
-    }
+    return {
+      backgroundColor: selectedStatus === 'all' ? '#292929' : '#fff',
+      color: selectedStatus === 'all' ? '#fff' : '#292929'
+    };
   };
 
   return (
@@ -101,29 +94,29 @@ const TradingAssetSelector = () => {
         }}
       >
         <span>{getDisplayText()}</span>
-        <DropdownArrowIcon color={selectedAsset ? '#292929' : '#fff'} />
+        <DropdownArrowIcon color={selectedStatus === 'all' ? '#fff' : '#292929'} />
       </div>
 
       {/* 选择弹窗 */}
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
         <div className="p-[20px]">
           <h3 className="text-white text-[18px] font-semibold mb-[20px]">
-            {t('history.select_trading_asset')}
+            {t('history.select_status')}
           </h3>
           <div className="space-y-[12px]">
-            {assets.map((asset) => (
+            {statusOptions.map((option) => (
               <div
-                key={asset.value}
-                onClick={() => handleAssetSelect(asset)}
+                key={option.value}
+                onClick={() => handleStatusSelect(option)}
                 className="w-full h-[44px] rounded-[8px] flex items-center justify-center cursor-pointer transition-colors"
                 style={{
-                  backgroundColor: selectedAsset?.value === asset.value ? '#fff' : '#292929',
-                  color: selectedAsset?.value === asset.value ? '#292929' : '#fff',
+                  backgroundColor: selectedStatus === option.value ? '#fff' : '#292929',
+                  color: selectedStatus === option.value ? '#292929' : '#fff',
                   fontSize: '15px',
                   fontWeight: 600
                 }}
               >
-                {asset.displayName}
+                {option.displayName}
               </div>
             ))}
           </div>
@@ -135,52 +128,10 @@ const TradingAssetSelector = () => {
 
 
 
-// 模拟交易历史数据
-const generateMockData = (page = 1, pageSize = 10) => {
-  const data = [];
-  const startIndex = (page - 1) * pageSize;
-  const timestamp = Date.now(); // 添加时间戳确保唯一性
-
-  for (let i = 0; i < pageSize; i++) {
-    const index = startIndex + i;
-    const isUp = Math.random() > 0.5;
-    const isWin = Math.random() > 0.4; // 60%胜率
-    const amount = Math.floor(Math.random() * 300) + 50;
-    const profit = isWin ? Math.floor(amount * (Math.random() * 0.8 + 0.2)) : -amount;
-    const openPrice = 115000 + Math.random() * 1000;
-    const closePrice = openPrice + (Math.random() - 0.5) * 500;
-
-    // 随机选择交易时长
-    const durations = ['1m', '5m', '15m', '30m', '1h'];
-    const duration = durations[Math.floor(Math.random() * durations.length)];
-    const durationMinutes = duration === '1m' ? 1 : duration === '5m' ? 5 : duration === '15m' ? 15 : duration === '30m' ? 30 : 60;
-
-    // 生成时间
-    const now = new Date();
-    const openTime = new Date(now.getTime() - (index + 1) * 60000 * Math.random() * 10);
-    const closeTime = new Date(openTime.getTime() + durationMinutes * 60000);
-
-    data.push({
-      id: `trade_${page}_${index}_${timestamp}_${i}`, // 使用页码、索引、时间戳和循环索引确保唯一性
-      direction: isUp ? 'up' : 'down',
-      result: isWin ? 'win' : 'lose',
-      amount,
-      profit,
-      openPrice,
-      closePrice,
-      openTime: openTime.toISOString(),
-      closeTime: closeTime.toISOString(),
-      duration: duration
-    });
-  }
-
-  return data;
-};
-
 const History = () => {
   const { t, i18n } = useTranslation();
-  const { isAuthenticated } = useAuthStore();
-  const { orders, fetchOrders } = useUserStore();
+  const { isAuthenticated, token } = useAuthStore();
+  const { fetchOrders } = useUserStore();
 
   // 设置页面标题
   usePageTitle('history');
@@ -189,20 +140,15 @@ const History = () => {
   const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState(1);
   const [error, setError] = useState(null);
+  const [pagination, setPagination] = useState(null);
+  const [status, setStatus] = useState('all');
   const initialLoadRef = useRef(false);
 
-  // 使用防重复调用的API hook
-  const safeApiCall = useApiCall(fetchOrders, []);
-
-  // 同步store中的orders到本地状态
-  useEffect(() => {
-    if (isAuthenticated && orders && Array.isArray(orders)) {
-      setHistoryData(orders);
-    }
-  }, [orders, isAuthenticated]);
+  // 直接使用fetchOrders，不需要防重复调用包装
 
   // 格式化时间
   const formatTime = (isoString) => {
+    if (!isoString) return '';
     const date = new Date(isoString);
     const locale = i18n.language === 'zh' ? 'zh-CN' : i18n.language === 'ko' ? 'ko-KR' : 'en-US';
     return date.toLocaleString(locale, {
@@ -218,7 +164,14 @@ const History = () => {
 
   // 格式化价格
   const formatPrice = (price) => {
-    return price.toFixed(2);
+    if (price === null || price === undefined) return '0.00';
+    return parseFloat(price).toFixed(2);
+  };
+
+  // 格式化金额
+  const formatAmount = (amount) => {
+    if (amount === null || amount === undefined) return '0.00';
+    return parseFloat(amount).toFixed(2);
   };
 
   // 加载数据
@@ -229,42 +182,47 @@ const History = () => {
     setError(null);
 
     try {
-      if (isAuthenticated) {
-        // 使用真实API
-        const result = await safeApiCall(pageNum, 20, !isRefresh);
+      // 使用真实API
+      const result = await fetchOrders(pageNum, 20, status, false);
 
-        if (result.success) {
-          const newData = result.data || [];
+      console.log('📋 loadData收到结果:', result);
 
-          // 检查是否还有更多数据
-          if (newData.length < 20) {
-            setHasMore(false);
-          }
+      if (result && result.success) {
+        const newData = result.data || [];
+        const paginationData = result.pagination;
 
-          // store会自动处理数据，我们通过useEffect同步到本地状态
-        } else {
-          throw new Error('获取订单历史失败');
+        console.log('📋 处理数据:', {
+          newDataLength: newData.length,
+          paginationData,
+          isRefresh
+        });
+
+        // 更新分页信息
+        setPagination(paginationData);
+
+        // 检查是否还有更多数据
+        if (paginationData && pageNum >= paginationData.last_page) {
+          setHasMore(false);
+        } else if (!paginationData && newData.length < 20) {
+          setHasMore(false);
         }
-      } else {
-        // 未认证时使用mock数据
-        const newData = generateMockData(pageNum, 10);
 
+        // 更新历史数据
         if (isRefresh) {
           setHistoryData(newData);
           setPage(1);
+          setHasMore(true);
         } else {
           setHistoryData(prev => {
-            // 确保prev是数组
             const prevArray = Array.isArray(prev) ? prev : [];
             const existingIds = new Set(prevArray.map(item => item.id));
             const filteredNewData = newData.filter(item => !existingIds.has(item.id));
             return [...prevArray, ...filteredNewData];
           });
         }
-
-        if (pageNum >= 5) {
-          setHasMore(false);
-        }
+      } else {
+        console.error('❌ API调用结果无效:', result);
+        throw new Error(result?.message || '获取订单历史失败');
       }
     } catch (err) {
       console.error('Error loading data:', err);
@@ -273,15 +231,29 @@ const History = () => {
     } finally {
       setLoading(false);
     }
-  }, [loading, isAuthenticated, fetchOrders]);
+  }, [loading, status, fetchOrders]);
 
   // 初始加载
   useEffect(() => {
     if (!initialLoadRef.current) {
       initialLoadRef.current = true;
+      console.log('📋 History页面初始化:', {
+        isAuthenticated,
+        hasToken: !!token,
+        tokenPreview: token ? `${token.substring(0, 20)}...` : null
+      });
       loadData(1, true);
     }
   }, []);
+
+  // 状态变化时重新加载数据
+  useEffect(() => {
+    if (initialLoadRef.current) {
+      setPage(1);
+      setHasMore(true);
+      loadData(1, true);
+    }
+  }, [status]);
 
   // 触底加载更多
   const handleScroll = useCallback(() => {
@@ -310,7 +282,7 @@ const History = () => {
         <h1 className="text-white font-size-[28vw] md:text-2xl font-semibold mb-[12vw] md:mb-3" style={{ fontWeight: 600 }}>
           {t('history.title')}
         </h1>
-        <TradingAssetSelector />
+        <StatusSelector selectedStatus={status} onStatusChange={setStatus} />
       </div>
 
       {/* 历史记录列表 */}
@@ -365,19 +337,23 @@ const History = () => {
                     BTC-USD
                   </span>
 
-                  {/* 时间文案 */}
+                  {/* 状态文案 */}
                   <span className="text-[rgb(143,143,143)] font-size-[13vw] md:text-sm" style={{ fontWeight: 400 }}>
-                    · {t(`history.duration_${item.duration}`)}
+                    · {item.status === 'pending' ? t('history.pending') : (item.status === 'win' ? t('history.win') : t('history.lose'))}
                   </span>
                 </div>
               </div>
 
               {/* 右侧箭头 */}
               <div>
-                {item.result === 'win' ? (
+                {item.status === 'win' ? (
                   <UpArrowIcon color="#00bc4b" />
-                ) : (
+                ) : item.status === 'lose' ? (
                   <DownArrowIcon color="#f5384e" />
+                ) : (
+                  <div className="w-[24px] h-[24px] rounded-full bg-gray-500 flex items-center justify-center">
+                    <span className="text-white text-xs">?</span>
+                  </div>
                 )}
               </div>
             </div>
@@ -387,36 +363,36 @@ const History = () => {
               {/* 第一行：投注金额和盈亏 */}
               <div className="flex justify-between items-center">
                 <span className="text-white font-size-[16vw] md:text-lg font-semibold" style={{ fontWeight: 600 }}>
-                  {item.amount} USDR
+                  {formatAmount(item.bet_amount)} {item.token || 'USDT'}
                 </span>
                 <span
                   className="font-size-[16vw] md:text-lg font-semibold"
                   style={{
                     fontWeight: 600,
-                    color: item.profit > 0 ? 'rgb(197, 255, 51)' : '#f5384e'
+                    color: parseFloat(item.profit || 0) > 0 ? 'rgb(197, 255, 51)' : '#f5384e'
                   }}
                 >
-                  {item.profit > 0 ? '+' : ''}{item.profit} USDR
+                  {parseFloat(item.profit || 0) > 0 ? '+' : ''}{formatAmount(item.profit)} {item.token || 'USDT'}
                 </span>
               </div>
 
               {/* 第二行：开盘价和收盘价 */}
               <div className="flex justify-between items-center">
                 <span className="text-[#8f8f8f] font-size-[13vw] md:text-sm">
-                  {formatPrice(item.openPrice)}
+                  {t('history.entry_price')}: {formatPrice(item.entry_price)}
                 </span>
                 <span className="text-[#8f8f8f] font-size-[13vw] md:text-sm">
-                  {formatPrice(item.closePrice)}
+                  {t('history.close_price')}: {formatPrice(item.close_price)}
                 </span>
               </div>
 
               {/* 第三行：开盘时间和封盘时间 */}
               <div className="flex justify-between items-center">
                 <span className="text-[#8f8f8f] font-size-[13vw] md:text-sm">
-                  {formatTime(item.openTime)}
+                  {t('history.created_at')}: {formatTime(item.created_at)}
                 </span>
                 <span className="text-[#8f8f8f] font-size-[13vw] md:text-sm">
-                  {formatTime(item.closeTime)}
+                  {item.settled_at ? `${t('history.settled_at')}: ${formatTime(item.settled_at)}` : t('history.pending')}
                 </span>
               </div>
             </div>
@@ -438,9 +414,35 @@ const History = () => {
         )}
 
         {/* 空状态 */}
-        {!loading && historyData.length === 0 && (
-          <div className="text-center py-[40vw] md:py-10">
-            <span className="text-[#8f8f8f] font-size-[16vw] md:text-lg">{t('history.no_data')}</span>
+        {!loading && !error && historyData.length === 0 && (
+          <div className="text-center py-[60vw] md:py-16">
+            <div className="flex flex-col items-center gap-[16vw] md:gap-4">
+              {/* 空状态图标 */}
+              <div className="w-[80vw] md:w-20 h-[80vw] md:h-20 rounded-full bg-[#2a2a2a] flex items-center justify-center">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" className="w-[40vw] md:w-10 h-[40vw] md:h-10">
+                  <path
+                    d="M9 11H15M9 15H15M17 21H7C5.89543 21 5 20.1046 5 19V5C5 3.89543 5.89543 3 7 3H12.5858C12.851 3 13.1054 3.10536 13.2929 3.29289L19.7071 9.70711C19.8946 9.89464 20 10.149 20 10.4142V19C20 20.1046 19.1046 21 18 21H17ZM17 21V11H13V7H7V19H17Z"
+                    stroke="#8f8f8f"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </div>
+
+              {/* 空状态文字 */}
+              <div className="flex flex-col items-center gap-[8vw] md:gap-2">
+                <span className="text-white font-size-[18vw] md:text-xl font-semibold">
+                  {t('history.no_data')}
+                </span>
+                <span className="text-[#8f8f8f] font-size-[14vw] md:text-sm text-center max-w-[280vw] md:max-w-80">
+                  {status === 'all'
+                    ? t('history.no_data_description')
+                    : t('history.no_data_filtered_description', { status: t(`history.${status}`) })
+                  }
+                </span>
+              </div>
+            </div>
           </div>
         )}
       </div>

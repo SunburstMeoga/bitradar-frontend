@@ -57,6 +57,19 @@ apiClient.interceptors.request.use(
     const token = TokenManager.getToken();
     if (token && !TokenManager.isTokenExpired(token)) {
       config.headers.Authorization = `Bearer ${token}`;
+      console.log('🔐 API请求添加Token:', {
+        url: config.url,
+        method: config.method,
+        hasToken: !!token,
+        tokenPreview: token ? `${token.substring(0, 20)}...` : null
+      });
+    } else {
+      console.log('⚠️ API请求无Token:', {
+        url: config.url,
+        method: config.method,
+        hasToken: !!token,
+        isExpired: token ? TokenManager.isTokenExpired(token) : null
+      });
     }
     return config;
   },

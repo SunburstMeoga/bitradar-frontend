@@ -25,6 +25,13 @@ class AuthService extends ApiService {
           TokenManager.setRefreshToken(refreshToken);
         }
 
+        console.log('🎉 登录成功，Token已保存:', {
+          hasToken: !!authToken,
+          tokenPreview: authToken ? `${authToken.substring(0, 20)}...` : null,
+          hasRefreshToken: !!refreshToken,
+          user: user
+        });
+
         return {
           success: true,
           user,

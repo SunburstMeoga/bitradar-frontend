@@ -14,20 +14,20 @@ export const useApiCall = (apiFunction, dependencies = []) => {
     // 检查是否正在调用中
     if (isCallingRef.current) {
       console.log('API call already in progress, skipping...');
-      return;
+      return { success: false, message: 'API调用正在进行中' };
     }
 
     // 检查参数是否与上次调用相同
     const currentParams = JSON.stringify(args);
     if (lastCallParamsRef.current === currentParams) {
       console.log('Same API call parameters, skipping...');
-      return;
+      return { success: false, message: '相同的API调用参数' };
     }
 
     try {
       isCallingRef.current = true;
       lastCallParamsRef.current = currentParams;
-      
+
       const result = await apiFunction(...args);
       return result;
     } catch (error) {
