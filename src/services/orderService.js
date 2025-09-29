@@ -36,13 +36,8 @@ class OrderService extends ApiService {
 
       console.log('🎯 发送订单创建请求:', orderData);
 
-      // 使用完整的URL路径，不带/api/v1前缀
-      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-      const fullUrl = `${API_BASE_URL}/orders`;
-
-      console.log('📡 API请求URL:', fullUrl);
-
-      const response = await this.client.post(fullUrl, {
+      // 使用相对路径，会自动拼接baseURL和API版本
+      const response = await this.post('/orders', {
         bet_amount: orderData.bet_amount,
         token: orderData.token,
         direction: orderData.direction,
@@ -61,6 +56,23 @@ class OrderService extends ApiService {
       throw new Error(response.message || '下单失败');
     } catch (error) {
       console.error('创建订单失败:', error);
+      console.error('错误详情:', {
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        headers: error.response?.headers,
+        config: {
+          url: error.config?.url,
+          method: error.config?.method,
+          data: error.config?.data,
+          headers: error.config?.headers
+        }
+      });
+
+      // 详细打印响应数据
+      if (error.response?.data) {
+        console.error('API响应数据:', JSON.stringify(error.response.data, null, 2));
+      }
 
       // 处理特定的错误情况，但不在这里显示toast
       // toast会在调用方或者api.js的拦截器中统一处理

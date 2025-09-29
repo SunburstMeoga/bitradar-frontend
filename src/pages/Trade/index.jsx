@@ -3,9 +3,10 @@ import { useTranslation } from 'react-i18next';
 import usePageTitle from '../../hooks/usePageTitle';
 import useViewportHeight from '../../hooks/useViewportHeight';
 import { useApiCall } from '../../hooks/useApiCall';
-import { useAuthStore, useUserStore } from '../../store';
+import { useAuthStore, useUserStore, useWeb3Store } from '../../store';
 import { safeParseFloat, formatNumber } from '../../utils/format';
 import { orderService, tokenService } from '../../services';
+import { connectWallet } from '../../utils/web3';
 import Modal from '../../components/Modal';
 import PriceChart from '../../components/PriceChart';
 import pUSDIcon from '../../assets/icons/pUSD.png';
@@ -18,8 +19,9 @@ import sliderIcon from '../../assets/icons/slider.png';
 
 const Trade = () => {
   const { t } = useTranslation();
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, login } = useAuthStore();
   const { balance, profile, fetchBalance, fetchProfile } = useUserStore();
+  const { setAccount, setChainId, setWeb3, setProvider, setIsConnected } = useWeb3Store();
 
   // 获取视口高度信息
   const { mainAreaHeight, isMobile } = useViewportHeight();
@@ -37,6 +39,7 @@ const Trade = () => {
   const [isPlacingBet, setIsPlacingBet] = useState(false); // 下注加载状态
   const [tokenOptions, setTokenOptions] = useState([]); // 可选择的币种列表
   const [isLoadingTokens, setIsLoadingTokens] = useState(true); // 代币列表加载状态
+  const [isConnecting, setIsConnecting] = useState(false); // 连接钱包状态
 
   // 计算PriceChart的动态高度
   const calculateChartHeight = () => {
@@ -300,13 +303,84 @@ const Trade = () => {
     setIsTokenModalOpen(false);
   };
 
+  // 连接钱包并登录
+  const handleConnectWallet = async () => {
+    setIsConnecting(true);
+    try {
+      // 1. 连接钱包
+      const result = await connectWallet();
+      setAccount(result.account);
+      setChainId(result.chainId);
+      setWeb3(result.web3);
+      setProvider(result.provider);
+      setIsConnected(true);
+
+      // 2. 进行Web3登录认证
+      try {
+        await login(result.account);
+        toast.success('钱包连接并登录成功！');
+
+        // 3. 获取用户信息和余额
+        try {
+          await Promise.all([
+            fetchProfile(),
+            fetchBalance()
+          ]);
+        } catch (fetchError) {
+          console.error('获取用户数据失败:', fetchError);
+        }
+      } catch (authError) {
+        console.error('Web3登录失败:', authError);
+        toast.error(`登录失败: ${authError.message}`);
+      }
+    } catch (error) {
+      console.error('连接钱包失败:', error);
+      toast.error(`连接钱包失败: ${error.message}`);
+    } finally {
+      setIsConnecting(false);
+    }
+  };
+
   // 处理用户下注
   const handlePlaceBet = async (direction) => {
-    if (tradeAmount === 0 || !currentPrice || isPlacingBet) return;
+    console.log('🎯 开始下注流程，参数检查:', {
+      tradeAmount,
+      currentPrice,
+      isPlacingBet,
+      direction,
+      selectedToken,
+      isAuthenticated
+    });
+
+    if (tradeAmount === 0 || !currentPrice || isPlacingBet) {
+      console.log('❌ 下注条件不满足:', {
+        tradeAmountZero: tradeAmount === 0,
+        noPriceData: !currentPrice,
+        isPlacingBet
+      });
+      return;
+    }
 
     // 检查用户是否已认证
     if (!isAuthenticated) {
+      console.log('❌ 用户未认证');
       toast.error('请先连接钱包并登录');
+      return;
+    }
+
+    // 检查是否有有效的token
+    const currentToken = localStorage.getItem('authToken');
+    console.log('🔐 当前认证token:', currentToken ? `${currentToken.substring(0, 20)}...` : '无');
+
+    if (!currentToken) {
+      console.log('❌ 没有认证token');
+      toast.error('认证token无效，请重新登录');
+      return;
+    }
+
+    // 检查选中的代币
+    if (!selectedToken || selectedToken === '') {
+      toast.error('请选择下注代币');
       return;
     }
 
@@ -331,6 +405,31 @@ const Trade = () => {
       };
 
       console.log('🎯 发送下注请求 (新格式):', orderData);
+      console.log('🎯 当前认证状态:', isAuthenticated);
+      console.log('🎯 当前用户余额:', userBalance);
+      console.log('🎯 选中的代币:', selectedToken);
+      console.log('🎯 交易金额:', tradeAmount);
+
+      // 验证订单数据
+      const validationErrors = [];
+      if (!orderData.bet_amount || parseFloat(orderData.bet_amount) < 1.0) {
+        validationErrors.push('下注金额必须大于等于1.00');
+      }
+      if (!orderData.token) {
+        validationErrors.push('必须选择下注代币');
+      }
+      if (!orderData.direction || !['up', 'down'].includes(orderData.direction)) {
+        validationErrors.push('预测方向必须是up或down');
+      }
+      if (!orderData.trading_pair) {
+        validationErrors.push('交易对不能为空');
+      }
+
+      if (validationErrors.length > 0) {
+        console.error('❌ 订单数据验证失败:', validationErrors);
+        toast.error('订单数据验证失败: ' + validationErrors.join(', '));
+        return;
+      }
 
       // 调用API创建订单
       const result = await orderService.createOrder(orderData);
@@ -666,15 +765,29 @@ const Trade = () => {
 
         {/* 第三部分：按钮和时间 */}
         <div className="w-full md:w-full flex items-center justify-between mt-[12vw] md:mt-3">
-          {/* Up按钮 */}
-          <div
-            className={`w-[100vw] md:w-32 h-[50vw] md:h-12 rounded-[12vw] md:rounded-lg flex items-center justify-center gap-[8vw] md:gap-2 ${isButtonsDisabled ? 'cursor-not-allowed' : 'cursor-pointer'}`}
-            style={{
-              backgroundColor: '#00bc4b',
-              filter: isButtonsDisabled ? 'brightness(0.3)' : 'brightness(1)'
-            }}
-            onClick={() => !isButtonsDisabled && handlePlaceBet('up')}
-          >
+          {!isAuthenticated ? (
+            /* 未认证时显示连接钱包按钮 */
+            <div className="w-full flex justify-center">
+              <button
+                onClick={handleConnectWallet}
+                disabled={isConnecting}
+                className="w-[200vw] md:w-64 h-[50vw] md:h-12 bg-[#c5ff33] text-black text-size-[17vw] md:text-lg font-semibold rounded-[12vw] md:rounded-lg flex items-center justify-center disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                {isConnecting ? '连接中...' : '连接钱包开始交易'}
+              </button>
+            </div>
+          ) : (
+            /* 已认证时显示交易按钮 */
+            <>
+              {/* Up按钮 */}
+              <div
+                className={`w-[100vw] md:w-32 h-[50vw] md:h-12 rounded-[12vw] md:rounded-lg flex items-center justify-center gap-[8vw] md:gap-2 ${isButtonsDisabled ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+                style={{
+                  backgroundColor: '#00bc4b',
+                  filter: isButtonsDisabled ? 'brightness(0.3)' : 'brightness(1)'
+                }}
+                onClick={() => !isButtonsDisabled && handlePlaceBet('up')}
+              >
             {isPlacingBet ? (
               <div className="w-[24vw] md:w-6 h-[24vw] md:h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
             ) : (
@@ -709,6 +822,8 @@ const Trade = () => {
               {isPlacingBet ? '下注中...' : t('trade.down')}
             </span>
           </div>
+            </>
+          )}
         </div>
       </div>
 
