@@ -454,9 +454,11 @@ const PriceChart = ({ onPriceUpdate, userBets = [] }) => {
         const response = await priceService.getHistoryPrice(120);
 
         if (response.success && response.data && Array.isArray(response.data)) {
-          // API返回的数据格式: [[timestamp, price], ...]
+          // API返回的数据格式: [{price, timestamp, symbol}, ...]
+          // 转换为内部使用的格式: [[timestamp, price], ...]
           // 取最新的119个数据点（保留1个位置给当前价格）
-          const historyData = response.data.slice(-119);
+          const rawData = response.data.slice(-119);
+          const historyData = rawData.map(item => [item.timestamp, parseFloat(item.price)]);
 
           console.log('📊 历史价格数据获取成功:', {
             totalPoints: response.data.length,
@@ -497,8 +499,8 @@ const PriceChart = ({ onPriceUpdate, userBets = [] }) => {
 
     const connectWebSocket = () => {
       try {
-        console.log('🔌 正在连接WebSocket到: wss://crypto.nickwongon99.top');
-        wsRef.current = new WebSocket('wss://crypto.nickwongon99.top');
+        console.log('🔌 正在连接WebSocket到: ws://54.254.151.178:9012/ws/price');
+        wsRef.current = new WebSocket('ws://54.254.151.178:9012/ws/price');
 
         wsRef.current.onopen = () => {
           console.log('✅ WebSocket连接成功');
@@ -515,8 +517,8 @@ const PriceChart = ({ onPriceUpdate, userBets = [] }) => {
 
             // 只处理价格更新消息
             if (message.type === 'price_update') {
-              const newPrice = parseFloat(message.price);
-              const newTimestamp = new Date(message.timestamp).getTime();
+              const newPrice = parseFloat(message.data.price);
+              const newTimestamp = message.timestamp;
 
               // 检查价格是否变化来决定是否闪烁
               if (previousPriceRef.current !== null && previousPriceRef.current !== newPrice) {
@@ -558,7 +560,7 @@ const PriceChart = ({ onPriceUpdate, userBets = [] }) => {
               };
 
               console.log('💰 WebSocket价格更新:', {
-                symbol: message.symbol,
+                symbol: message.data.symbol,
                 price: newPrice.toFixed(2),
                 timestamp: newTimestamp,
                 time: new Date(newTimestamp).toLocaleTimeString(),

@@ -55,7 +55,7 @@ class PriceService extends ApiService {
     try {
       const response = await this.get(`/price/history?seconds=${seconds}`);
       
-      if (response.code === 0 && response.data) {
+      if (response.success && response.data) {
         return {
           success: true,
           data: response.data,
