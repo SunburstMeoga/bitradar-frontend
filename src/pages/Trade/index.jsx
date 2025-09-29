@@ -34,7 +34,6 @@ const Trade = () => {
   const [selectedToken, setSelectedToken] = useState('');
   const [isTokenModalOpen, setIsTokenModalOpen] = useState(false);
   const [userBets, setUserBets] = useState([]); // 用户下注记录
-  const [luckyUSDBalance, setLuckyUSDBalance] = useState(0); // LuckyUSD随机余额
   const [isPlacingBet, setIsPlacingBet] = useState(false); // 下注加载状态
   const [tokenOptions, setTokenOptions] = useState([]); // 可选择的币种列表
   const [isLoadingTokens, setIsLoadingTokens] = useState(true); // 代币列表加载状态
@@ -94,23 +93,28 @@ const Trade = () => {
   // 使用防重复调用的API hook
   const safeFetchBalance = useApiCall(fetchBalance, []);
 
-  // 生成LuckyUSD随机余额（0-10000，两位小数）
-  const generateLuckyUSDBalance = () => {
-    const randomBalance = Math.random() * 10000;
-    return Math.round(randomBalance * 100) / 100; // 保留两位小数
-  };
+
 
   // 获取当前选中币种的余额
   const getCurrentTokenBalance = () => {
-    if (selectedToken === 'USDT') {
-      // USDT余额，如果余额数据为null/undefined或网络请求失败，返回0
-      return safeParseFloat(balance?.usdtBalance, 0);
-    } else if (selectedToken === 'USDR') {
-      // USDR余额，暂时使用USDT余额数据
-      return safeParseFloat(balance?.usdtBalance, 0);
-    } else if (selectedToken === 'LuckyUSD') {
-      return luckyUSDBalance;
+    if (!balance) return 0;
+
+    // 根据代币symbol映射到对应的余额字段
+    const balanceFieldMap = {
+      'USDT': 'usdt_balance',
+      'USDR': 'usdr_balance',
+      'LUSD': 'lusd_balance',
+      'LuckyUSD': 'lusd_balance', // LuckyUSD对应LUSD
+      'Rocket': 'rocket_balance'
+    };
+
+    const balanceField = balanceFieldMap[selectedToken];
+    if (balanceField && balance[balanceField]) {
+      return safeParseFloat(balance[balanceField], 0);
     }
+
+    // 如果没有找到对应的余额字段，返回0
+    console.warn(`⚠️ 未找到代币 ${selectedToken} 对应的余额字段`);
     return 0;
   };
 
@@ -129,24 +133,29 @@ const Trade = () => {
     try {
       setIsLoadingTokens(true);
       console.log('🪙 开始获取代币列表...');
+      console.log('🪙 API基础URL:', import.meta.env.VITE_API_BASE_URL);
 
       const result = await tokenService.getBetTokens();
+      console.log('🪙 tokenService.getBetTokens() 返回结果:', result);
 
       if (result.success && result.data) {
-        // 将API返回的代币数据转换为UI需要的格式
-        const formattedTokens = result.data.map(token => ({
-          name: token.symbol,
-          displayName: token.name,
-          icon: pUSDIcon, // 暂时使用统一图标
-          minBet: parseFloat(token.min_bet),
-          maxBet: parseFloat(token.max_bet),
-          winRate: token.win_rate,
-          // 保存原始数据
-          originalData: token
-        }));
+        // 过滤只显示可下注的代币，并转换为UI需要的格式
+        const formattedTokens = result.data
+          .filter(token => token.is_bet_enabled === true) // 只显示可下注的代币
+          .map(token => ({
+            name: token.symbol,
+            displayName: token.name,
+            icon: pUSDIcon, // 暂时使用统一图标
+            decimals: token.decimals,
+            isActive: token.is_active,
+            isBetEnabled: token.is_bet_enabled,
+            isSettlementEnabled: token.is_settlement_enabled,
+            // 保存原始数据
+            originalData: token
+          }));
 
         setTokenOptions(formattedTokens);
-        console.log('🪙 代币列表获取成功:', formattedTokens);
+        console.log('🪙 代币列表获取成功 (已过滤可下注代币):', formattedTokens);
 
         // 设置默认选中的代币
         if (formattedTokens.length > 0) {
@@ -164,11 +173,40 @@ const Trade = () => {
       }
     } catch (error) {
       console.error('🪙 获取代币列表失败:', error);
-      // 如果获取失败，使用默认列表
+      console.error('🪙 错误详情:', {
+        message: error.message,
+        response: error.response,
+        request: error.request
+      });
+      // 如果获取失败，使用默认列表（与API数据结构保持一致）
       const defaultTokens = [
-        { name: 'USDT', displayName: 'Tether USD', icon: pUSDIcon, minBet: 1, maxBet: 10000, winRate: '80%' },
-        { name: 'USDR', displayName: 'USD Reserve', icon: pUSDIcon, minBet: 1, maxBet: 5000, winRate: '80%' },
-        { name: 'LuckyUSD', displayName: 'Lucky USD', icon: pUSDIcon, minBet: 1, maxBet: 5000, winRate: '80%' }
+        {
+          name: 'USDT',
+          displayName: 'Tether USD',
+          icon: pUSDIcon,
+          decimals: 8,
+          isActive: true,
+          isBetEnabled: true,
+          isSettlementEnabled: true
+        },
+        {
+          name: 'USDR',
+          displayName: 'USDR',
+          icon: pUSDIcon,
+          decimals: 8,
+          isActive: true,
+          isBetEnabled: true,
+          isSettlementEnabled: true
+        },
+        {
+          name: 'LUSD',
+          displayName: 'LuckyUSD',
+          icon: pUSDIcon,
+          decimals: 8,
+          isActive: true,
+          isBetEnabled: true,
+          isSettlementEnabled: false
+        }
       ];
       setTokenOptions(defaultTokens);
 
@@ -222,15 +260,25 @@ const Trade = () => {
     setSelectedToken(tokenName);
     setIsTokenModalOpen(false);
 
-    // 币种切换时重置滑动条值
+    // 币种切换时重置滑动条值，使用统一的余额获取逻辑
     let newBalance = 0;
-    if (tokenName === 'USDT') {
-      newBalance = safeParseFloat(balance?.usdtBalance, 0);
-    } else if (tokenName === 'USDR') {
-      newBalance = safeParseFloat(balance?.usdtBalance, 0); // 暂时使用USDT余额数据
-    } else if (tokenName === 'LuckyUSD') {
-      newBalance = luckyUSDBalance;
+    if (balance) {
+      // 根据代币symbol映射到对应的余额字段
+      const balanceFieldMap = {
+        'USDT': 'usdt_balance',
+        'USDR': 'usdr_balance',
+        'LUSD': 'lusd_balance',
+        'LuckyUSD': 'lusd_balance', // LuckyUSD对应LUSD
+        'Rocket': 'rocket_balance'
+      };
+
+      const balanceField = balanceFieldMap[tokenName];
+      if (balanceField && balance[balanceField]) {
+        newBalance = safeParseFloat(balance[balanceField], 0);
+      }
     }
+
+    console.log(`🪙 切换到代币 ${tokenName}，余额: ${newBalance}`);
 
     if (newBalance <= 0) {
       // 余额为0时，滑动条和交易金额都设为0
@@ -314,7 +362,12 @@ const Trade = () => {
 
         // 刷新用户余额
         if (fetchBalance) {
-          fetchBalance();
+          console.log('🔄 下注成功，刷新余额...');
+          fetchBalance().then(() => {
+            console.log('✅ 余额刷新完成');
+          }).catch(error => {
+            console.error('❌ 余额刷新失败:', error);
+          });
         }
 
         // 重置交易金额
@@ -395,11 +448,7 @@ const Trade = () => {
     fetchBetTokens();
   }, []); // 只在组件挂载时执行一次
 
-  // 初始化LuckyUSD随机余额
-  useEffect(() => {
-    const initialLuckyUSDBalance = generateLuckyUSDBalance();
-    setLuckyUSDBalance(initialLuckyUSDBalance);
-  }, []); // 只在组件挂载时执行一次
+
 
   // 获取用户余额
   useEffect(() => {
@@ -421,6 +470,15 @@ const Trade = () => {
     }
   }, [isAuthenticated, profile, fetchProfile]);
 
+  // 监听余额变化和代币选择变化，输出调试信息
+  useEffect(() => {
+    if (selectedToken && balance) {
+      const currentBalance = getCurrentTokenBalance();
+      console.log(`💰 当前选中代币: ${selectedToken}, 余额: ${currentBalance}`);
+      console.log('💰 完整余额数据:', balance);
+    }
+  }, [balance, selectedToken]); // 依赖余额数据和选中代币
+
   // 当余额数据更新时，设置滑动条默认值
   useEffect(() => {
     const currentBalance = getCurrentTokenBalance();
@@ -434,7 +492,7 @@ const Trade = () => {
       setSliderValue(1);
       setTradeAmount(1);
     }
-  }, [balance, luckyUSDBalance, selectedToken]); // 只依赖余额数据和选中的币种
+  }, [balance, selectedToken]); // 只依赖余额数据和选中的币种
 
   // 清理过期的下注记录（只清理未结算且超过结算时间5秒的记录）
   useEffect(() => {

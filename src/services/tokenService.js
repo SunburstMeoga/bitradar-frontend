@@ -13,18 +13,23 @@ class TokenService extends ApiService {
 
       console.log('🪙 代币列表API响应:', response);
 
-      if (response.success && response.data && response.data.bet_tokens) {
-        const tokens = response.data.bet_tokens;
-        
+      if (response.success && response.data) {
+        // 处理实际的API响应结构：data直接是数组
+        const tokens = Array.isArray(response.data) ? response.data : response.data.bet_tokens || [];
+
         // 在控制台打印代币信息
         console.log('=== 可用于下注的代币列表 ===');
         tokens.forEach((token, index) => {
           console.log(`代币 ${index + 1}:`);
+          console.log('  ID:', token.id);
           console.log('  符号:', token.symbol);
           console.log('  名称:', token.name);
-          console.log('  最小下注:', token.min_bet);
-          console.log('  最大下注:', token.max_bet);
-          console.log('  胜率:', token.win_rate);
+          console.log('  小数位数:', token.decimals);
+          console.log('  是否激活:', token.is_active);
+          console.log('  是否可下注:', token.is_bet_enabled);
+          console.log('  是否可结算:', token.is_settlement_enabled);
+          console.log('  创建时间:', token.created_at);
+          console.log('  更新时间:', token.updated_at);
           console.log('  ---');
         });
         console.log('============================');
@@ -43,25 +48,37 @@ class TokenService extends ApiService {
       console.warn('🪙 API调用失败，使用默认代币列表');
       const fallbackTokens = [
         {
+          id: 2,
           symbol: "USDT",
           name: "Tether USD",
-          min_bet: "1.00",
-          max_bet: "10000.00",
-          win_rate: "80%"
+          decimals: 8,
+          is_active: true,
+          is_bet_enabled: true,
+          is_settlement_enabled: true,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
         },
         {
+          id: 3,
           symbol: "USDR",
-          name: "USD Reserve",
-          min_bet: "1.00",
-          max_bet: "5000.00",
-          win_rate: "80%"
+          name: "USDR",
+          decimals: 8,
+          is_active: true,
+          is_bet_enabled: true,
+          is_settlement_enabled: true,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
         },
         {
-          symbol: "LuckyUSD",
-          name: "Lucky USD",
-          min_bet: "1.00",
-          max_bet: "5000.00",
-          win_rate: "80%"
+          id: 4,
+          symbol: "LUSD",
+          name: "LuckyUSD",
+          decimals: 8,
+          is_active: true,
+          is_bet_enabled: true,
+          is_settlement_enabled: false,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
         }
       ];
 
