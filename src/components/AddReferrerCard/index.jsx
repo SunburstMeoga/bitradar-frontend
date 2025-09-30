@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { referralService } from '../../services';
+import { useWeb3Store } from '../../store';
 import toast from 'react-hot-toast';
 
 // 返回按钮SVG组件
@@ -51,6 +52,7 @@ const PasteIcon = () => (
 
 const AddReferrerCard = ({ onBack, onClose, onSuccess }) => {
   const { t } = useTranslation();
+  const { account } = useWeb3Store();
   const [inviteCode, setInviteCode] = useState('');
   const [isCodeFocused, setIsCodeFocused] = useState(false);
   const [isValidating, setIsValidating] = useState(false);
@@ -76,13 +78,13 @@ const AddReferrerCard = ({ onBack, onClose, onSuccess }) => {
       } else {
         setValidationResult({
           isValid: false,
-          message: '邀请码无效'
+          message: t('wallet.invalid_referral_code')
         });
       }
     } catch (error) {
       setValidationResult({
         isValid: false,
-        message: error.message || '验证失败'
+        message: error.message || t('wallet.validation_failed')
       });
     } finally {
       setIsValidating(false);
@@ -140,19 +142,24 @@ const AddReferrerCard = ({ onBack, onClose, onSuccess }) => {
   // 处理确认按钮点击
   const handleConfirm = async () => {
     if (!inviteCode.trim() || !validationResult?.isValid) {
-      toast.error('请输入有效的邀请码');
+      toast.error(t('wallet.please_enter_valid_referral_code'));
+      return;
+    }
+
+    if (!account) {
+      toast.error(t('wallet.please_connect_wallet_first'));
       return;
     }
 
     setIsSubmitting(true);
     try {
-      const result = await referralService.useInviteCode(inviteCode.trim());
+      const result = await referralService.useInviteCode(inviteCode.trim(), account);
       if (result.success) {
-        toast.success('成功使用邀请码！');
+        toast.success(t('wallet.referral_bind_success'));
         onSuccess && onSuccess();
       }
     } catch (error) {
-      toast.error(error.message || '使用邀请码失败');
+      toast.error(error.message || t('wallet.referral_bind_failed'));
     } finally {
       setIsSubmitting(false);
     }
@@ -194,7 +201,7 @@ const AddReferrerCard = ({ onBack, onClose, onSuccess }) => {
               style={{ padding: '11px 18px 11px 12px', boxSizing: 'border-box' }}
             >
               <div className="flex items-center gap-2 text-[#e4e7e7] text-[14px] md:text-sm">
-                <span>Type or</span>
+                <span>{t('wallet.type_or')}</span>
                 <div
                   onClick={(e) => {
                     e.stopPropagation();
@@ -203,9 +210,9 @@ const AddReferrerCard = ({ onBack, onClose, onSuccess }) => {
                   className="w-[80px] md:w-20 h-[36px] md:h-9 rounded-full border border-[rgb(228,231,231)] flex items-center justify-center gap-1 cursor-pointer hover:bg-[rgba(228,231,231,0.1)]"
                 >
                   <PasteIcon />
-                  <span>Paste</span>
+                  <span>{t('wallet.paste')}</span>
                 </div>
-                <span>invite code</span>
+                <span>{t('wallet.referral_code_text')}</span>
               </div>
             </div>
           ) : (
@@ -225,11 +232,11 @@ const AddReferrerCard = ({ onBack, onClose, onSuccess }) => {
               {inviteCode.trim() && (
                 <div className="flex items-center gap-1 mt-1">
                   {isValidating ? (
-                    <span className="text-[10px] text-[#949E9E]">验证中...</span>
+                    <span className="text-[10px] text-[#949E9E]">{t('wallet.validating')}</span>
                   ) : validationResult ? (
                     validationResult.isValid ? (
                       <div className="flex items-center gap-1">
-                        <span className="text-[10px] text-green-400">✓ 有效邀请码</span>
+                        <span className="text-[10px] text-green-400">✓ {t('wallet.valid_referral_code')}</span>
                         {validationResult.inviter && (
                           <span className="text-[10px] text-[#949E9E]">
                             (VIP{validationResult.inviter.vip_level})

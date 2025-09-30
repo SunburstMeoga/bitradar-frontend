@@ -56,31 +56,44 @@ class ReferralService extends ApiService {
   }
 
   /**
-   * 使用邀请码建立推荐关系（需要认证）
-   * @param {string} inviteCode - 邀请码
-   * @returns {Promise<Object>} 使用结果
+   * 绑定推荐关系（需要认证）
+   * @param {string} referralCode - 推荐码
+   * @param {string} walletAddress - 钱包地址
+   * @returns {Promise<Object>} 绑定结果
    */
-  async useInviteCode(inviteCode) {
+  async bindReferral(referralCode, walletAddress) {
     try {
-      console.log('🎯 使用邀请码:', inviteCode);
-      
-      const response = await this.post('/referral/use-invite-code', {
-        invite_code: inviteCode
+      console.log('🔗 绑定推荐关系:', { referralCode, walletAddress });
+
+      const response = await this.post('/referral/bind', {
+        referral_code: referralCode,
+        wallet_address: walletAddress
       });
-      
+
       if (response.success && response.data) {
-        console.log('✅ 使用邀请码成功:', response.data);
+        console.log('✅ 绑定推荐关系成功:', response.data);
         return {
           success: true,
           data: response.data
         };
       }
 
-      throw new Error(response.message || '使用邀请码失败');
+      throw new Error(response.message || '绑定推荐关系失败');
     } catch (error) {
-      console.error('使用邀请码失败:', error);
+      console.error('绑定推荐关系失败:', error);
       throw error;
     }
+  }
+
+  /**
+   * 使用邀请码建立推荐关系（需要认证）
+   * @param {string} inviteCode - 邀请码
+   * @param {string} walletAddress - 钱包地址
+   * @returns {Promise<Object>} 使用结果
+   */
+  async useInviteCode(inviteCode, walletAddress) {
+    // 现在调用新的 bindReferral 方法
+    return this.bindReferral(inviteCode, walletAddress);
   }
 
   /**
