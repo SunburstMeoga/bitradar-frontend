@@ -37,11 +37,14 @@ class ReferralService extends ApiService {
       
       const response = await this.get('/referral/my-invite-code');
       
-      if (response.success && response.data) {
-        console.log('✅ 获取邀请码成功:', response.data);
+      if (response.success && response.inviteCode) {
+        console.log('✅ 获取邀请码成功:', response.inviteCode);
         return {
           success: true,
-          data: response.data
+          data: {
+            invite_code: response.inviteCode,
+            share_url: response.shareUrl
+          }
         };
       }
 
@@ -90,11 +93,17 @@ class ReferralService extends ApiService {
       
       const response = await this.get('/referral/my-tree');
       
-      if (response.success && response.data) {
-        console.log('✅ 获取推荐树成功:', response.data);
+      if (response.success && response.tree) {
+        console.log('✅ 获取推荐树成功:', response.tree);
         return {
           success: true,
-          data: response.data
+          data: {
+            tree: response.tree,
+            stats: {
+              total_referrals: response.tree.total_invites || 0,
+              total_volume: response.tree.total_rewards || '0'
+            }
+          }
         };
       }
 

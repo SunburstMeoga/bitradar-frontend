@@ -16,14 +16,30 @@ class NetworkService extends ApiService {
       if (params.depth !== undefined) queryParams.append('depth', params.depth);
       if (params.include_inactive !== undefined) queryParams.append('include_inactive', params.include_inactive);
       
-      const url = `/network/my-tree${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
+      const url = `/referral/my-tree${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
       const response = await this.get(url);
       
-      if (response.success && response.data) {
-        console.log('✅ 获取网体结构树成功:', response.data);
+      if (response.success && response.tree) {
+        console.log('✅ 获取网体结构树成功:', response.tree);
+
+        // 适配页面期望的数据结构
+        const treeStructure = {
+          direct_referrals: response.tree.direct_referrals || [], // 如果有下级推荐数组
+          user_id: response.tree.user_id,
+          wallet_address: response.tree.wallet_address,
+          invite_code: response.tree.invite_code,
+          level: response.tree.level
+        };
+
         return {
           success: true,
-          data: response.data
+          data: {
+            tree_structure: treeStructure,
+            statistics: {
+              total_referrals: response.tree.total_invites || 0,
+              total_network_volume: response.tree.total_rewards || '0'
+            }
+          }
         };
       }
 

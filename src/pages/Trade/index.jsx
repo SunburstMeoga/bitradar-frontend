@@ -396,13 +396,15 @@ const Trade = () => {
     try {
       const now = Date.now();
 
-      // 准备API请求数据 - 严格按照接口文档格式 + entry_price
+      // 准备API请求数据 - 使用新的参数格式
       const orderData = {
-        bet_amount: tradeAmount.toFixed(2), // 转换为字符串格式，保留2位小数
-        token: selectedToken, // 使用当前选中的代币
-        direction: direction, // 直接使用 "up" 或 "down"
-        trading_pair: "BTC/USDT", // 默认交易对
-        entry_price: currentPrice.toString() // 添加入场价格，转换为字符串
+        orderType: direction === 'up' ? 'CALL' : 'PUT', // up -> CALL, down -> PUT
+        amount: tradeAmount, // 数字格式的下注金额
+        entryPrice: currentPrice, // 数字格式的入场价格
+        betTokenSymbol: selectedToken, // 使用当前选中的代币
+        tradingPairSymbol: "BTCUSDT", // 交易对符号，去掉斜杠
+        ratio: 1.8, // 固定比率，可以后续从配置或API获取
+        frontendSubmitTime: now // 前端提交时间戳
       };
 
       console.log('🎯 发送下注请求 (新格式):', orderData);
@@ -413,17 +415,23 @@ const Trade = () => {
 
       // 验证订单数据
       const validationErrors = [];
-      if (!orderData.bet_amount || parseFloat(orderData.bet_amount) < 1.0) {
+      if (!orderData.amount || orderData.amount < 1.0) {
         validationErrors.push('下注金额必须大于等于1.00');
       }
-      if (!orderData.token) {
+      if (!orderData.betTokenSymbol) {
         validationErrors.push('必须选择下注代币');
       }
-      if (!orderData.direction || !['up', 'down'].includes(orderData.direction)) {
-        validationErrors.push('预测方向必须是up或down');
+      if (!orderData.orderType || !['CALL', 'PUT'].includes(orderData.orderType)) {
+        validationErrors.push('订单类型必须是CALL或PUT');
       }
-      if (!orderData.trading_pair) {
+      if (!orderData.tradingPairSymbol) {
         validationErrors.push('交易对不能为空');
+      }
+      if (!orderData.entryPrice || orderData.entryPrice <= 0) {
+        validationErrors.push('入场价格必须大于0');
+      }
+      if (!orderData.ratio || orderData.ratio <= 0) {
+        validationErrors.push('比率必须大于0');
       }
 
       if (validationErrors.length > 0) {
@@ -441,20 +449,20 @@ const Trade = () => {
 
         // 创建本地下注记录（用于图表显示）
         // 适配新的API响应格式
-        const orderData = result.data.order || result.data;
+        const responseOrderData = result.data.order || result.data;
         const newBet = {
-          id: orderData.id,
+          id: responseOrderData.id,
           direction,
           amount: tradeAmount,
-          price: parseFloat(orderData.entry_price) || currentPrice,
-          timestamp: new Date(orderData.created_at).getTime() || now,
-          settlementTime: new Date(orderData.expires_at).getTime() || (now + 60000),
+          price: parseFloat(responseOrderData.entryPrice || responseOrderData.entry_price) || currentPrice,
+          timestamp: new Date(responseOrderData.created_at || responseOrderData.createdAt).getTime() || now,
+          settlementTime: new Date(responseOrderData.expires_at || responseOrderData.expiresAt).getTime() || (now + 60000),
           settlementPrice: null,
           isWin: null,
           profit: null,
           status: 'active',
           // 保存API返回的完整数据
-          apiData: orderData
+          apiData: responseOrderData
         };
 
         setUserBets(prev => [...prev, newBet]);

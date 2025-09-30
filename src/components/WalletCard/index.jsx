@@ -37,6 +37,15 @@ const MembershipIcon = () => (
   </svg>
 );
 
+// Loading 图标SVG组件
+const LoadingIcon = () => (
+  <svg width="32" height="32" viewBox="0 0 32 32" fill="none" className="animate-spin">
+    <circle cx="16" cy="16" r="12" stroke="#666" strokeWidth="2" strokeLinecap="round" strokeDasharray="75.4" strokeDashoffset="75.4">
+      <animate attributeName="stroke-dashoffset" dur="1s" values="75.4;0;75.4" repeatCount="indefinite"/>
+    </circle>
+  </svg>
+);
+
 // 右箭头SVG组件
 const ArrowRightIcon = ({ isRotated = false }) => (
   <svg
@@ -112,6 +121,7 @@ const WalletCard = ({ onClose, onSendClick, onActivityClick, onAddReferrerClick,
   const [isLanguageExpanded, setIsLanguageExpanded] = useState(false);
   const [hasReferralRelation, setHasReferralRelation] = useState(false);
   const [isCheckingReferral, setIsCheckingReferral] = useState(true);
+  const [isGeneratingReferralCode, setIsGeneratingReferralCode] = useState(false);
 
 
   // 从URL参数获取推荐人地址
@@ -125,24 +135,21 @@ const WalletCard = ({ onClose, onSendClick, onActivityClick, onAddReferrerClick,
 
   // 检查用户是否已有推荐关系
   const checkReferralRelation = async () => {
-    if (!isAuthenticated) {
+    if (!isAuthenticated || !profile) {
       setIsCheckingReferral(false);
       return;
     }
 
-    try {
-      const result = await referralService.getMyInviteCode();
-      if (result.success && result.data) {
-        // 如果用户有邀请码且有推荐数据，说明已建立推荐关系
-        setHasReferralRelation(true);
-      }
-    } catch (error) {
-      // 如果获取失败，可能是用户还没有推荐关系
-      console.log('用户可能还没有推荐关系:', error.message);
-      setHasReferralRelation(false);
-    } finally {
-      setIsCheckingReferral(false);
-    }
+    // 基于用户profile中的invited_by字段判断是否有推荐人
+    const hasReferrer = profile.invited_by && profile.invited_by > 0;
+
+    console.log('WalletCard检查推荐关系:', {
+      invited_by: profile.invited_by,
+      hasReferrer: hasReferrer
+    });
+
+    setHasReferralRelation(hasReferrer);
+    setIsCheckingReferral(false);
   };
 
   // 根据当前语言设置显示的语言名称
@@ -184,8 +191,10 @@ const WalletCard = ({ onClose, onSendClick, onActivityClick, onAddReferrerClick,
 
   // 检查推荐关系
   useEffect(() => {
-    checkReferralRelation();
-  }, [isAuthenticated]);
+    if (isAuthenticated && profile) {
+      checkReferralRelation();
+    }
+  }, [isAuthenticated, profile]);
 
   // 获取BNB余额
   useEffect(() => {
@@ -227,16 +236,47 @@ const WalletCard = ({ onClose, onSendClick, onActivityClick, onAddReferrerClick,
     }
   };
 
-  // 生成并复制推荐链接
+  // 生成并复制推荐码
   const handleGenerateReferralLink = async () => {
+    if (isGeneratingReferralCode) return; // 防止重复点击
+
+    setIsGeneratingReferralCode(true);
+
+    // 重试机制：最多重试3次
+    const maxRetries = 3;
+    let retryCount = 0;
+
+    const attemptGetReferralCode = async () => {
+      try {
+        const result = await referralService.getMyInviteCode();
+        if (result.success && result.data && result.data.share_url) {
+          // 复制推荐链接
+          await navigator.clipboard.writeText(result.data.share_url);
+          toast.success(t('wallet.referral_link_generated_and_copied'));
+          return true;
+        } else {
+          throw new Error('获取推荐链接失败：数据格式错误');
+        }
+      } catch (error) {
+        console.error(`获取推荐码失败 (尝试 ${retryCount + 1}/${maxRetries}):`, error);
+
+        if (retryCount < maxRetries - 1) {
+          retryCount++;
+          // 等待一小段时间后重试
+          await new Promise(resolve => setTimeout(resolve, 500));
+          return attemptGetReferralCode();
+        } else {
+          // 所有重试都失败了，显示错误提示
+          toast.error(error.message || '获取推荐码失败，请稍后重试');
+          return false;
+        }
+      }
+    };
+
     try {
-      const currentUrl = window.location.origin + window.location.pathname;
-      const referralLink = `${currentUrl}?ref=${account}`;
-      await navigator.clipboard.writeText(referralLink);
-      toast.success(t('wallet.referral_link_copied'));
-    } catch (err) {
-      console.error('复制失败:', err);
-      toast.error(t('wallet.copy_failed'));
+      await attemptGetReferralCode();
+    } finally {
+      setIsGeneratingReferralCode(false);
     }
   };
 
@@ -340,10 +380,11 @@ const WalletCard = ({ onClose, onSendClick, onActivityClick, onAddReferrerClick,
     ]),
     {
       id: 'generate-referral',
-      label: t('wallet.generate_referral_link'),
-      icon: LinkIcon,
-      textColor: '#9D9D9D',
+      label: isGeneratingReferralCode ? t('wallet.generating_referral_code') : t('wallet.generate_referral_link'),
+      icon: isGeneratingReferralCode ? LoadingIcon : LinkIcon,
+      textColor: isGeneratingReferralCode ? '#666' : '#9D9D9D',
       showArrow: false,
+      isLoading: isGeneratingReferralCode,
       onClick: handleGenerateReferralLink
     },
     {
@@ -427,8 +468,10 @@ const WalletCard = ({ onClose, onSendClick, onActivityClick, onAddReferrerClick,
             <div key={item.id}>
               {/* 主菜单项 */}
               <div
-                onClick={item.onClick}
-                className="w-[290px] md:w-full h-[54px] md:h-14 bg-[#2a2a2a] rounded-[8px] md:rounded-lg cursor-pointer hover:bg-[#333333] transition-colors box-border"
+                onClick={item.isLoading ? undefined : item.onClick}
+                className={`w-[290px] md:w-full h-[54px] md:h-14 bg-[#2a2a2a] rounded-[8px] md:rounded-lg transition-colors box-border ${
+                  item.isLoading ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:bg-[#333333]'
+                }`}
                 style={{ padding: '11px 18px 11px 12px' }}
               >
                 <div className="flex items-center justify-between h-full">

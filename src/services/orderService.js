@@ -4,52 +4,62 @@ class OrderService extends ApiService {
   /**
    * 创建新的二元期权订单
    * @param {Object} orderData - 订单数据
-   * @param {string} orderData.bet_amount - 下注金额 (字符串格式，如 "100.00")，最小 1.00
-   * @param {string} orderData.token - 下注代币 (USDT, LuckyUSD)
-   * @param {string} orderData.direction - 预测方向 (up, down)
-   * @param {string} orderData.trading_pair - 交易对 (BTC/USDT)
-   * @param {string} orderData.entry_price - 入场价格 (当前BTC价格，字符串格式)
+   * @param {string} orderData.orderType - 订单类型 (CALL, PUT)
+   * @param {number} orderData.amount - 下注金额，最小 1.00
+   * @param {number} orderData.entryPrice - 入场价格 (当前BTC价格)
+   * @param {string} orderData.betTokenSymbol - 下注代币符号 (USDT, LUSD等)
+   * @param {string} orderData.tradingPairSymbol - 交易对符号 (BTCUSDT)
+   * @param {number} orderData.ratio - 比率
+   * @param {number} orderData.frontendSubmitTime - 前端提交时间戳
    * @returns {Promise<Object>} 订单创建结果
-   *
-   * 注意：严格按照API接口文档的参数格式发送请求，额外添加entry_price参数
    */
   async createOrder(orderData) {
     try {
       // 验证参数
-      if (!orderData.bet_amount) {
+      if (!orderData.amount) {
         throw new Error('下注金额不能为空');
       }
 
-      const betAmount = parseFloat(orderData.bet_amount);
+      const betAmount = parseFloat(orderData.amount);
       if (isNaN(betAmount) || betAmount < 1.00) {
         throw new Error('下注金额必须大于等于 1.00');
       }
 
-      if (!orderData.token || !['USDT', 'LuckyUSD', 'USDR'].includes(orderData.token)) {
-        throw new Error('代币类型必须是 USDT, LuckyUSD 或 USDR');
+      if (!orderData.betTokenSymbol || !['USDT', 'LUSD', 'USDR'].includes(orderData.betTokenSymbol)) {
+        throw new Error('代币类型必须是 USDT, LUSD 或 USDR');
       }
 
-      if (!orderData.direction || !['up', 'down'].includes(orderData.direction)) {
-        throw new Error('预测方向必须是 up 或 down');
+      if (!orderData.orderType || !['CALL', 'PUT'].includes(orderData.orderType)) {
+        throw new Error('订单类型必须是 CALL 或 PUT');
       }
 
-      if (!orderData.trading_pair) {
+      if (!orderData.tradingPairSymbol) {
         throw new Error('交易对不能为空');
       }
 
-      if (!orderData.entry_price || parseFloat(orderData.entry_price) <= 0) {
+      if (!orderData.entryPrice || parseFloat(orderData.entryPrice) <= 0) {
         throw new Error('入场价格必须大于0');
+      }
+
+      if (!orderData.ratio || parseFloat(orderData.ratio) <= 0) {
+        throw new Error('比率必须大于0');
+      }
+
+      if (!orderData.frontendSubmitTime) {
+        throw new Error('前端提交时间不能为空');
       }
 
       console.log('🎯 发送订单创建请求:', orderData);
 
-      // 直接使用接口文档规定的参数格式 + entry_price
+      // 使用新的API参数格式
       const apiParams = {
-        bet_amount: orderData.bet_amount,
-        token: orderData.token,
-        direction: orderData.direction,
-        trading_pair: orderData.trading_pair,
-        entry_price: orderData.entry_price // 添加入场价格参数
+        orderType: orderData.orderType,
+        amount: orderData.amount,
+        entryPrice: orderData.entryPrice,
+        betTokenSymbol: orderData.betTokenSymbol,
+        tradingPairSymbol: orderData.tradingPairSymbol,
+        ratio: orderData.ratio,
+        frontendSubmitTime: orderData.frontendSubmitTime
       };
 
       console.log('🎯 API请求参数:', apiParams);

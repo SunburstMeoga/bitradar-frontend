@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useWeb3Store, useAuthStore } from '../../store';
+import { useWeb3Store, useAuthStore, useUserStore } from '../../store';
 import { referralService } from '../../services';
 import SlideModal from '../SlideModal';
 import SendCard from '../SendCard';
@@ -16,6 +16,7 @@ import ReferralTreeCard from '../ReferralTreeCard';
 const WalletModal = ({ isOpen, onClose }) => {
   const { account } = useWeb3Store();
   const { isAuthenticated } = useAuthStore();
+  const { profile } = useUserStore();
   const { t } = useTranslation();
   const [currentCardIndex, setCurrentCardIndex] = useState(0); // 0: 钱包卡片, 1: AddReferrer卡片, 2: Send卡片, 3: Activity卡片, 4: SelectToken卡片, 5: Membership卡片, 6: PaymentConfirm卡片, 7: ReferralStats卡片, 8: ReferralTree卡片
   const [selectedMembershipLevel, setSelectedMembershipLevel] = useState(null);
@@ -88,38 +89,39 @@ const WalletModal = ({ isOpen, onClose }) => {
 
   // 检查用户推荐关系
   const checkReferralRelation = async () => {
-    if (!isAuthenticated) {
+    if (!isAuthenticated || !profile) {
       setIsCheckingReferral(false);
       return;
     }
 
-    try {
-      const result = await referralService.getMyInviteCode();
-      if (result.success && result.data) {
-        // 用户已有推荐关系
-        setHasReferralRelation(true);
-        setShouldAutoShowInvite(false);
-      }
-    } catch (error) {
-      // 用户可能还没有推荐关系
-      console.log('用户可能还没有推荐关系:', error.message);
-      setHasReferralRelation(false);
+    // 基于用户profile中的invited_by字段判断是否有推荐人
+    const hasReferrer = profile.invited_by && profile.invited_by > 0;
 
-      // 检查URL中是否有推荐参数，如果没有则自动显示邀请码输入
+    console.log('检查推荐关系:', {
+      invited_by: profile.invited_by,
+      hasReferrer: hasReferrer
+    });
+
+    setHasReferralRelation(hasReferrer);
+
+    if (!hasReferrer) {
+      // 用户没有推荐人，检查URL中是否有推荐参数，如果没有则自动显示邀请码输入
       const urlParams = new URLSearchParams(window.location.search);
       const hasRefParam = urlParams.has('ref');
       setShouldAutoShowInvite(!hasRefParam);
-    } finally {
-      setIsCheckingReferral(false);
+    } else {
+      setShouldAutoShowInvite(false);
     }
+
+    setIsCheckingReferral(false);
   };
 
-  // 当弹窗打开且用户已认证时检查推荐关系
+  // 当弹窗打开且用户已认证且profile可用时检查推荐关系
   useEffect(() => {
-    if (isOpen && isAuthenticated && !isCheckingReferral) {
+    if (isOpen && isAuthenticated && profile && !isCheckingReferral) {
       checkReferralRelation();
     }
-  }, [isOpen, isAuthenticated]);
+  }, [isOpen, isAuthenticated, profile]);
 
   // 根据检查结果自动显示邀请码输入界面
   useEffect(() => {

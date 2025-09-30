@@ -14,14 +14,31 @@ class UserService extends ApiService {
         console.log('=== 用户信息 ===');
         console.log('用户ID:', response.data.id);
         console.log('钱包地址:', response.data.wallet_address);
-        console.log('VIP等级:', response.data.vip_level);
         console.log('邀请码:', response.data.invite_code);
-        console.log('邀请人ID:', response.data.inviter_id);
-        console.log('总投注金额:', response.data.total_bet_amount);
-        console.log('总盈利:', response.data.total_profit);
-        console.log('总亏损:', response.data.total_loss);
+        console.log('邀请数量:', response.data.invite_count);
+        console.log('总邀请数量:', response.data.total_invite_count);
+        console.log('推荐人ID:', response.data.invited_by);
+        console.log('是否有推荐人:', response.data.invited_by && response.data.invited_by > 0 ? '是' : '否');
+        console.log('是否激活:', response.data.is_active);
         console.log('创建时间:', response.data.created_at);
         console.log('更新时间:', response.data.updated_at);
+
+        // 显示可能缺失的字段（如果API后续添加）
+        if (response.data.vip_level !== undefined) {
+          console.log('VIP等级:', response.data.vip_level);
+        }
+        if (response.data.inviter_id !== undefined) {
+          console.log('邀请人ID:', response.data.inviter_id);
+        }
+        if (response.data.total_bet_amount !== undefined) {
+          console.log('总投注金额:', response.data.total_bet_amount);
+        }
+        if (response.data.total_profit !== undefined) {
+          console.log('总盈利:', response.data.total_profit);
+        }
+        if (response.data.total_loss !== undefined) {
+          console.log('总亏损:', response.data.total_loss);
+        }
         console.log('===============');
 
         return {
