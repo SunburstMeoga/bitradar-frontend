@@ -99,12 +99,12 @@ class NetworkService extends ApiService {
   async bindReferral(params) {
     try {
       console.log('🔗 绑定推荐关系...', { referral_code: params.referral_code });
-      
-      const response = await this.post('/referral/bind', {
+
+      const response = await this.post('/referral/use-invite-code', {
         referral_code: params.referral_code,
         wallet_address: params.wallet_address
       });
-      
+
       if (response.success && response.data) {
         console.log('✅ 绑定推荐关系成功:', response.data);
         return {
