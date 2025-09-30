@@ -8,7 +8,10 @@ class OrderService extends ApiService {
    * @param {string} orderData.token - 下注代币 (USDT, LuckyUSD)
    * @param {string} orderData.direction - 预测方向 (up, down)
    * @param {string} orderData.trading_pair - 交易对 (BTC/USDT)
+   * @param {string} orderData.entry_price - 入场价格 (当前BTC价格，字符串格式)
    * @returns {Promise<Object>} 订单创建结果
+   *
+   * 注意：严格按照API接口文档的参数格式发送请求，额外添加entry_price参数
    */
   async createOrder(orderData) {
     try {
@@ -34,15 +37,25 @@ class OrderService extends ApiService {
         throw new Error('交易对不能为空');
       }
 
+      if (!orderData.entry_price || parseFloat(orderData.entry_price) <= 0) {
+        throw new Error('入场价格必须大于0');
+      }
+
       console.log('🎯 发送订单创建请求:', orderData);
 
-      // 使用相对路径，会自动拼接baseURL和API版本
-      const response = await this.post('/orders', {
+      // 直接使用接口文档规定的参数格式 + entry_price
+      const apiParams = {
         bet_amount: orderData.bet_amount,
         token: orderData.token,
         direction: orderData.direction,
-        trading_pair: orderData.trading_pair
-      });
+        trading_pair: orderData.trading_pair,
+        entry_price: orderData.entry_price // 添加入场价格参数
+      };
+
+      console.log('🎯 API请求参数:', apiParams);
+
+      // 使用相对路径，会自动拼接baseURL和API版本
+      const response = await this.post('/orders', apiParams);
 
       if (response.success && response.data) {
         console.log('✅ 订单创建成功:', response.data);

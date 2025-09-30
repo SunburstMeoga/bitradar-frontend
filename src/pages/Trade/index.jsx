@@ -396,12 +396,13 @@ const Trade = () => {
     try {
       const now = Date.now();
 
-      // 准备API请求数据 - 使用新的API格式
+      // 准备API请求数据 - 严格按照接口文档格式 + entry_price
       const orderData = {
         bet_amount: tradeAmount.toFixed(2), // 转换为字符串格式，保留2位小数
         token: selectedToken, // 使用当前选中的代币
         direction: direction, // 直接使用 "up" 或 "down"
-        trading_pair: "BTC/USDT" // 默认交易对
+        trading_pair: "BTC/USDT", // 默认交易对
+        entry_price: currentPrice.toString() // 添加入场价格，转换为字符串
       };
 
       console.log('🎯 发送下注请求 (新格式):', orderData);
