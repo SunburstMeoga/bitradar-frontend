@@ -48,13 +48,14 @@ class PriceService extends ApiService {
 
   /**
    * 获取历史价格数据
-   * @param {number} seconds - 历史数据时间范围（秒），默认60秒
+   * @param {string} interval - 时间间隔：1m, 5m, 15m, 1h, 4h, 1d，默认1m
+   * @param {number} limit - 数据点数量（最大1000），默认100
    * @returns {Promise<Object>} 历史价格数据
    */
-  async getHistoryPrice(seconds = 60) {
+  async getHistoryPrice(interval = '1m', limit = 100) {
     try {
-      const response = await this.get(`/price/history?seconds=${seconds}`);
-      
+      const response = await this.get(`/price/history?interval=${interval}&limit=${limit}`);
+
       if (response.success && response.data) {
         return {
           success: true,

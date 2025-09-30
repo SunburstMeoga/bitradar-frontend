@@ -451,10 +451,10 @@ const PriceChart = ({ onPriceUpdate, userBets = [] }) => {
         setIsLoading(true);
         console.log('📊 开始获取历史价格数据...');
 
-        const response = await priceService.getHistoryPrice(120);
+        const response = await priceService.getHistoryPrice('1m', 119);
 
         if (response.success && response.data && Array.isArray(response.data)) {
-          // API返回的数据格式: [{price, timestamp, symbol}, ...]
+          // API返回的数据格式: {count: 1000, data: [{price, timestamp, symbol}, ...]}
           // 转换为内部使用的格式: [[timestamp, price], ...]
           // 取最新的119个数据点（保留1个位置给当前价格）
           const rawData = response.data.slice(-119);
