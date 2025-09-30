@@ -8,6 +8,7 @@ import { formatAddress } from '../../utils/web3';
 import { safeParseFloat, formatBalance } from '../../utils/format';
 import btcIcon from '../../assets/images/account-btc.png';
 import toast from 'react-hot-toast';
+import ReferralBindModal from '../../components/ReferralBindModal';
 
 const Account = () => {
   const navigate = useNavigate();
@@ -20,6 +21,7 @@ const Account = () => {
   usePageTitle('account');
   const [activeTab, setActiveTab] = useState('USDT');
   const [countdown, setCountdown] = useState(86400); // 24小时倒计时（秒）
+  const [showReferralBindModal, setShowReferralBindModal] = useState(false);
   const balanceFetchedRef = useRef(false);
 
   // 使用防重复调用的API hook
@@ -91,6 +93,15 @@ const Account = () => {
   // 处理交易记录点击
   const handleTransactionHistoryClick = () => {
     navigate('/transaction-history');
+  };
+
+  // 处理推荐码绑定点击
+  const handleReferralBindClick = () => {
+    if (!isConnected) {
+      toast.error('请先连接钱包');
+      return;
+    }
+    setShowReferralBindModal(true);
   };
 
 
@@ -210,7 +221,19 @@ const Account = () => {
         </div>
       </div>
 
-     
+      {/* 推荐码绑定入口 */}
+      <div className="px-[16vw] md:px-4 pb-[24vw] md:pb-6">
+        <div
+          onClick={handleReferralBindClick}
+          className="w-[343vw] md:w-full h-[50vw] md:h-12 flex items-center justify-between px-[16vw] md:px-4 rounded-[8vw] md:rounded-lg cursor-pointer hover:opacity-80 transition-opacity"
+          style={{ backgroundColor: 'rgb(41, 41, 41)' }}
+        >
+          <span className="text-white text-size-[16vw] md:text-lg">{t('network_details.referral_bind.title')}</span>
+          <svg className="w-[16vw] md:w-4 h-[16vw] md:h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+          </svg>
+        </div>
+      </div>
 
       {/* 第六部分：交易记录入口 */}
       <div className="px-[16vw] md:px-4">
@@ -225,6 +248,13 @@ const Account = () => {
           </svg>
         </div>
       </div>
+
+      {/* 推荐码绑定模态框 */}
+      <ReferralBindModal
+        isOpen={showReferralBindModal}
+        onClose={() => setShowReferralBindModal(false)}
+        walletAddress={account}
+      />
     </div>
   );
 };

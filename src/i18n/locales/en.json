@@ -8,7 +8,12 @@
     "connect_wallet": "Connect Wallet",
     "disconnect": "Disconnect",
     "retry": "Retry",
-    "app_name": "BitRocket"
+    "app_name": "BitRocket",
+    "yes": "Yes",
+    "no": "No",
+    "save": "Save",
+    "submit": "Submit",
+    "close": "Close"
   },
   "page_titles": {
     "trade": "Trade",
@@ -16,6 +21,7 @@
     "history": "History",
     "account": "Account",
     "network_details": "Network Details",
+    "network_earnings": "Earnings Details",
     "exchange": "Exchange",
     "transaction_history": "Transaction History",
     "active_orders": "Active Orders",
@@ -146,13 +152,47 @@
     "total_deposit": "Total Deposit",
     "total_withdrawal": "Total Withdrawal",
     "referral_system": "Referral System",
-    "level_1": "Level 1: 6 People",
-    "level_2": "Level 2: 6 People",
-    "level_3": "Level 3: 6 People",
-    "level_4": "Level 4: 6 People",
-    "trading_amount": "Trading Amount",
-    "fee_amount": "Fee Amount",
-    "withdrawal_amount": "Withdrawal Amount"
+    "level_title": "Level {{level}}: {{count}} People",
+    "stake_amount": "Stake Amount",
+    "relationship": "Relationship",
+    "reward_eligible": "Reward Eligible",
+    "relationship_direct": "Direct",
+    "relationship_same_level": "Same Level",
+    "relationship_indirect": "Indirect",
+    "no_referrals": "No referrals yet",
+    "earnings": {
+      "title": "Earnings Details",
+      "differential_rewards": "Differential Rewards",
+      "flat_rewards": "Flat Rewards",
+      "fee_dividends": "Fee Dividends",
+      "total_earnings": "Total Earnings",
+      "daily_total": "Daily Total",
+      "reward_type": "Reward Type",
+      "from_user": "From User",
+      "amount": "Amount",
+      "rate": "Rate",
+      "date_range": {
+        "today": "Today",
+        "week": "This Week",
+        "month": "This Month",
+        "custom": "Custom"
+      }
+    },
+    "referral_bind": {
+      "title": "Bind Referral",
+      "referral_code": "Referral Code",
+      "wallet_address": "Wallet Address",
+      "bind": "Bind",
+      "success": "Bind Success",
+      "failed": "Bind Failed"
+    },
+    "reward_config": {
+      "title": "Reward Configuration",
+      "max_levels": "Max Levels",
+      "level_rates": "Level Rates",
+      "min_referrals": "Min Referrals",
+      "calculation_period": "Calculation Period"
+    }
   },
   "exchange": {
     "title": "Exchange",

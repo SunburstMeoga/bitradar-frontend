@@ -7,6 +7,7 @@ import Home from '../pages/Home';
 import History from '../pages/History';
 import Account from '../pages/Account';
 import NetworkDetails from '../pages/NetworkDetails';
+import NetworkEarnings from '../pages/NetworkEarnings';
 import Exchange from '../pages/Exchange';
 import Withdraw from '../pages/Withdraw';
 import TransactionHistory from '../pages/TransactionHistory';
@@ -77,6 +78,16 @@ const OrderDetailWrapper = () => {
   );
 };
 
+// 网体收益页面包装组件
+const NetworkEarningsWrapper = () => {
+  const { t } = useTranslation();
+  return (
+    <SecondaryLayout title={t('network_details.earnings.title')}>
+      <NetworkEarnings />
+    </SecondaryLayout>
+  );
+};
+
 export const router = createBrowserRouter([
   {
     path: '/',
@@ -107,6 +118,10 @@ export const router = createBrowserRouter([
   {
     path: '/network-details',
     element: <NetworkDetailsWrapper />,
+  },
+  {
+    path: '/network-earnings',
+    element: <NetworkEarningsWrapper />,
   },
   {
     path: '/exchange',

@@ -1,7 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import usePageTitle from '../../hooks/usePageTitle';
 import CountUp from 'react-countup';
+import networkService from '../../services/networkService';
+import toast from 'react-hot-toast';
 
 // 向下箭头SVG组件
 const ArrowDownIcon = ({ isExpanded }) => (
@@ -62,62 +65,117 @@ const AnimatedAmount = ({ amount, fontSize = '14vw', mdFontSize = 'text-sm', cla
 
 const NetworkDetails = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
 
   // 设置页面标题
   usePageTitle('network_details');
   const [expandedLevel, setExpandedLevel] = useState(null);
 
-  // 模拟数据
-  const overviewData = {
-    teamMembers: 24,
-    totalDeposit: 15680.50,
-    totalWithdrawal: 8420.30
+  // 状态管理
+  const [loading, setLoading] = useState(true);
+  const [networkData, setNetworkData] = useState(null);
+  const [rewardConfig, setRewardConfig] = useState(null);
+  const [error, setError] = useState(null);
+
+  // 从API数据中提取的统计信息
+  const overviewData = networkData ? {
+    teamMembers: networkData.statistics?.total_referrals || 0,
+    totalDeposit: parseFloat(networkData.statistics?.total_network_volume || '0'),
+    totalWithdrawal: 0 // API中没有提现数据，暂时设为0
+  } : {
+    teamMembers: 0,
+    totalDeposit: 0,
+    totalWithdrawal: 0
   };
 
-  const levelData = [
-    { level: 1, count: 6, expanded: false },
-    { level: 2, count: 6, expanded: false },
-    { level: 3, count: 6, expanded: false },
-    { level: 4, count: 6, expanded: false }
-  ];
+  // 从网体结构中构建层级数据
+  const buildLevelData = (treeStructure) => {
+    if (!treeStructure) return [];
 
-  // 模拟用户数据
-  const mockUsers = [
-    {
-      address: '0x515613aq34ad51q51wqe331ad1',
-      tradingAmount: 1250.00,
-      feeAmount: 850.00,
-      withdrawalAmount: 420.00
-    },
-    {
-      address: '0x515613aq34ad51q51wqe331ad1',
-      tradingAmount: 980.50,
-      feeAmount: 650.25,
-      withdrawalAmount: 320.75
-    },
-    {
-      address: '0x515613aq34ad51q51wqe331ad1',
-      tradingAmount: 1580.75,
-      feeAmount: 1200.00,
-      withdrawalAmount: 680.50
-    },
-    {
-      address: '0x515613aq34ad51q51wqe331ad1',
-      tradingAmount: 750.25,
-      feeAmount: 480.00,
-      withdrawalAmount: 250.00
+    const levels = [];
+    const processLevel = (users, level) => {
+      if (users && users.length > 0) {
+        levels[level - 1] = {
+          level,
+          count: users.length,
+          users: users.map(user => ({
+            user_id: user.user_id,
+            vip_level: user.vip_level,
+            stake_amount: parseFloat(user.stake_amount || '0'),
+            relationship: user.relationship,
+            level_difference: user.level_difference,
+            network_reward_eligible: user.network_reward_eligible,
+            flat_reward_eligible: user.flat_reward_eligible
+          }))
+        };
+
+        // 递归处理子级
+        users.forEach(user => {
+          if (user.children && user.children.length > 0) {
+            processLevel(user.children, level + 1);
+          }
+        });
+      }
+    };
+
+    if (treeStructure.direct_referrals) {
+      processLevel(treeStructure.direct_referrals, 1);
     }
-  ];
+
+    return levels.filter(level => level); // 过滤掉空的层级
+  };
+
+  const levelData = buildLevelData(networkData?.tree_structure);
+
+  // 加载网体数据
+  const loadNetworkData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      // 并行加载网体数据和奖励配置
+      const [networkResponse, configResponse] = await Promise.all([
+        networkService.getMyNetworkTree({
+          depth: 10, // 获取最大深度
+          include_inactive: false // 只包含活跃用户
+        }),
+        networkService.getNetworkRewardConfig()
+      ]);
+
+      if (networkResponse.success) {
+        setNetworkData(networkResponse.data);
+      } else {
+        throw new Error('获取网体数据失败');
+      }
+
+      if (configResponse.success) {
+        setRewardConfig(configResponse.data.config);
+      }
+      // 奖励配置失败不影响主要功能，只记录错误
+
+    } catch (err) {
+      console.error('加载网体数据失败:', err);
+      setError(err.message || '加载网体数据失败');
+      toast.error('加载网体数据失败，请稍后重试');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 组件挂载时加载数据
+  useEffect(() => {
+    loadNetworkData();
+  }, []);
 
   // 处理层级展开/收起
   const handleLevelToggle = (level) => {
     setExpandedLevel(expandedLevel === level ? null : level);
   };
 
-  // 显示完整地址（不使用省略号）
-  const formatAddress = (address) => {
-    if (!address) return '';
-    return address;
+  // 格式化用户ID显示（因为API返回的是user_id而不是address）
+  const formatUserId = (userId) => {
+    if (!userId) return '';
+    return `用户 #${userId}`;
   };
 
   // 格式化金额显示，小数点后字体小一半，带跳动效果
@@ -139,13 +197,54 @@ const NetworkDetails = () => {
     );
   };
 
+  // 加载状态
+  if (loading) {
+    return (
+      <div className="px-[16vw] md:px-4 pt-[20vw] md:pt-5 pb-[20vw] md:pb-5">
+        <div className="flex items-center justify-center min-h-[200px]">
+          <div className="text-white text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-4"></div>
+            <p className="text-size-[16vw] md:text-lg">{t('common.loading')}</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 错误状态
+  if (error) {
+    return (
+      <div className="px-[16vw] md:px-4 pt-[20vw] md:pt-5 pb-[20vw] md:pb-5">
+        <div className="flex items-center justify-center min-h-[200px]">
+          <div className="text-center">
+            <p className="text-red-400 text-size-[16vw] md:text-lg mb-4">{error}</p>
+            <button
+              onClick={loadNetworkData}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              {t('common.retry')}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="px-[16vw] md:px-4 pt-[20vw] md:pt-5 pb-[20vw] md:pb-5">
       {/* 推荐总览 */}
       <div className="mb-[24vw] md:mb-6">
-        <h2 className="text-white text-size-[18vw] md:text-xl font-semibold mb-[16vw] md:mb-4" style={{ fontWeight: 600 }}>
-          {t('network_details.referral_overview')}
-        </h2>
+        <div className="flex justify-between items-center mb-[16vw] md:mb-4">
+          <h2 className="text-white text-size-[18vw] md:text-xl font-semibold" style={{ fontWeight: 600 }}>
+            {t('network_details.referral_overview')}
+          </h2>
+          <button
+            onClick={() => navigate('/network-earnings')}
+            className="px-[12vw] md:px-3 py-[6vw] md:py-1.5 bg-blue-600 text-white rounded-[6vw] md:rounded text-size-[12vw] md:text-xs hover:bg-blue-700 transition-colors"
+          >
+            {t('network_details.earnings.title')}
+          </button>
+        </div>
 
         {/* 团队总人数 */}
         <div
@@ -186,7 +285,7 @@ const NetworkDetails = () => {
         </h2>
 
         <div className="space-y-[2vw] md:space-y-1">
-          {levelData.map((level) => (
+          {levelData.length > 0 ? levelData.map((level) => (
             <div key={level.level}>
               {/* 层级标题 */}
               <button
@@ -195,7 +294,7 @@ const NetworkDetails = () => {
                 style={{ backgroundColor: 'rgb(41, 41, 41)' }}
               >
                 <span className="text-white text-size-[16vw] md:text-lg">
-                  {t(`network_details.level_${level.level}`)}
+                  {t('network_details.level_title', { level: level.level, count: level.count })}
                 </span>
                 <ArrowDownIcon isExpanded={expandedLevel === level.level} />
               </button>
@@ -203,30 +302,41 @@ const NetworkDetails = () => {
               {/* 展开的用户列表 */}
               {expandedLevel === level.level && (
                 <div className="mt-[2vw] md:mt-1 space-y-[1vw] md:space-y-1">
-                  {mockUsers.map((user, index) => (
+                  {level.users.map((user, index) => (
                     <div
-                      key={index}
+                      key={user.user_id || index}
                       className="px-[16vw] md:px-4 py-[12vw] md:py-3 rounded-[8vw] md:rounded-lg"
                       style={{ backgroundColor: 'rgb(31, 31, 31)' }}
                     >
-                      {/* 用户地址 */}
-                      <div className="text-white text-size-[14vw] md:text-sm font-medium mb-[8vw] md:mb-2">
-                        {formatAddress(user.address)}
+                      {/* 用户信息 */}
+                      <div className="flex justify-between items-center mb-[8vw] md:mb-2">
+                        <div className="text-white text-size-[14vw] md:text-sm font-medium">
+                          {formatUserId(user.user_id)}
+                        </div>
+                        <div className="text-yellow-400 text-size-[12vw] md:text-xs">
+                          VIP{user.vip_level}
+                        </div>
                       </div>
 
                       {/* 用户数据 */}
                       <div className="flex justify-between text-size-[12vw] md:text-xs">
                         <div className="flex flex-col items-center">
-                          <span className="text-[#8f8f8f] mb-[4vw] md:mb-1">{t('network_details.trading_amount')}</span>
-                          {formatAmount(user.tradingAmount, '12vw', 'text-white')}
+                          <span className="text-[#8f8f8f] mb-[4vw] md:mb-1">{t('network_details.stake_amount')}</span>
+                          {formatAmount(user.stake_amount, '12vw', 'text-white')}
                         </div>
                         <div className="flex flex-col items-center">
-                          <span className="text-[#8f8f8f] mb-[4vw] md:mb-1">{t('network_details.fee_amount')}</span>
-                          {formatAmount(user.feeAmount, '12vw', 'text-white')}
+                          <span className="text-[#8f8f8f] mb-[4vw] md:mb-1">{t('network_details.relationship')}</span>
+                          <span className="text-white text-size-[12vw] md:text-xs">
+                            {t(`network_details.relationship_${user.relationship}`)}
+                          </span>
                         </div>
                         <div className="flex flex-col items-center">
-                          <span className="text-[#8f8f8f] mb-[4vw] md:mb-1">{t('network_details.withdrawal_amount')}</span>
-                          {formatAmount(user.withdrawalAmount, '12vw', 'text-white')}
+                          <span className="text-[#8f8f8f] mb-[4vw] md:mb-1">{t('network_details.reward_eligible')}</span>
+                          <span className={`text-size-[12vw] md:text-xs ${
+                            user.network_reward_eligible || user.flat_reward_eligible ? 'text-green-400' : 'text-red-400'
+                          }`}>
+                            {user.network_reward_eligible || user.flat_reward_eligible ? t('common.yes') : t('common.no')}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -234,9 +344,86 @@ const NetworkDetails = () => {
                 </div>
               )}
             </div>
-          ))}
+          )) : (
+            <div className="text-center py-8">
+              <p className="text-[#8f8f8f] text-size-[16vw] md:text-lg">
+                {t('network_details.no_referrals')}
+              </p>
+            </div>
+          )}
         </div>
       </div>
+
+      {/* 奖励配置 */}
+      {rewardConfig && (
+        <div className="mt-[24vw] md:mt-6">
+          <h2 className="text-white text-size-[18vw] md:text-xl font-semibold mb-[16vw] md:mb-4" style={{ fontWeight: 600 }}>
+            {t('network_details.reward_config.title')}
+          </h2>
+
+          <div className="space-y-[12vw] md:space-y-3">
+            {/* 基本配置 */}
+            <div
+              className="p-[16vw] md:p-4 rounded-[8vw] md:rounded-lg"
+              style={{ backgroundColor: 'rgb(41, 41, 41)' }}
+            >
+              <div className="grid grid-cols-2 gap-[12vw] md:gap-3">
+                <div>
+                  <div className="text-[#8f8f8f] text-size-[12vw] md:text-xs mb-[4vw] md:mb-1">
+                    {t('network_details.reward_config.max_levels')}
+                  </div>
+                  <div className="text-white text-size-[14vw] md:text-sm font-medium">
+                    {rewardConfig.max_levels} 层
+                  </div>
+                </div>
+                <div>
+                  <div className="text-[#8f8f8f] text-size-[12vw] md:text-xs mb-[4vw] md:mb-1">
+                    {t('network_details.reward_config.min_referrals')}
+                  </div>
+                  <div className="text-white text-size-[14vw] md:text-sm font-medium">
+                    {rewardConfig.min_referrals_required} 人
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* 层级费率 */}
+            <div
+              className="p-[16vw] md:p-4 rounded-[8vw] md:rounded-lg"
+              style={{ backgroundColor: 'rgb(41, 41, 41)' }}
+            >
+              <div className="text-white text-size-[16vw] md:text-base font-medium mb-[12vw] md:mb-3">
+                {t('network_details.reward_config.level_rates')}
+              </div>
+              <div className="space-y-[8vw] md:space-y-2">
+                {rewardConfig.level_rates?.map((levelRate, index) => (
+                  <div key={index} className="flex justify-between items-center">
+                    <span className="text-[#8f8f8f] text-size-[14vw] md:text-sm">
+                      第 {levelRate.level} 层
+                    </span>
+                    <span className="text-green-400 text-size-[14vw] md:text-sm font-medium">
+                      {levelRate.rate}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* 结算周期 */}
+            <div
+              className="p-[16vw] md:p-4 rounded-[8vw] md:rounded-lg"
+              style={{ backgroundColor: 'rgb(41, 41, 41)' }}
+            >
+              <div className="text-[#8f8f8f] text-size-[12vw] md:text-xs mb-[4vw] md:mb-1">
+                {t('network_details.reward_config.calculation_period')}
+              </div>
+              <div className="text-white text-size-[14vw] md:text-sm font-medium">
+                {rewardConfig.calculation_period === 'daily' ? '每日结算' : rewardConfig.calculation_period}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

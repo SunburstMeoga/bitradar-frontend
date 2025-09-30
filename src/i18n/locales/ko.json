@@ -8,7 +8,12 @@
     "connect_wallet": "지갑 연결",
     "disconnect": "연결 해제",
     "retry": "다시 시도",
-    "app_name": "BitRocket"
+    "app_name": "BitRocket",
+    "yes": "예",
+    "no": "아니오",
+    "save": "저장",
+    "submit": "제출",
+    "close": "닫기"
   },
   "page_titles": {
     "trade": "거래",
@@ -16,6 +21,7 @@
     "history": "기록",
     "account": "계정",
     "network_details": "네트워크 세부정보",
+    "network_earnings": "수익 세부정보",
     "exchange": "교환",
     "transaction_history": "거래 내역",
     "active_orders": "활성 주문",
@@ -146,13 +152,47 @@
     "total_deposit": "총 예치금",
     "total_withdrawal": "총 출금액",
     "referral_system": "추천 시스템",
-    "level_1": "1단계: 6명",
-    "level_2": "2단계: 6명",
-    "level_3": "3단계: 6명",
-    "level_4": "4단계: 6명",
-    "trading_amount": "거래 금액",
-    "fee_amount": "수수료 금액",
-    "withdrawal_amount": "출금 금액"
+    "level_title": "{{level}}단계: {{count}}명",
+    "stake_amount": "스테이킹 금액",
+    "relationship": "관계 유형",
+    "reward_eligible": "보상 자격",
+    "relationship_direct": "직접 추천",
+    "relationship_same_level": "동일 레벨",
+    "relationship_indirect": "간접 추천",
+    "no_referrals": "아직 추천인이 없습니다",
+    "earnings": {
+      "title": "수익 세부정보",
+      "differential_rewards": "차등 보상",
+      "flat_rewards": "평등 보상",
+      "fee_dividends": "수수료 배당",
+      "total_earnings": "총 수익",
+      "daily_total": "일일 총액",
+      "reward_type": "보상 유형",
+      "from_user": "출처 사용자",
+      "amount": "금액",
+      "rate": "비율",
+      "date_range": {
+        "today": "오늘",
+        "week": "이번 주",
+        "month": "이번 달",
+        "custom": "사용자 정의"
+      }
+    },
+    "referral_bind": {
+      "title": "추천 관계 연결",
+      "referral_code": "추천 코드",
+      "wallet_address": "지갑 주소",
+      "bind": "연결",
+      "success": "연결 성공",
+      "failed": "연결 실패"
+    },
+    "reward_config": {
+      "title": "보상 구성",
+      "max_levels": "최대 레벨",
+      "level_rates": "레벨 비율",
+      "min_referrals": "최소 추천인 수",
+      "calculation_period": "계산 주기"
+    }
   },
   "exchange": {
     "title": "교환",

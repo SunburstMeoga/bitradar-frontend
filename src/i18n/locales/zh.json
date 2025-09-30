@@ -9,7 +9,12 @@
     "disconnect": "断开连接",
     "retry": "重试",
     "copy": "复制",
-    "app_name": "BitRocket"
+    "app_name": "BitRocket",
+    "yes": "是",
+    "no": "否",
+    "save": "保存",
+    "submit": "提交",
+    "close": "关闭"
   },
   "page_titles": {
     "trade": "交易",
@@ -17,6 +22,7 @@
     "history": "历史记录",
     "account": "账户",
     "network_details": "网体详情",
+    "network_earnings": "收益明细",
     "exchange": "兑换",
     "transaction_history": "交易记录",
     "active_orders": "活跃订单",
@@ -162,13 +168,47 @@
     "total_deposit": "总质押金额",
     "total_withdrawal": "总提现金额",
     "referral_system": "推荐关系",
-    "level_1": "第一层: 6人",
-    "level_2": "第二层: 6人",
-    "level_3": "第三层: 6人",
-    "level_4": "第四层: 6人",
-    "trading_amount": "交易金额",
-    "fee_amount": "质押金额",
-    "withdrawal_amount": "提现金额"
+    "level_title": "第{{level}}层: {{count}}人",
+    "stake_amount": "质押金额",
+    "relationship": "关系类型",
+    "reward_eligible": "奖励资格",
+    "relationship_direct": "直推",
+    "relationship_same_level": "平级",
+    "relationship_indirect": "间推",
+    "no_referrals": "暂无推荐用户",
+    "earnings": {
+      "title": "收益明细",
+      "differential_rewards": "极差奖励",
+      "flat_rewards": "平级奖励",
+      "fee_dividends": "手续费分红",
+      "total_earnings": "总收益",
+      "daily_total": "日收益",
+      "reward_type": "奖励类型",
+      "from_user": "来源用户",
+      "amount": "金额",
+      "rate": "费率",
+      "date_range": {
+        "today": "今日",
+        "week": "本周",
+        "month": "本月",
+        "custom": "自定义"
+      }
+    },
+    "referral_bind": {
+      "title": "绑定推荐关系",
+      "referral_code": "推荐码",
+      "wallet_address": "钱包地址",
+      "bind": "绑定",
+      "success": "绑定成功",
+      "failed": "绑定失败"
+    },
+    "reward_config": {
+      "title": "奖励配置",
+      "max_levels": "最大层级",
+      "level_rates": "层级费率",
+      "min_referrals": "最少推荐人数",
+      "calculation_period": "结算周期"
+    }
   },
   "exchange": {
     "title": "兑换",
