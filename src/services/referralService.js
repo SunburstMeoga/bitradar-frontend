@@ -9,14 +9,22 @@ class ReferralService extends ApiService {
   async validateInviteCode(code) {
     try {
       console.log('🔍 验证邀请码:', code);
-      
+
       const response = await this.get(`/referral/validate/${code}`);
-      
-      if (response.success && response.data) {
-        console.log('✅ 邀请码验证成功:', response.data);
+
+      console.log('🔍 邀请码验证响应:', response);
+
+      if (response.success) {
+        console.log('✅ 邀请码验证成功:', response);
         return {
           success: true,
-          data: response.data
+          data: {
+            is_valid: response.valid,
+            valid: response.valid,
+            inviter: response.referrer,
+            referrer: response.referrer,
+            message: response.message
+          }
         };
       }
 

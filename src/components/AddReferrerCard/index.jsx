@@ -70,18 +70,21 @@ const AddReferrerCard = ({ onBack, onClose, onSuccess }) => {
     setIsValidating(true);
     try {
       const result = await referralService.validateInviteCode(code.trim());
-      if (result.success && result.data.is_valid) {
+      console.log('🔍 验证邀请码结果:', result);
+
+      if (result.success && (result.data.is_valid || result.data.valid)) {
         setValidationResult({
           isValid: true,
-          inviter: result.data.inviter
+          inviter: result.data.inviter || result.data.referrer
         });
       } else {
         setValidationResult({
           isValid: false,
-          message: t('wallet.invalid_referral_code')
+          message: result.data.message || t('wallet.invalid_referral_code')
         });
       }
     } catch (error) {
+      console.error('邀请码验证失败:', error);
       setValidationResult({
         isValid: false,
         message: error.message || t('wallet.validation_failed')
@@ -235,14 +238,7 @@ const AddReferrerCard = ({ onBack, onClose, onSuccess }) => {
                     <span className="text-[10px] text-[#949E9E]">{t('wallet.validating')}</span>
                   ) : validationResult ? (
                     validationResult.isValid ? (
-                      <div className="flex items-center gap-1">
-                        <span className="text-[10px] text-green-400">✓ {t('wallet.valid_referral_code')}</span>
-                        {validationResult.inviter && (
-                          <span className="text-[10px] text-[#949E9E]">
-                            (VIP{validationResult.inviter.vip_level})
-                          </span>
-                        )}
-                      </div>
+                      <span className="text-[10px] text-green-400">✓ {t('wallet.valid_referral_code')}</span>
                     ) : (
                       <span className="text-[10px] text-red-400">✗ {validationResult.message}</span>
                     )
