@@ -145,8 +145,43 @@ const History = () => {
   const [pagination, setPagination] = useState(null);
   const [status, setStatus] = useState('all');
   const initialLoadRef = useRef(false);
+  const [currentTime, setCurrentTime] = useState(Date.now());
 
   // 直接使用fetchOrders，不需要防重复调用包装
+
+  // 更新当前时间的定时器
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(Date.now());
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  // 计算倒计时信息
+  const getCountdownInfo = (item) => {
+    if (!item.backend_confirm_time) {
+      return null;
+    }
+
+    // backend_confirm_time 已经是毫秒时间戳，直接使用
+    const confirmTime = item.backend_confirm_time;
+    const settlementTime = confirmTime + 60000; // 加1分钟（60000毫秒）
+    const remainingTime = settlementTime - currentTime;
+
+    if (remainingTime <= 0) {
+      return { isExpired: true, progress: 0, remainingSeconds: 0 };
+    }
+
+    const totalTime = 60000; // 1分钟总时长
+    const progress = (totalTime - remainingTime) / totalTime; // 已过去的进度
+    const remainingSeconds = Math.ceil(remainingTime / 1000);
+
+    return {
+      isExpired: false,
+      progress: Math.min(Math.max(progress, 0), 1), // 确保在0-1之间
+      remainingSeconds
+    };
+  };
 
   // 格式化时间
   const formatTime = (isoString) => {
@@ -334,10 +369,10 @@ const History = () => {
                   alt="BTC"
                   className="w-[24vw] md:w-6 h-[24vw] md:h-6 object-contain"
                 />
-                {/* 涨跌标志 - 用负margin实现重叠 */}
+                {/* 涨跌标志 - 根据order_type判断 */}
                 <img
-                  src={item.direction === 'up' ? historyUpIcon : historyDownIcon}
-                  alt={item.direction === 'up' ? 'Up' : 'Down'}
+                  src={item.order_type === 'CALL' ? historyUpIcon : historyDownIcon}
+                  alt={item.order_type === 'CALL' ? 'Up' : 'Down'}
                   className="w-[24vw] md:w-6 h-[24vw] md:h-6 object-contain -ml-[8vw] md:-ml-2"
                 />
                 {/* 交易对和时间文案 */}
@@ -346,63 +381,113 @@ const History = () => {
                   <span className="text-white font-size-[13vw] md:text-sm font-semibold" style={{ fontWeight: 600 }}>
                     BTC-USD
                   </span>
-
-                  {/* 状态文案 */}
-                  <span className="text-[rgb(143,143,143)] font-size-[13vw] md:text-sm" style={{ fontWeight: 400 }}>
-                    · {item.status === 'pending' ? t('history.pending') : (item.status === 'win' ? t('history.win') : t('history.lose'))}
+                  {/* 固定的1m文案 */}
+                  <span className="text-[#8f8f8f] font-size-[13vw] md:text-sm" style={{ fontWeight: 400 }}>
+                    · 1m
                   </span>
                 </div>
               </div>
 
-              {/* 右侧箭头 */}
-              <div>
-                {item.status === 'win' ? (
-                  <UpArrowIcon color="#00bc4b" />
-                ) : item.status === 'lose' ? (
-                  <DownArrowIcon color="#f5384e" />
-                ) : (
-                  <div className="w-[24px] h-[24px] rounded-full bg-gray-500 flex items-center justify-center">
-                    <span className="text-white text-xs">?</span>
-                  </div>
-                )}
+              {/* 右侧倒计时或状态 */}
+              <div className="flex items-center">
+                {(() => {
+                  const countdownInfo = getCountdownInfo(item);
+                  if (countdownInfo && !countdownInfo.isExpired) {
+                    // 显示倒计时
+                    return (
+                      <div className="flex items-center gap-[4vw] md:gap-1">
+                        <span className="text-white font-size-[13vw] md:text-sm">
+                          {countdownInfo.remainingSeconds}s
+                        </span>
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                          <circle cx="8" cy="8" r="7" stroke="#3d3d3d" strokeWidth="2"/>
+                          <circle
+                            cx="8"
+                            cy="8"
+                            r="7"
+                            stroke={item.order_type === 'CALL' ? '#00bc4b' : '#f5384e'}
+                            strokeWidth="2"
+                            strokeDasharray={`${2 * Math.PI * 7}`}
+                            strokeDashoffset={`${2 * Math.PI * 7 * (1 - countdownInfo.progress)}`}
+                            transform="rotate(-90 8 8)"
+                            strokeLinecap="round"
+                          />
+                        </svg>
+                      </div>
+                    );
+                  } else {
+                    // 显示状态箭头
+                    return item.status === 'win' ? (
+                      <UpArrowIcon color="#00bc4b" />
+                    ) : item.status === 'lose' ? (
+                      <DownArrowIcon color="#f5384e" />
+                    ) : (
+                      <div className="w-[24px] h-[24px] rounded-full bg-gray-500 flex items-center justify-center">
+                        <span className="text-white text-xs">?</span>
+                      </div>
+                    );
+                  }
+                })()}
               </div>
             </div>
+
+            {/* 倒计时进度条（如果订单正在结算中） */}
+            {(() => {
+              const countdownInfo = getCountdownInfo(item);
+              if (countdownInfo && !countdownInfo.isExpired) {
+                return (
+                  <div className="w-full h-[2px] my-[12vw] md:my-3 bg-[#3d3d3d] relative overflow-hidden">
+                    <div
+                      className="absolute left-0 top-0 h-full transition-all duration-1000 ease-linear"
+                      style={{
+                        width: `${countdownInfo.progress * 100}%`,
+                        backgroundColor: item.order_type === 'CALL' ? '#00bc4b' : '#f5384e'
+                      }}
+                    />
+                  </div>
+                );
+              }
+              return null;
+            })()}
 
             {/* 下半部分 - 三行数据 */}
             <div className="mt-[12vw] md:mt-3 space-y-[3vw] md:space-y-1">
               {/* 第一行：投注金额和盈亏 */}
               <div className="flex justify-between items-center">
                 <span className="text-white font-size-[16vw] md:text-lg font-semibold" style={{ fontWeight: 600 }}>
-                  {formatAmount(item.bet_amount)} {item.token || 'USDT'}
+                  {formatAmount(item.amount)} USDT
                 </span>
                 <span
                   className="font-size-[16vw] md:text-lg font-semibold"
                   style={{
                     fontWeight: 600,
-                    color: parseFloat(item.profit || 0) > 0 ? 'rgb(197, 255, 51)' : '#f5384e'
+                    color: parseFloat(item.profit_loss || 0) > 0 ? 'rgb(197, 255, 51)' : '#f5384e'
                   }}
                 >
-                  {parseFloat(item.profit || 0) > 0 ? '+' : ''}{formatAmount(item.profit)} {item.token || 'USDT'}
+                  {parseFloat(item.profit_loss || 0) > 0 ? '+' : ''}{formatAmount(item.profit_loss)} USDT
                 </span>
               </div>
 
-              {/* 第二行：开盘价和收盘价 */}
+              {/* 第二行：开盘价和收盘价（无标签） */}
               <div className="flex justify-between items-center">
                 <span className="text-[#8f8f8f] font-size-[13vw] md:text-sm">
-                  {t('history.entry_price')}: {formatPrice(item.entry_price)}
+                  {formatPrice(item.entry_price)}
                 </span>
                 <span className="text-[#8f8f8f] font-size-[13vw] md:text-sm">
-                  {t('history.close_price')}: {formatPrice(item.close_price)}
+                  {formatPrice(item.exit_price)}
                 </span>
               </div>
 
-              {/* 第三行：开盘时间和封盘时间 */}
+              {/* 第三行：开盘时间和结算时间（无标签） */}
               <div className="flex justify-between items-center">
                 <span className="text-[#8f8f8f] font-size-[13vw] md:text-sm">
-                  {t('history.created_at')}: {formatTime(item.created_at)}
+                  {formatTime(item.created_at)}
                 </span>
                 <span className="text-[#8f8f8f] font-size-[13vw] md:text-sm">
-                  {item.settled_at ? `${t('history.settled_at')}: ${formatTime(item.settled_at)}` : t('history.pending')}
+                  {item.settlement_time
+                    ? formatTime(new Date(item.settlement_time).toISOString())
+                    : formatTime(new Date(item.backend_confirm_time + 60000).toISOString())
+                  }
                 </span>
               </div>
             </div>
