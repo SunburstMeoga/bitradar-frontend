@@ -249,13 +249,13 @@ const WalletCard = ({ onClose, onSendClick, onActivityClick, onAddReferrerClick,
     const attemptGetReferralCode = async () => {
       try {
         const result = await referralService.getMyInviteCode();
-        if (result.success && result.data && result.data.share_url) {
-          // 复制推荐链接
-          await navigator.clipboard.writeText(result.data.share_url);
+        if (result.success && result.data && result.data.invite_code) {
+          // 复制推荐码
+          await navigator.clipboard.writeText(result.data.invite_code);
           toast.success(t('wallet.referral_link_generated_and_copied'));
           return true;
         } else {
-          throw new Error('获取推荐链接失败：数据格式错误');
+          throw new Error('获取推荐码失败：数据格式错误');
         }
       } catch (error) {
         console.error(`获取推荐码失败 (尝试 ${retryCount + 1}/${maxRetries}):`, error);
