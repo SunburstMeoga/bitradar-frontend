@@ -603,7 +603,7 @@ const History = () => {
                 </span>
                 {(() => {
                   const countdownInfo = getCountdownInfo(item);
-                  // 如果订单正在倒计时中，显示"结算中..."
+                  // 如果订单正在倒计时中，显示"-{amount} USDT"
                   if (countdownInfo && !countdownInfo.isExpired) {
                     return (
                       <span
@@ -612,7 +612,7 @@ const History = () => {
                           color: '#8f8f8f'
                         }}
                       >
-                        {t('history.settling')}
+                        -{formatAmount(item.amount)} USDT
                       </span>
                     );
                   }
