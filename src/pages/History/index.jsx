@@ -155,7 +155,129 @@ const History = () => {
   const initialLoadRef = useRef(false);
   const [currentTime, setCurrentTime] = useState(Date.now());
 
+  // 实时价格相关状态
+  const [currentPrice, setCurrentPrice] = useState(null);
+  const wsRef = useRef(null);
+  const reconnectTimeoutRef = useRef(null);
+
+  // 订单状态轮询相关
+  const pollIntervalRef = useRef(null);
+  const [pendingOrderIds, setPendingOrderIds] = useState(new Set());
+
   // 直接使用fetchOrders，不需要防重复调用包装
+
+  // WebSocket连接逻辑
+  useEffect(() => {
+    const connectWebSocket = () => {
+      try {
+        console.log('🔌 History页面连接WebSocket...');
+        wsRef.current = new WebSocket('ws://54.254.151.178:9012/ws/price');
+
+        wsRef.current.onopen = () => {
+          console.log('✅ History页面WebSocket连接成功');
+          if (reconnectTimeoutRef.current) {
+            clearTimeout(reconnectTimeoutRef.current);
+            reconnectTimeoutRef.current = null;
+          }
+        };
+
+        wsRef.current.onmessage = (event) => {
+          try {
+            const message = JSON.parse(event.data);
+            if (message.type === 'price_update') {
+              const newPrice = parseFloat(message.data.price);
+              setCurrentPrice(newPrice);
+            }
+          } catch (error) {
+            console.error('❌ History页面WebSocket消息解析失败:', error);
+          }
+        };
+
+        wsRef.current.onerror = (error) => {
+          console.error('❌ History页面WebSocket连接错误:', error);
+        };
+
+        wsRef.current.onclose = (event) => {
+          console.log('🔌 History页面WebSocket连接关闭');
+          if (wsRef.current !== null) {
+            reconnectTimeoutRef.current = setTimeout(connectWebSocket, 1000);
+          }
+        };
+
+      } catch (error) {
+        console.error('❌ History页面WebSocket连接失败:', error);
+        reconnectTimeoutRef.current = setTimeout(connectWebSocket, 1000);
+      }
+    };
+
+    connectWebSocket();
+
+    return () => {
+      if (wsRef.current) {
+        wsRef.current.close();
+        wsRef.current = null;
+      }
+      if (reconnectTimeoutRef.current) {
+        clearTimeout(reconnectTimeoutRef.current);
+        reconnectTimeoutRef.current = null;
+      }
+    };
+  }, []);
+
+  // 订单状态轮询逻辑
+  useEffect(() => {
+    const pollPendingOrders = async () => {
+      if (pendingOrderIds.size === 0) return;
+
+      try {
+        const result = await fetchOrders(1, 20, status, false);
+        if (result && result.success && result.data) {
+          const updatedOrders = result.data;
+          let hasUpdates = false;
+          const newPendingIds = new Set(pendingOrderIds);
+
+          // 检查每个待结算订单的状态
+          updatedOrders.forEach(order => {
+            if (pendingOrderIds.has(order.id) && order.profit_loss !== "0") {
+              // 订单已结算，更新历史数据中的对应项
+              setHistoryData(prevData =>
+                prevData.map(item =>
+                  item.id === order.id ? { ...item, ...order } : item
+                )
+              );
+              newPendingIds.delete(order.id);
+              hasUpdates = true;
+              console.log(`✅ 订单 ${order.id} 已结算，盈亏: ${order.profit_loss}`);
+            }
+          });
+
+          if (hasUpdates) {
+            setPendingOrderIds(newPendingIds);
+          }
+        }
+      } catch (error) {
+        console.error('❌ 轮询订单状态失败:', error);
+      }
+    };
+
+    // 如果有待结算订单，启动轮询
+    if (pendingOrderIds.size > 0) {
+      pollIntervalRef.current = setInterval(pollPendingOrders, 5000); // 每5秒轮询一次
+    } else {
+      // 没有待结算订单，清除轮询
+      if (pollIntervalRef.current) {
+        clearInterval(pollIntervalRef.current);
+        pollIntervalRef.current = null;
+      }
+    }
+
+    return () => {
+      if (pollIntervalRef.current) {
+        clearInterval(pollIntervalRef.current);
+        pollIntervalRef.current = null;
+      }
+    };
+  }, [pendingOrderIds, status, fetchOrders]);
 
   // 更新当前时间的定时器
   useEffect(() => {
@@ -254,6 +376,21 @@ const History = () => {
           setHasMore(false);
         } else if (!paginationData && newData.length < 20) {
           setHasMore(false);
+        }
+
+        // 识别待结算订单（profit_loss为"0"的订单）
+        const pendingIds = new Set();
+        newData.forEach(order => {
+          if (order.profit_loss === "0") {
+            pendingIds.add(order.id);
+          }
+        });
+
+        // 更新待结算订单ID集合
+        if (isRefresh) {
+          setPendingOrderIds(pendingIds);
+        } else {
+          setPendingOrderIds(prev => new Set([...prev, ...pendingIds]));
         }
 
         // 更新历史数据
@@ -407,10 +544,14 @@ const History = () => {
                 {(() => {
                   const countdownInfo = getCountdownInfo(item);
                   if (countdownInfo && !countdownInfo.isExpired) {
-                    // 显示倒计时图标
+                    // 显示倒计时图标，文案颜色根据order_type决定
+                    const textColor = item.order_type === 'CALL' ? '#00bc4b' : '#f5384e';
                     return (
                       <div className="flex items-center gap-[4vw] md:gap-1">
-                        <span className="text-white font-size-[13vw] md:text-sm">
+                        <span
+                          className="font-size-[13vw] md:text-sm"
+                          style={{ color: textColor }}
+                        >
                           {countdownInfo.remainingSeconds}s
                         </span>
                         <CountdownIcon color="#8f8f8f" />
@@ -434,12 +575,16 @@ const History = () => {
             {(() => {
               const countdownInfo = getCountdownInfo(item);
               if (countdownInfo && !countdownInfo.isExpired) {
+                // 计算剩余时间比例，用于确定有色线条的宽度
+                const remainingRatio = countdownInfo.remainingSeconds / 60; // 60秒总时长
+                const coloredWidth = Math.max(remainingRatio * 100, 0); // 有色部分宽度百分比
+
                 return (
                   <div className="w-full h-[0.5px] bg-[#3d3d3d] relative overflow-hidden">
                     <div
-                      className="absolute left-0 top-0 h-full transition-all duration-1000 ease-linear"
+                      className="absolute right-0 top-0 h-full transition-all duration-1000 ease-linear"
                       style={{
-                        width: `${countdownInfo.progressWidth * 100}%`,
+                        width: `${coloredWidth}%`,
                         backgroundColor: item.order_type === 'CALL' ? '#00bc4b' : '#f5384e'
                       }}
                     />
@@ -460,10 +605,28 @@ const History = () => {
                   className="font-size-[16vw] md:text-lg font-semibold"
                   style={{
                     fontWeight: 600,
-                    color: parseFloat(item.profit_loss || 0) > 0 ? 'rgb(197, 255, 51)' : '#f5384e'
+                    color: (() => {
+                      const countdownInfo = getCountdownInfo(item);
+                      // 如果订单正在倒计时中，不显示盈亏颜色
+                      if (countdownInfo && !countdownInfo.isExpired) {
+                        return '#8f8f8f'; // 灰色
+                      }
+                      // 已结算订单根据盈亏显示颜色
+                      const profitLoss = parseFloat(item.profit_loss || 0);
+                      return profitLoss > 0 ? '#c5ff33' : '#ffffff'; // 赢了绿色，输了白色
+                    })()
                   }}
                 >
-                  {parseFloat(item.profit_loss || 0) > 0 ? '+' : ''}{formatAmount(item.profit_loss)} USDT
+                  {(() => {
+                    const countdownInfo = getCountdownInfo(item);
+                    // 如果订单正在倒计时中，显示"结算中..."
+                    if (countdownInfo && !countdownInfo.isExpired) {
+                      return '结算中...';
+                    }
+                    // 已结算订单显示盈亏
+                    const profitLoss = parseFloat(item.profit_loss || 0);
+                    return `${profitLoss > 0 ? '+' : ''}${formatAmount(item.profit_loss)} USDT`;
+                  })()}
                 </span>
               </div>
 
@@ -473,7 +636,15 @@ const History = () => {
                   {formatPrice(item.entry_price)}
                 </span>
                 <span className="text-[#8f8f8f] font-size-[13vw] md:text-sm">
-                  {formatPrice(item.exit_price)}
+                  {(() => {
+                    const countdownInfo = getCountdownInfo(item);
+                    // 如果订单正在倒计时中，显示实时价格
+                    if (countdownInfo && !countdownInfo.isExpired && currentPrice) {
+                      return formatPrice(currentPrice);
+                    }
+                    // 否则显示固定的收盘价
+                    return formatPrice(item.exit_price);
+                  })()}
                 </span>
               </div>
 
