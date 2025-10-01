@@ -238,9 +238,9 @@ export const useUserStore = create(
       },
 
       // 获取订单历史
-      fetchOrders: async (page = 1, limit = 20, status = 'all', append = false) => {
+      fetchOrders: async (page = 1, limit = 20, betTokenSymbol = 'all', append = false) => {
         try {
-          const result = await userService.getOrders(page, limit, status);
+          const result = await userService.getOrders(page, limit, betTokenSymbol);
 
           if (result.success) {
             if (append) {

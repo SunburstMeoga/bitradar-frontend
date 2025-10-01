@@ -57,32 +57,32 @@ const DropdownArrowIcon = ({ color = '#fff' }) => (
   </svg>
 );
 
-// 状态选择组件
-const StatusSelector = ({ selectedStatus, onStatusChange }) => {
+// 代币选择组件
+const TokenSelector = ({ selectedToken, onTokenChange }) => {
   const { t } = useTranslation();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const statusOptions = [
-    { value: 'all', label: t('history.all_status'), displayName: t('history.all') },
-    { value: 'pending', label: t('history.pending_status'), displayName: t('history.pending') },
-    { value: 'win', label: t('history.win_status'), displayName: t('history.win') },
-    { value: 'lose', label: t('history.lose_status'), displayName: t('history.lose') }
+  const tokenOptions = [
+    { value: 'all', label: t('history.all_tokens'), displayName: t('history.all') },
+    { value: 'LUSD', label: 'LUSD', displayName: 'LUSD' },
+    { value: 'USDT', label: 'USDT', displayName: 'USDT' },
+    { value: 'USDR', label: 'USDR', displayName: 'USDR' }
   ];
 
-  const handleStatusSelect = (status) => {
-    onStatusChange(status.value);
+  const handleTokenSelect = (token) => {
+    onTokenChange(token.value);
     setIsModalOpen(false);
   };
 
   const getDisplayText = () => {
-    const selected = statusOptions.find(option => option.value === selectedStatus);
+    const selected = tokenOptions.find(option => option.value === selectedToken);
     return selected ? selected.displayName : t('history.all');
   };
 
   const getButtonStyle = () => {
     return {
-      backgroundColor: selectedStatus === 'all' ? '#292929' : '#fff',
-      color: selectedStatus === 'all' ? '#fff' : '#292929'
+      backgroundColor: selectedToken === 'all' ? '#292929' : '#fff',
+      color: selectedToken === 'all' ? '#fff' : '#292929'
     };
   };
 
@@ -103,24 +103,24 @@ const StatusSelector = ({ selectedStatus, onStatusChange }) => {
         }}
       >
         <span>{getDisplayText()}</span>
-        <DropdownArrowIcon color={selectedStatus === 'all' ? '#fff' : '#292929'} />
+        <DropdownArrowIcon color={selectedToken === 'all' ? '#fff' : '#292929'} />
       </div>
 
       {/* 选择弹窗 */}
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
         <div className="p-[20px]">
           <h3 className="text-white text-[18px] font-semibold mb-[20px]">
-            {t('history.select_status')}
+            {t('history.select_token')}
           </h3>
           <div className="space-y-[12px]">
-            {statusOptions.map((option) => (
+            {tokenOptions.map((option) => (
               <div
                 key={option.value}
-                onClick={() => handleStatusSelect(option)}
+                onClick={() => handleTokenSelect(option)}
                 className="w-full h-[44px] rounded-[8px] flex items-center justify-center cursor-pointer transition-colors"
                 style={{
-                  backgroundColor: selectedStatus === option.value ? '#fff' : '#292929',
-                  color: selectedStatus === option.value ? '#292929' : '#fff',
+                  backgroundColor: selectedToken === option.value ? '#fff' : '#292929',
+                  color: selectedToken === option.value ? '#292929' : '#fff',
                   fontSize: '15px',
                   fontWeight: 600
                 }}
@@ -151,7 +151,7 @@ const History = () => {
   const [page, setPage] = useState(1);
   const [error, setError] = useState(null);
   const [pagination, setPagination] = useState(null);
-  const [status, setStatus] = useState('all');
+  const [betToken, setBetToken] = useState('all');
   const initialLoadRef = useRef(false);
   const [currentTime, setCurrentTime] = useState(Date.now());
 
@@ -230,7 +230,7 @@ const History = () => {
       if (pendingOrderIds.size === 0) return;
 
       try {
-        const result = await fetchOrders(1, 20, status, false);
+        const result = await fetchOrders(1, 20, betToken, false);
         if (result && result.success && result.data) {
           const updatedOrders = result.data;
           let hasUpdates = false;
@@ -277,7 +277,7 @@ const History = () => {
         pollIntervalRef.current = null;
       }
     };
-  }, [pendingOrderIds, status, fetchOrders]);
+  }, [pendingOrderIds, betToken, fetchOrders]);
 
   // 更新当前时间的定时器
   useEffect(() => {
@@ -354,7 +354,7 @@ const History = () => {
 
     try {
       // 使用真实API
-      const result = await fetchOrders(pageNum, 20, status, false);
+      const result = await fetchOrders(pageNum, 20, betToken, false);
 
       console.log('📋 loadData收到结果:', result);
 
@@ -417,7 +417,7 @@ const History = () => {
     } finally {
       setLoading(false);
     }
-  }, [loading, status, fetchOrders]);
+  }, [loading, betToken, fetchOrders]);
 
   // 初始加载
   useEffect(() => {
@@ -432,14 +432,14 @@ const History = () => {
     }
   }, []);
 
-  // 状态变化时重新加载数据
+  // 代币筛选变化时重新加载数据
   useEffect(() => {
     if (initialLoadRef.current) {
       setPage(1);
       setHasMore(true);
       loadData(1, true);
     }
-  }, [status]);
+  }, [betToken]);
 
   // 触底加载更多
   const handleScroll = useCallback(() => {
@@ -476,7 +476,7 @@ const History = () => {
             {t('active_orders.title')}
           </button>
         </div>
-        <StatusSelector selectedStatus={status} onStatusChange={setStatus} />
+        <TokenSelector selectedToken={betToken} onTokenChange={setBetToken} />
       </div>
 
       {/* 历史记录列表 */}
@@ -599,7 +599,7 @@ const History = () => {
               {/* 第一行：投注金额和盈亏 */}
               <div className="flex justify-between items-center">
                 <span className="text-white font-size-[16vw] md:text-lg font-semibold" style={{ fontWeight: 600 }}>
-                  {formatAmount(item.amount)} USDT
+                  {formatAmount(item.amount)} {item.bet_token_symbol || 'USDT'}
                 </span>
                 {(() => {
                   const countdownInfo = getCountdownInfo(item);
@@ -612,7 +612,7 @@ const History = () => {
                           color: '#8f8f8f'
                         }}
                       >
-                        -{formatAmount(item.amount)} USDT
+                        -{formatAmount(item.amount)} {item.bet_token_symbol || 'USDT'}
                       </span>
                     );
                   }
@@ -626,7 +626,7 @@ const History = () => {
                         color: profitLoss > 0 ? '#c5ff33' : '#ffffff'
                       }}
                     >
-                      {`${profitLoss > 0 ? '+' : ''}${formatAmount(item.profit_loss)} USDT`}
+                      {`${profitLoss > 0 ? '+' : ''}${formatAmount(item.profit_loss)} ${item.settlement_token_symbol || 'USDT'}`}
                     </span>
                   );
                 })()}
@@ -703,9 +703,9 @@ const History = () => {
                   {t('history.no_data')}
                 </span>
                 <span className="text-[#8f8f8f] font-size-[14vw] md:text-sm text-center max-w-[280vw] md:max-w-80">
-                  {status === 'all'
+                  {betToken === 'all'
                     ? t('history.no_data_description')
-                    : t('history.no_data_filtered_description', { status: t(`history.${status}`) })
+                    : t('history.no_data_filtered_description', { token: betToken })
                   }
                 </span>
               </div>
