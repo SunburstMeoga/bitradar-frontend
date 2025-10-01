@@ -23,7 +23,7 @@
     "network_details": "Network Details",
     "network_earnings": "Earnings Details",
     "exchange": "Exchange",
-    "transaction_history": "Transaction History",
+    "token_history": "Token History",
     "active_orders": "Active Orders",
     "order_detail": "Order Detail",
     "not_found": "Page Not Found"
@@ -149,7 +149,7 @@
     "network_details": "Network Details",
     "exchange": "Exchange",
     "next_distribution": "Next Distribution",
-    "transactions": "Transactions",
+    "token_history": "Token History",
     "loading": "Loading...",
     "no_more_data": "No more data",
     "transaction_types": {
@@ -258,8 +258,8 @@
     "price_chart_area": "Price Chart Area",
     "binary_options": "Binary Options"
   },
-  "transaction_history": {
-    "title": "Transaction History",
+  "token_history": {
+    "title": "Token History",
     "loading": "Loading...",
     "no_more_data": "No more data",
     "filters": {

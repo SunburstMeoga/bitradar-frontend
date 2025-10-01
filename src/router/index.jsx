@@ -10,7 +10,7 @@ import NetworkDetails from '../pages/NetworkDetails';
 import NetworkEarnings from '../pages/NetworkEarnings';
 import Exchange from '../pages/Exchange';
 import Withdraw from '../pages/Withdraw';
-import TransactionHistory from '../pages/TransactionHistory';
+import TokenHistory from '../pages/TransactionHistory';
 import ActiveOrders from '../pages/ActiveOrders';
 import OrderDetail from '../pages/OrderDetail';
 import TestActiveOrders from '../pages/TestActiveOrders';
@@ -48,12 +48,12 @@ const WithdrawWrapper = () => {
   );
 };
 
-// 交易记录页面包装组件
-const TransactionHistoryWrapper = () => {
+// 代币记录页面包装组件
+const TokenHistoryWrapper = () => {
   const { t } = useTranslation();
   return (
-    <SecondaryLayout title={t('transaction_history.title')}>
-      <TransactionHistory />
+    <SecondaryLayout title={t('token_history.title')}>
+      <TokenHistory />
     </SecondaryLayout>
   );
 };
@@ -132,8 +132,8 @@ export const router = createBrowserRouter([
     element: <WithdrawWrapper />,
   },
   {
-    path: '/transaction-history',
-    element: <TransactionHistoryWrapper />,
+    path: '/token-history',
+    element: <TokenHistoryWrapper />,
   },
   {
     path: '/active-orders',

@@ -140,9 +140,9 @@ const Account = () => {
     navigate('/withdraw');
   };
 
-  // 处理交易记录点击
-  const handleTransactionHistoryClick = () => {
-    navigate('/transaction-history');
+  // 处理代币记录点击
+  const handleTokenHistoryClick = () => {
+    navigate('/token-history');
   };
 
   // 处理推荐码绑定点击
@@ -415,14 +415,14 @@ const Account = () => {
         </div>
       )}
 
-      {/* 第六部分：交易记录入口 */}
+      {/* 第六部分：代币记录入口 */}
       <div className="px-[16vw] md:px-4">
         <div
-          onClick={handleTransactionHistoryClick}
+          onClick={handleTokenHistoryClick}
           className="w-[343vw] md:w-full h-[50vw] md:h-12 flex items-center justify-between px-[16vw] md:px-4 rounded-[8vw] md:rounded-lg cursor-pointer hover:opacity-80 transition-opacity"
           style={{ backgroundColor: 'rgb(41, 41, 41)' }}
         >
-          <span className="text-white text-size-[16vw] md:text-lg">{t('account.transactions')}</span>
+          <span className="text-white text-size-[16vw] md:text-lg">{t('account.token_history')}</span>
           <svg className="w-[16vw] md:w-4 h-[16vw] md:h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
           </svg>

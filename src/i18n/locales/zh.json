@@ -24,7 +24,7 @@
     "network_details": "网体详情",
     "network_earnings": "收益明细",
     "exchange": "兑换",
-    "transaction_history": "交易记录",
+    "token_history": "代币记录",
     "active_orders": "活跃订单",
     "order_detail": "订单详情",
     "not_found": "页面未找到"
@@ -165,7 +165,7 @@
     "network_details": "网体详情",
     "exchange": "兑换",
     "next_distribution": "下次发放",
-    "transactions": "交易记录",
+    "token_history": "代币记录",
     "loading": "加载中...",
     "no_more_data": "没有更多数据了",
     "transaction_types": {
@@ -274,8 +274,8 @@
     "price_chart_area": "价格图表区域",
     "binary_options": "二元期权"
   },
-  "transaction_history": {
-    "title": "交易记录",
+  "token_history": {
+    "title": "代币记录",
     "loading": "加载中...",
     "no_more_data": "没有更多数据了",
     "filters": {

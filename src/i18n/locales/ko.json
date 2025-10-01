@@ -23,7 +23,7 @@
     "network_details": "네트워크 세부정보",
     "network_earnings": "수익 세부정보",
     "exchange": "교환",
-    "transaction_history": "거래 내역",
+    "token_history": "토큰 기록",
     "active_orders": "활성 주문",
     "order_detail": "주문 상세",
     "not_found": "페이지를 찾을 수 없음"
@@ -149,7 +149,7 @@
     "network_details": "네트워크 세부정보",
     "exchange": "교환",
     "next_distribution": "다음 배포",
-    "transactions": "거래 내역",
+    "token_history": "토큰 기록",
     "loading": "로딩 중...",
     "no_more_data": "더 이상 데이터가 없습니다",
     "transaction_types": {
@@ -258,8 +258,8 @@
     "price_chart_area": "가격 차트 영역",
     "binary_options": "바이너리 옵션"
   },
-  "transaction_history": {
-    "title": "거래 내역",
+  "token_history": {
+    "title": "토큰 기록",
     "loading": "로딩 중...",
     "no_more_data": "더 이상 데이터가 없습니다",
     "filters": {

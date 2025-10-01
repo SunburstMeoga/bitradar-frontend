@@ -7,7 +7,7 @@ const TransactionHistory = () => {
   const { t } = useTranslation();
 
   // 设置页面标题
-  usePageTitle('transaction_history');
+  usePageTitle('token_history');
   const [activeTab, setActiveTab] = useState('USDT');
   const [activeFilter, setActiveFilter] = useState('all');
   const [transactions, setTransactions] = useState([]);
@@ -327,17 +327,17 @@ const TransactionHistory = () => {
   // 获取交易类型的翻译
   const getTransactionTypeText = (type) => {
     const typeMap = {
-      'Check-in': t('transaction_history.transaction_types.check_in'),
-      'Reward': t('transaction_history.transaction_types.reward'),
-      'Transfer': t('transaction_history.transaction_types.transfer'),
-      'Mining': t('transaction_history.transaction_types.mining'),
-      'Bonus': t('transaction_history.transaction_types.bonus'),
-      'Exchange': t('transaction_history.transaction_types.exchange'),
-      'Deposit': t('transaction_history.transaction_types.deposit'),
-      'Distribution': t('transaction_history.transaction_types.distribution'),
-      'Rocket Reward': t('transaction_history.transaction_types.rocket_reward'),
-      'Rocket Withdraw': t('transaction_history.transaction_types.rocket_withdraw'),
-      'Rocket Bonus': t('transaction_history.transaction_types.rocket_bonus')
+      'Check-in': t('token_history.transaction_types.check_in'),
+      'Reward': t('token_history.transaction_types.reward'),
+      'Transfer': t('token_history.transaction_types.transfer'),
+      'Mining': t('token_history.transaction_types.mining'),
+      'Bonus': t('token_history.transaction_types.bonus'),
+      'Exchange': t('token_history.transaction_types.exchange'),
+      'Deposit': t('token_history.transaction_types.deposit'),
+      'Distribution': t('token_history.transaction_types.distribution'),
+      'Rocket Reward': t('token_history.transaction_types.rocket_reward'),
+      'Rocket Withdraw': t('token_history.transaction_types.rocket_withdraw'),
+      'Rocket Bonus': t('token_history.transaction_types.rocket_bonus')
     };
     return typeMap[type] || type;
   };
@@ -382,7 +382,7 @@ const TransactionHistory = () => {
                 backgroundColor: activeFilter === filter ? 'rgb(200, 200, 200)' : 'rgb(31, 31, 31)',
               }}
             >
-              {t(`transaction_history.filters.${filter}`)}
+              {t(`token_history.filters.${filter}`)}
             </button>
           ))}
         </div>
@@ -424,12 +424,12 @@ const TransactionHistory = () => {
       <div ref={loadMoreRef} className="pt-[24vw] md:pt-6 pb-[24vw] md:pb-6 flex justify-center">
         {loading && (
           <div className="text-[#8f8f8f] text-size-[14vw] md:text-sm">
-            {t('transaction_history.loading')}
+            {t('token_history.loading')}
           </div>
         )}
         {!hasMore && !loading && (
           <div className="text-[#8f8f8f] text-size-[14vw] md:text-sm">
-            {t('transaction_history.no_more_data')}
+            {t('token_history.no_more_data')}
           </div>
         )}
       </div>
