@@ -92,27 +92,58 @@ const PaymentConfirmCard = ({ membershipLevel, onBack, onClose, onPaymentSuccess
 
     const prices = membershipConfig.membership_prices || {};
     const price = prices[membershipLevel];
-    return price ? parseFloat(price) : (membershipLevel === MEMBERSHIP_LEVELS.SILVER ? 18 : 58);
+    // 确保返回数值类型，处理字符串格式的价格
+    const numericPrice = price ? parseFloat(price) : (membershipLevel === MEMBERSHIP_LEVELS.SILVER ? 18 : 58);
+
+    console.log('🏷️ 获取升级价格:', {
+      membershipLevel,
+      rawPrice: price,
+      numericPrice,
+      priceType: typeof price,
+      numericPriceType: typeof numericPrice
+    });
+
+    return numericPrice;
   };
 
   // 获取用户USDT余额
   const getUSDTBalance = () => {
     if (!balance) {
+      console.log('💰 余额检查: balance为空');
       return 0;
     }
 
+    let usdtBalance = 0;
+
     // 优先使用 balanceMap 格式（如果存在）
     if (balance.balanceMap && balance.balanceMap['USDT']) {
-      const usdtBalance = balance.balanceMap['USDT'];
-      return parseFloat(usdtBalance.available || 0);
+      const usdtBalanceData = balance.balanceMap['USDT'];
+      // 优先使用total，其次available
+      usdtBalance = parseFloat(usdtBalanceData.total || usdtBalanceData.available || 0);
+      console.log('💰 使用balanceMap格式:', {
+        balanceData: usdtBalanceData,
+        parsedBalance: usdtBalance
+      });
     }
-
     // 使用直接字段格式
-    if (balance.usdt_balance) {
-      return parseFloat(balance.usdt_balance || 0);
+    else if (balance.usdt_balance !== undefined) {
+      usdtBalance = parseFloat(balance.usdt_balance || 0);
+      console.log('💰 使用直接字段格式:', {
+        rawBalance: balance.usdt_balance,
+        rawBalanceType: typeof balance.usdt_balance,
+        parsedBalance: usdtBalance
+      });
+    }
+    else {
+      console.log('💰 未找到USDT余额数据');
     }
 
-    return 0;
+    console.log('💰 最终USDT余额:', {
+      balance: usdtBalance,
+      balanceType: typeof usdtBalance
+    });
+
+    return usdtBalance;
   };
 
   // 升级前验证
@@ -143,19 +174,44 @@ const PaymentConfirmCard = ({ membershipLevel, onBack, onClose, onPaymentSuccess
     const requiredPrice = getUpgradePrice();
     const currentBalance = getUSDTBalance();
 
+    // 确保两个值都是数值类型
+    const numericRequiredPrice = Number(requiredPrice);
+    const numericCurrentBalance = Number(currentBalance);
+
     console.log('💰 余额检查详情:', {
       balance: balance,
-      requiredPrice,
-      currentBalance,
+      requiredPrice: {
+        original: requiredPrice,
+        numeric: numericRequiredPrice,
+        type: typeof requiredPrice
+      },
+      currentBalance: {
+        original: currentBalance,
+        numeric: numericCurrentBalance,
+        type: typeof currentBalance
+      },
+      comparison: {
+        sufficient: numericCurrentBalance >= numericRequiredPrice,
+        difference: numericCurrentBalance - numericRequiredPrice
+      },
       hasBalanceMap: !!balance?.balanceMap,
       hasDirectBalance: !!balance?.usdt_balance
     });
 
-    if (currentBalance < requiredPrice) {
-      toast.error(`余额不足，需要 ${requiredPrice.toFixed(2)} USDT`);
+    // 使用数值比较，并添加小的容差以处理浮点数精度问题
+    const EPSILON = 0.000001; // 1e-6的容差
+    if (numericCurrentBalance + EPSILON < numericRequiredPrice) {
+      const shortfall = numericRequiredPrice - numericCurrentBalance;
+      console.log('❌ 余额不足:', {
+        required: numericRequiredPrice,
+        current: numericCurrentBalance,
+        shortfall: shortfall
+      });
+      toast.error(`余额不足，需要 ${numericRequiredPrice.toFixed(2)} USDT，当前余额 ${numericCurrentBalance.toFixed(2)} USDT`);
       return false;
     }
 
+    console.log('✅ 余额充足');
     return true;
   };
 
