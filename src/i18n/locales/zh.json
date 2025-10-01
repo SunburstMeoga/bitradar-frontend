@@ -147,6 +147,7 @@
     "win": "盈利",
     "lose": "亏损",
     "pending": "待结算",
+    "settling": "结算中...",
     "all": "全部",
     "all_status": "全部订单",
     "pending_status": "待结算订单",

@@ -601,33 +601,35 @@ const History = () => {
                 <span className="text-white font-size-[16vw] md:text-lg font-semibold" style={{ fontWeight: 600 }}>
                   {formatAmount(item.amount)} USDT
                 </span>
-                <span
-                  className="font-size-[16vw] md:text-lg font-semibold"
-                  style={{
-                    fontWeight: 600,
-                    color: (() => {
-                      const countdownInfo = getCountdownInfo(item);
-                      // 如果订单正在倒计时中，不显示盈亏颜色
-                      if (countdownInfo && !countdownInfo.isExpired) {
-                        return '#8f8f8f'; // 灰色
-                      }
-                      // 已结算订单根据盈亏显示颜色
-                      const profitLoss = parseFloat(item.profit_loss || 0);
-                      return profitLoss > 0 ? '#c5ff33' : '#ffffff'; // 赢了绿色，输了白色
-                    })()
-                  }}
-                >
-                  {(() => {
-                    const countdownInfo = getCountdownInfo(item);
-                    // 如果订单正在倒计时中，显示"结算中..."
-                    if (countdownInfo && !countdownInfo.isExpired) {
-                      return '结算中...';
-                    }
-                    // 已结算订单显示盈亏
-                    const profitLoss = parseFloat(item.profit_loss || 0);
-                    return `${profitLoss > 0 ? '+' : ''}${formatAmount(item.profit_loss)} USDT`;
-                  })()}
-                </span>
+                {(() => {
+                  const countdownInfo = getCountdownInfo(item);
+                  // 如果订单正在倒计时中，显示"结算中..."
+                  if (countdownInfo && !countdownInfo.isExpired) {
+                    return (
+                      <span
+                        className="font-size-[13vw] md:text-sm"
+                        style={{
+                          color: '#8f8f8f'
+                        }}
+                      >
+                        {t('history.settling')}
+                      </span>
+                    );
+                  }
+                  // 已结算订单显示盈亏
+                  const profitLoss = parseFloat(item.profit_loss || 0);
+                  return (
+                    <span
+                      className="font-size-[16vw] md:text-lg font-semibold"
+                      style={{
+                        fontWeight: 600,
+                        color: profitLoss > 0 ? '#c5ff33' : '#ffffff'
+                      }}
+                    >
+                      {`${profitLoss > 0 ? '+' : ''}${formatAmount(item.profit_loss)} USDT`}
+                    </span>
+                  );
+                })()}
               </div>
 
               {/* 第二行：开盘价和收盘价（无标签） */}

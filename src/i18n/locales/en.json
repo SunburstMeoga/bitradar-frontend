@@ -131,6 +131,7 @@
     "win": "Win",
     "lose": "Lose",
     "pending": "Pending",
+    "settling": "Settling...",
     "all": "All",
     "all_status": "All Orders",
     "pending_status": "Pending Orders",

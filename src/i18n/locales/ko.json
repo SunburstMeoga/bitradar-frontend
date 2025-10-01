@@ -131,6 +131,7 @@
     "win": "수익",
     "lose": "손실",
     "pending": "대기 중",
+    "settling": "정산 중...",
     "all": "전체",
     "all_status": "전체 주문",
     "pending_status": "대기 중인 주문",
