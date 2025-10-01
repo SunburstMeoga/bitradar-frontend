@@ -1,230 +1,37 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import usePageTitle from '../../hooks/usePageTitle';
+import { useAuthStore } from '../../store';
+import { transactionService } from '../../services';
+import toast from 'react-hot-toast';
 import transactionIcon from '../../assets/images/account-transation.png';
 
 const TransactionHistory = () => {
   const { t } = useTranslation();
+  const { isAuthenticated } = useAuthStore();
 
   // 设置页面标题
   usePageTitle('token_history');
-  const [activeTab, setActiveTab] = useState('USDT');
+  const [activeTab, setActiveTab] = useState('LuckyUSD'); // 使用UI显示名称作为默认
   const [activeFilter, setActiveFilter] = useState('all');
   const [transactions, setTransactions] = useState([]);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
+  const [error, setError] = useState(null);
+  const [totalCount, setTotalCount] = useState(0);
   const loadMoreRef = useRef(null);
+  const pageSize = 20; // 每页加载20条记录
 
-  // 模拟交易数据
-  const mockTransactions = {
-    USDT: [
-      {
-        id: 1,
-        type: 'Deposit',
-        category: 'deposit',
-        amount: '+500',
-        timestamp: new Date(Date.now() - 3600000).toISOString(), // 1小时前
-      },
-      {
-        id: 2,
-        type: 'Withdraw',
-        category: 'withdraw',
-        amount: '-200',
-        timestamp: new Date(Date.now() - 7200000).toISOString(), // 2小时前
-      },
-      {
-        id: 3,
-        type: 'Exchange',
-        category: 'trade',
-        amount: '-100',
-        timestamp: new Date(Date.now() - 10800000).toISOString(), // 3小时前
-      },
-      {
-        id: 4,
-        type: 'Transfer',
-        category: 'trade',
-        amount: '-50',
-        timestamp: new Date(Date.now() - 14400000).toISOString(), // 4小时前
-      },
-      {
-        id: 5,
-        type: 'Deposit',
-        category: 'deposit',
-        amount: '+300',
-        timestamp: new Date(Date.now() - 18000000).toISOString(), // 5小时前
-      },
-      {
-        id: 6,
-        type: 'Withdraw',
-        category: 'withdraw',
-        amount: '-150',
-        timestamp: new Date(Date.now() - 21600000).toISOString(), // 6小时前
-      },
-      {
-        id: 7,
-        type: 'Exchange',
-        category: 'trade',
-        amount: '-75',
-        timestamp: new Date(Date.now() - 25200000).toISOString(), // 7小时前
-      },
-    ],
-    LuckyUSD: [
-      {
-        id: 1,
-        type: 'Check-in',
-        category: 'reward',
-        amount: '+100',
-        timestamp: new Date(Date.now() - 3600000).toISOString(), // 1小时前
-      },
-      {
-        id: 2,
-        type: 'Reward',
-        category: 'reward',
-        amount: '+50',
-        timestamp: new Date(Date.now() - 7200000).toISOString(), // 2小时前
-      },
-      {
-        id: 3,
-        type: 'Exchange',
-        category: 'trade',
-        amount: '-75',
-        timestamp: new Date(Date.now() - 10800000).toISOString(), // 3小时前
-      },
-      {
-        id: 4,
-        type: 'Bonus',
-        category: 'reward',
-        amount: '+25',
-        timestamp: new Date(Date.now() - 14400000).toISOString(), // 4小时前
-      },
-      {
-        id: 5,
-        type: 'Transfer',
-        category: 'trade',
-        amount: '-30',
-        timestamp: new Date(Date.now() - 18000000).toISOString(), // 5小时前
-      },
-      {
-        id: 6,
-        type: 'Distribution',
-        category: 'reward',
-        amount: '+150',
-        timestamp: new Date(Date.now() - 21600000).toISOString(), // 6小时前
-      },
-      {
-        id: 7,
-        type: 'Mining',
-        category: 'reward',
-        amount: '+80',
-        timestamp: new Date(Date.now() - 25200000).toISOString(), // 7小时前
-      },
-    ],
-    USDR: [
-      {
-        id: 1,
-        type: 'Reward',
-        category: 'reward',
-        amount: '+200',
-        timestamp: new Date(Date.now() - 3600000).toISOString(), // 1小时前
-      },
-      {
-        id: 2,
-        type: 'Exchange',
-        category: 'trade',
-        amount: '-100',
-        timestamp: new Date(Date.now() - 7200000).toISOString(), // 2小时前
-      },
-      {
-        id: 3,
-        type: 'Withdraw',
-        category: 'withdraw',
-        amount: '-50',
-        timestamp: new Date(Date.now() - 10800000).toISOString(), // 3小时前
-      },
-      {
-        id: 4,
-        type: 'Reward',
-        category: 'reward',
-        amount: '+150',
-        timestamp: new Date(Date.now() - 14400000).toISOString(), // 4小时前
-      },
-      {
-        id: 5,
-        type: 'Trade',
-        category: 'trade',
-        amount: '-80',
-        timestamp: new Date(Date.now() - 18000000).toISOString(), // 5小时前
-      },
-      {
-        id: 6,
-        type: 'Withdraw',
-        category: 'withdraw',
-        amount: '-120',
-        timestamp: new Date(Date.now() - 21600000).toISOString(), // 6小时前
-      },
-      {
-        id: 7,
-        type: 'Reward',
-        category: 'reward',
-        amount: '+300',
-        timestamp: new Date(Date.now() - 25200000).toISOString(), // 7小时前
-      },
-    ],
-    Rocket: [
-      {
-        id: 1,
-        type: 'Rocket Reward',
-        category: 'reward',
-        amount: '+250',
-        timestamp: new Date(Date.now() - 3600000).toISOString(), // 1小时前
-      },
-      {
-        id: 2,
-        type: 'Rocket Withdraw',
-        category: 'withdraw',
-        amount: '-100',
-        timestamp: new Date(Date.now() - 7200000).toISOString(), // 2小时前
-      },
-      {
-        id: 3,
-        type: 'Rocket Bonus',
-        category: 'reward',
-        amount: '+75',
-        timestamp: new Date(Date.now() - 10800000).toISOString(), // 3小时前
-      },
-      {
-        id: 4,
-        type: 'Rocket Withdraw',
-        category: 'withdraw',
-        amount: '-50',
-        timestamp: new Date(Date.now() - 14400000).toISOString(), // 4小时前
-      },
-      {
-        id: 5,
-        type: 'Rocket Reward',
-        category: 'reward',
-        amount: '+300',
-        timestamp: new Date(Date.now() - 18000000).toISOString(), // 5小时前
-      },
-      {
-        id: 6,
-        type: 'Rocket Withdraw',
-        category: 'withdraw',
-        amount: '-200',
-        timestamp: new Date(Date.now() - 21600000).toISOString(), // 6小时前
-      },
-      {
-        id: 7,
-        type: 'Rocket Bonus',
-        category: 'reward',
-        amount: '+120',
-        timestamp: new Date(Date.now() - 25200000).toISOString(), // 7小时前
-      },
-    ]
+  // 代币符号映射（将UI显示的名称映射到API的token_symbol）
+  const tokenSymbolMap = {
+    'USDT': 'USDT',
+    'USDR': 'USDR',
+    'LuckyUSD': 'LUSD',
+    'Rocket': 'ROCKET'
   };
 
-  // 筛选选项配置
+  // 筛选选项配置（基于交易类型分类）
   const filterOptions = {
     USDT: ['all', 'deposit', 'withdraw', 'trade'],
     USDR: ['all', 'reward', 'trade', 'withdraw'],
@@ -232,58 +39,127 @@ const TransactionHistory = () => {
     Rocket: ['all', 'reward', 'withdraw']
   };
 
-  // 筛选交易数据
-  const getFilteredTransactions = (transactions, filter) => {
-    if (filter === 'all') {
-      return transactions;
-    }
-    return transactions.filter(transaction => transaction.category === filter);
+  // 将筛选类别映射到API的transaction_type
+  const getTransactionTypesByFilter = (filter) => {
+    const typeMap = {
+      'deposit': ['DEPOSIT', 'TEST_ADD', 'LUSD_CLAIM'],
+      'withdraw': ['WITHDRAW'],
+      'trade': ['BET', 'WIN', 'LOSE', 'REFUND', 'FEE', 'MEMBERSHIP_UPGRADE'],
+      'reward': ['REFERRAL_REWARD', 'TRADING_MINING_REWARD', 'STAKE_REWARD']
+    };
+    return typeMap[filter] || [];
   };
+
+  // 加载交易记录数据
+  const loadTransactions = useCallback(async (pageNum = 1, isLoadMore = false) => {
+    if (!isAuthenticated) {
+      console.log('用户未认证，跳过加载交易记录');
+      return;
+    }
+
+    if (loading) return;
+
+    try {
+      setLoading(true);
+      setError(null);
+
+      // 构建API请求参数
+      const params = {
+        limit: pageSize,
+        offset: (pageNum - 1) * pageSize,
+        token_symbol: tokenSymbolMap[activeTab]
+      };
+
+      // 如果有筛选条件，添加transaction_type参数
+      if (activeFilter !== 'all') {
+        const transactionTypes = getTransactionTypesByFilter(activeFilter);
+        if (transactionTypes.length > 0) {
+          // API只支持单个transaction_type，所以我们需要分别请求然后合并
+          // 为了简化，这里先用第一个类型，后续可以优化为多次请求合并
+          params.transaction_type = transactionTypes[0];
+        }
+      }
+
+      console.log('🔄 加载交易记录，参数:', params);
+
+      const result = await transactionService.getTransactions(params);
+
+      if (result.success) {
+        const newTransactions = result.data || [];
+
+        if (isLoadMore) {
+          setTransactions(prev => [...prev, ...newTransactions]);
+        } else {
+          setTransactions(newTransactions);
+        }
+
+        setTotalCount(result.count || 0);
+        // 使用count和当前已加载的数据量来判断是否还有更多数据
+        const currentTotal = isLoadMore ? transactions.length + newTransactions.length : newTransactions.length;
+        setHasMore(result.count > currentTotal);
+        setPage(pageNum);
+
+        console.log(`✅ 成功加载 ${newTransactions.length} 条交易记录`);
+      }
+    } catch (error) {
+      console.error('❌ 加载交易记录失败:', error);
+      setError(error.message || '加载失败');
+
+      if (!isLoadMore) {
+        setTransactions([]);
+      }
+
+      toast.error('加载交易记录失败');
+    } finally {
+      setLoading(false);
+    }
+  }, [isAuthenticated, activeTab, activeFilter, pageSize]);
 
   // 处理触底加载更多
   const handleLoadMore = useCallback(() => {
     if (loading || !hasMore) return;
+    loadTransactions(page + 1, true);
+  }, [loading, hasMore, page, loadTransactions]);
 
-    setLoading(true);
-    // 模拟加载延迟
-    setTimeout(() => {
-      const currentMockData = mockTransactions[activeTab];
-      const filteredMockData = getFilteredTransactions(currentMockData, activeFilter);
-      const newTransactions = filteredMockData.map((item, index) => ({
-        ...item,
-        id: `${Date.now()}_${page}_${index}_${Math.random().toString(36).substring(2, 11)}`,
-        timestamp: new Date(Date.now() - (25200000 + index * 3600000 + page * 86400000)).toISOString(),
-      }));
-      setTransactions(prev => [...prev, ...newTransactions]);
-      setPage(prev => prev + 1);
-
-      // 模拟数据加载完毕（加载3页后停止）
-      if (page >= 3) {
-        setHasMore(false);
-      }
-
-      setLoading(false);
-    }, 1000);
-  }, [loading, hasMore, page, activeTab, activeFilter, mockTransactions, getFilteredTransactions]);
+  // 初始加载和认证状态变化时加载数据
+  useEffect(() => {
+    if (isAuthenticated) {
+      loadTransactions(1, false);
+    } else {
+      setTransactions([]);
+      setTotalCount(0);
+      setHasMore(false);
+      setError(null);
+    }
+  }, [isAuthenticated]); // 移除loadTransactions依赖
 
   // 切换tab时重置数据和筛选
   useEffect(() => {
     setActiveFilter('all'); // 重置筛选为全部
-    const currentMockData = mockTransactions[activeTab];
-    const filteredData = getFilteredTransactions(currentMockData, 'all');
-    setTransactions(filteredData.slice(0, 5));
+    setTransactions([]);
     setPage(1);
     setHasMore(true);
-  }, [activeTab]);
+    setError(null);
+
+    if (isAuthenticated) {
+      // 延迟一下让activeFilter状态更新完成
+      setTimeout(() => {
+        loadTransactions(1, false);
+      }, 100);
+    }
+  }, [activeTab, isAuthenticated]); // 添加isAuthenticated依赖
 
   // 切换筛选时重置数据
   useEffect(() => {
-    const currentMockData = mockTransactions[activeTab];
-    const filteredData = getFilteredTransactions(currentMockData, activeFilter);
-    setTransactions(filteredData.slice(0, 5));
+    setTransactions([]);
     setPage(1);
     setHasMore(true);
-  }, [activeFilter, activeTab]);
+    setError(null);
+
+    if (isAuthenticated) {
+      loadTransactions(1, false);
+    }
+  }, [activeFilter, isAuthenticated]); // 添加isAuthenticated依赖
 
   // 触底加载监听
   useEffect(() => {
@@ -324,23 +200,18 @@ const TransactionHistory = () => {
     }
   };
 
-  // 获取交易类型的翻译
-  const getTransactionTypeText = (type) => {
-    const typeMap = {
-      'Check-in': t('token_history.transaction_types.check_in'),
-      'Reward': t('token_history.transaction_types.reward'),
-      'Transfer': t('token_history.transaction_types.transfer'),
-      'Mining': t('token_history.transaction_types.mining'),
-      'Bonus': t('token_history.transaction_types.bonus'),
-      'Exchange': t('token_history.transaction_types.exchange'),
-      'Deposit': t('token_history.transaction_types.deposit'),
-      'Distribution': t('token_history.transaction_types.distribution'),
-      'Rocket Reward': t('token_history.transaction_types.rocket_reward'),
-      'Rocket Withdraw': t('token_history.transaction_types.rocket_withdraw'),
-      'Rocket Bonus': t('token_history.transaction_types.rocket_bonus')
-    };
-    return typeMap[type] || type;
+  // 获取交易类型的翻译（适配API返回的transaction_type）
+  const getTransactionTypeText = (transactionType) => {
+    // 使用transactionService的格式化方法
+    return transactionService.formatTransactionType(transactionType);
   };
+
+  // 格式化金额显示
+  const formatAmount = (amount) => {
+    return transactionService.formatAmount(amount);
+  };
+
+
 
   return (
     <div className="px-[16vw] md:px-4 pt-[20vw] md:pt-5 pb-[24vw] md:pb-6">
@@ -369,7 +240,7 @@ const TransactionHistory = () => {
       {/* 筛选选项 */}
       <div className="pb-[24vw] md:pb-6">
         <div className="flex gap-[8vw] md:gap-2 flex-wrap">
-          {filterOptions[activeTab].map((filter) => (
+          {(filterOptions[activeTab] || []).map((filter) => (
             <button
               key={filter}
               onClick={() => setActiveFilter(filter)}
@@ -388,51 +259,100 @@ const TransactionHistory = () => {
         </div>
       </div>
 
-      {/* 交易列表 */}
-      <div className="space-y-[2vw] md:space-y-1">
-        {transactions.map((transaction) => (
-          <div
-            key={transaction.id}
-            className="flex items-center justify-between p-[16vw] md:p-4 rounded-[8vw] md:rounded-lg"
-            style={{ backgroundColor: 'rgb(31, 31, 31)' }}
-          >
-            {/* 左侧内容 */}
-            <div className="flex items-center gap-[12vw] md:gap-3">
-              {/* 交易图标 */}
-              <img src={transactionIcon} alt="Transaction" className="w-[48vw] md:w-12 h-[48vw] md:h-12" />
-
-              {/* 交易信息 */}
-              <div className="flex flex-col gap-[4vw] md:gap-1">
-                <span className="text-white text-size-[17vw] md:text-lg">
-                  {getTransactionTypeText(transaction.type)}
-                </span>
-                <span className="text-[#8f8f8f] text-size-[13vw] md:text-sm">
-                  {formatTime(transaction.timestamp)}
-                </span>
-              </div>
-            </div>
-
-            {/* 右侧金额 */}
-            <div className="text-white text-size-[17vw] md:text-lg font-semibold" style={{ fontWeight: 600 }}>
-              {transaction.amount}
-            </div>
+      {/* 错误状态 */}
+      {error && !loading && (!Array.isArray(transactions) || transactions.length === 0) && (
+        <div className="flex flex-col items-center justify-center py-[40vw] md:py-10">
+          <div className="text-red-400 text-size-[16vw] md:text-base mb-[8vw] md:mb-2">
+            {error}
           </div>
-        ))}
-      </div>
+          <button
+            onClick={() => loadTransactions(1, false)}
+            className="px-[24vw] md:px-6 py-[12vw] md:py-3 bg-blue-600 text-white rounded-[8vw] md:rounded-lg text-size-[14vw] md:text-sm"
+          >
+            重试
+          </button>
+        </div>
+      )}
 
-      {/* 加载更多指示器 */}
-      <div ref={loadMoreRef} className="pt-[24vw] md:pt-6 pb-[24vw] md:pb-6 flex justify-center">
-        {loading && (
+      {/* 未认证状态 */}
+      {!isAuthenticated && (
+        <div className="flex flex-col items-center justify-center py-[40vw] md:py-10">
+          <div className="text-[#8f8f8f] text-size-[16vw] md:text-base">
+            请先连接钱包并登录
+          </div>
+        </div>
+      )}
+
+      {/* 初始加载状态 */}
+      {loading && (!Array.isArray(transactions) || transactions.length === 0) && (
+        <div className="flex justify-center py-[40vw] md:py-10">
           <div className="text-[#8f8f8f] text-size-[14vw] md:text-sm">
             {t('token_history.loading')}
           </div>
-        )}
-        {!hasMore && !loading && (
-          <div className="text-[#8f8f8f] text-size-[14vw] md:text-sm">
-            {t('token_history.no_more_data')}
+        </div>
+      )}
+
+      {/* 空数据状态 */}
+      {!loading && !error && isAuthenticated && (!Array.isArray(transactions) || transactions.length === 0) && (
+        <div className="flex flex-col items-center justify-center py-[40vw] md:py-10">
+          <div className="text-[#8f8f8f] text-size-[16vw] md:text-base">
+            暂无交易记录
           </div>
-        )}
-      </div>
+        </div>
+      )}
+
+      {/* 交易列表 */}
+      {Array.isArray(transactions) && transactions.length > 0 && (
+        <div className="space-y-[2vw] md:space-y-1">
+          {transactions.map((transaction) => (
+            <div
+              key={transaction.id}
+              className="flex items-center justify-between p-[16vw] md:p-4 rounded-[8vw] md:rounded-lg"
+              style={{ backgroundColor: 'rgb(31, 31, 31)' }}
+            >
+              {/* 左侧内容 */}
+              <div className="flex items-center gap-[12vw] md:gap-3">
+                {/* 交易图标 */}
+                <img src={transactionIcon} alt="Transaction" className="w-[48vw] md:w-12 h-[48vw] md:h-12" />
+
+                {/* 交易信息 */}
+                <div className="flex flex-col gap-[4vw] md:gap-1">
+                  <span className="text-white text-size-[17vw] md:text-lg">
+                    {getTransactionTypeText(transaction.transaction_type)}
+                  </span>
+                  <span className="text-[#8f8f8f] text-size-[13vw] md:text-sm">
+                    {formatTime(transaction.created_at)}
+                  </span>
+                </div>
+              </div>
+
+              {/* 右侧金额 */}
+              <div className="text-white text-size-[17vw] md:text-lg font-semibold" style={{ fontWeight: 600 }}>
+                {formatAmount(transaction.amount)}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* 加载更多指示器 */}
+      {Array.isArray(transactions) && transactions.length > 0 && (
+        <div ref={loadMoreRef} className="pt-[24vw] md:pt-6 pb-[24vw] md:pb-6 flex justify-center">
+          {loading && (
+            <div className="flex items-center space-x-2">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+              <span className="text-[#8f8f8f] text-size-[14vw] md:text-sm">
+                {t('token_history.loading')}
+              </span>
+            </div>
+          )}
+          {!hasMore && !loading && totalCount > 0 && (
+            <div className="text-[#8f8f8f] text-size-[14vw] md:text-sm">
+              {t('token_history.no_more_data')} (共 {totalCount} 条记录)
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };

@@ -8,6 +8,7 @@ export { default as referralService } from './referralService.js';
 export { default as networkService } from './networkService.js';
 export { default as membershipService } from './membershipService.js';
 export { default as lusdService } from './lusdService.js';
+export { default as transactionService } from './transactionService.js';
 export { ApiService, TokenManager, apiClient } from './api.js';
 
 // 便捷的服务实例导出
