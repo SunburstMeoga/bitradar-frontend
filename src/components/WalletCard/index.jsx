@@ -115,7 +115,12 @@ const FormattedBalance = ({ balance, className = "text-[16px] md:text-base", sty
 const WalletCard = ({ onClose, onSendClick, onActivityClick, onAddReferrerClick, onBuyMembershipClick, onViewReferralStatsClick }) => {
   const { account, reset } = useWeb3Store();
   const { isAuthenticated, logout } = useAuthStore();
-  const { profile, fetchProfile } = useUserStore();
+  const {
+    profile,
+    membershipInfo,
+    fetchProfile,
+    fetchMembershipInfo
+  } = useUserStore();
   const { i18n, t } = useTranslation();
   const [bnbBalance, setBnbBalance] = useState('0.00');
   const [isLanguageExpanded, setIsLanguageExpanded] = useState(false);
@@ -164,21 +169,31 @@ const WalletCard = ({ onClose, onSendClick, onActivityClick, onAddReferrerClick,
 
   const [selectedLanguage, setSelectedLanguage] = useState(getLanguageDisplayName(i18n.language));
 
-  // 将API的vip_level转换为本地的MEMBERSHIP_LEVELS
-  const getMembershipLevelFromVip = (vipLevel) => {
-    switch (vipLevel) {
-      case 1:
-        return MEMBERSHIP_LEVELS.SILVER;
-      case 2:
-        return MEMBERSHIP_LEVELS.GOLD;
-      case 0:
-      default:
-        return MEMBERSHIP_LEVELS.NONE;
+  // 获取当前会员等级
+  const getCurrentMembershipLevel = () => {
+    // 优先使用 membershipInfo 中的数据
+    if (membershipInfo && membershipInfo.membership_type) {
+      return membershipInfo.membership_type;
     }
+
+    // 如果没有 membershipInfo，尝试从 profile 的 vip_level 转换
+    if (profile && profile.vip_level !== undefined) {
+      switch (profile.vip_level) {
+        case 1:
+          return MEMBERSHIP_LEVELS.SILVER;
+        case 2:
+          return MEMBERSHIP_LEVELS.GOLD;
+        case 0:
+        default:
+          return MEMBERSHIP_LEVELS.NONE;
+      }
+    }
+
+    // 默认返回无会员
+    return MEMBERSHIP_LEVELS.NONE;
   };
 
-  // 获取当前会员等级
-  const currentMembershipLevel = getMembershipLevelFromVip(profile?.vip_level);
+  const currentMembershipLevel = getCurrentMembershipLevel();
 
   // 获取用户资料数据
   useEffect(() => {
@@ -188,6 +203,15 @@ const WalletCard = ({ onClose, onSendClick, onActivityClick, onAddReferrerClick,
       });
     }
   }, [isAuthenticated, profile, fetchProfile]);
+
+  // 获取会员信息
+  useEffect(() => {
+    if (isAuthenticated && !membershipInfo) {
+      fetchMembershipInfo().catch(error => {
+        console.error('获取会员信息失败:', error);
+      });
+    }
+  }, [isAuthenticated, membershipInfo, fetchMembershipInfo]);
 
   // 检查推荐关系
   useEffect(() => {

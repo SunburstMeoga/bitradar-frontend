@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
-import { authService, userService } from '../services';
+import { authService, userService, membershipService } from '../services';
 
 // Web3 Store - 暂时禁用devtools和persist来解决BigInt序列化问题
 export const useWeb3Store = create(
@@ -143,6 +143,8 @@ export const useUserStore = create(
       balance: null,
       stats: null,
       orders: [],
+      membershipInfo: null,
+      membershipConfig: null,
       isLoading: false,
 
       // 动作
@@ -150,6 +152,8 @@ export const useUserStore = create(
       setBalance: (balance) => set({ balance }),
       setStats: (stats) => set({ stats }),
       setOrders: (orders) => set({ orders }),
+      setMembershipInfo: (membershipInfo) => set({ membershipInfo }),
+      setMembershipConfig: (membershipConfig) => set({ membershipConfig }),
       setLoading: (isLoading) => set({ isLoading }),
 
       // 获取用户完整信息
@@ -255,12 +259,74 @@ export const useUserStore = create(
         }
       },
 
+      // 获取会员配置
+      fetchMembershipConfig: async () => {
+        try {
+          const result = await membershipService.getConfig();
+
+          if (result.success) {
+            set({ membershipConfig: result.data });
+            console.log('✅ 会员配置获取成功:', result.data);
+            return result;
+          }
+
+          throw new Error('获取会员配置失败');
+        } catch (error) {
+          console.error('❌ 获取会员配置失败:', error);
+          throw error;
+        }
+      },
+
+      // 获取会员信息
+      fetchMembershipInfo: async () => {
+        try {
+          const result = await membershipService.getMembershipInfo();
+
+          if (result.success) {
+            set({ membershipInfo: result.data });
+            console.log('✅ 会员信息获取成功:', result.data);
+            return result;
+          }
+
+          throw new Error('获取会员信息失败');
+        } catch (error) {
+          console.error('❌ 获取会员信息失败:', error);
+          throw error;
+        }
+      },
+
+      // 执行会员升级
+      upgradeMembership: async (membershipType) => {
+        try {
+          const result = await membershipService.upgradeMembership(membershipType);
+
+          if (result.success) {
+            // 升级成功后重新获取会员信息、余额和配置
+            const membershipInfoPromise = get().fetchMembershipInfo();
+            const balancePromise = get().fetchBalance();
+            const membershipConfigPromise = get().fetchMembershipConfig();
+
+            await Promise.all([membershipInfoPromise, balancePromise, membershipConfigPromise]);
+
+            console.log('✅ 会员升级成功，所有数据已刷新:', result.data);
+            return result;
+          }
+
+          throw new Error('会员升级失败');
+        } catch (error) {
+          console.error('❌ 会员升级失败:', error);
+          throw error;
+        }
+      },
+
       // 重置状态
       reset: () => set({
         profile: null,
         balance: null,
         stats: null,
         orders: [],
+        membershipInfo: null,
+        membershipConfig: null,
         isLoading: false
       }),
     }),

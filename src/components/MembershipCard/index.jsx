@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useUserStore } from '../../store';
+import toast from 'react-hot-toast';
 
 // 会员等级常量
 const MEMBERSHIP_LEVELS = {
@@ -16,9 +18,9 @@ const MEMBERSHIP_COLORS = {
 };
 
 // 会员卡片组件
-const MembershipLevelCard = ({ level, price, benefits, onBuy, isCurrentLevel = false }) => {
+const MembershipLevelCard = ({ level, price, benefits, onBuy, isCurrentLevel = false, isDisabled = false }) => {
   const { t } = useTranslation();
-  
+
   const levelConfig = {
     [MEMBERSHIP_LEVELS.SILVER]: {
       title: t('wallet.membership_silver_title'),
@@ -67,28 +69,73 @@ const MembershipLevelCard = ({ level, price, benefits, onBuy, isCurrentLevel = f
       </div>
 
       {/* 购买按钮 */}
-      {!isCurrentLevel && (
-        <button
-          onClick={() => onBuy(level)}
-          className="w-full h-[40px] md:h-10 bg-[#5671FB] rounded-[8px] md:rounded-lg text-white text-[14px] md:text-sm font-medium hover:bg-[#4A63E8] transition-colors"
-        >
-          {t('wallet.membership_buy_button')}
-        </button>
-      )}
+      <button
+        onClick={() => onBuy(level)}
+        disabled={isCurrentLevel || isDisabled}
+        className={`w-full h-[40px] md:h-10 rounded-[8px] md:rounded-lg text-[14px] md:text-sm font-medium transition-colors ${
+          isCurrentLevel
+            ? 'bg-[#3d3d3d] text-[#8f8f8f] cursor-not-allowed'
+            : isDisabled
+            ? 'bg-[#3d3d3d] text-[#8f8f8f] cursor-not-allowed'
+            : 'bg-[#5671FB] text-white hover:bg-[#4A63E8]'
+        }`}
+      >
+        {isCurrentLevel
+          ? t('wallet.membership_current_level')
+          : t('wallet.membership_buy_button')
+        }
+      </button>
     </div>
   );
 };
 
 const MembershipCard = ({ onBack, onClose, onBuyMembership }) => {
   const { t } = useTranslation();
-  const [currentMembershipLevel, setCurrentMembershipLevel] = useState(MEMBERSHIP_LEVELS.NONE);
+  const {
+    membershipInfo,
+    membershipConfig,
+    fetchMembershipInfo,
+    fetchMembershipConfig,
+    isLoading
+  } = useUserStore();
 
-  // 随机生成用户会员等级（每次打开弹窗时重新生成）
+  const [currentMembershipLevel, setCurrentMembershipLevel] = useState(MEMBERSHIP_LEVELS.NONE);
+  const [isDataLoading, setIsDataLoading] = useState(true);
+
+  // 获取会员数据
   useEffect(() => {
-    const levels = [MEMBERSHIP_LEVELS.NONE, MEMBERSHIP_LEVELS.SILVER, MEMBERSHIP_LEVELS.GOLD];
-    const randomLevel = levels[Math.floor(Math.random() * levels.length)];
-    setCurrentMembershipLevel(randomLevel);
-  }, []);
+    const loadMembershipData = async () => {
+      setIsDataLoading(true);
+      try {
+        // 并行获取会员配置和会员信息
+        const promises = [fetchMembershipConfig()];
+
+        // 只有在用户已认证时才获取会员信息
+        try {
+          promises.push(fetchMembershipInfo());
+        } catch (error) {
+          console.log('用户未认证，跳过获取会员信息');
+        }
+
+        await Promise.allSettled(promises);
+      } catch (error) {
+        console.error('获取会员数据失败:', error);
+        toast.error('获取会员信息失败');
+      } finally {
+        setIsDataLoading(false);
+      }
+    };
+
+    loadMembershipData();
+  }, [fetchMembershipConfig, fetchMembershipInfo]);
+
+  // 更新当前会员等级
+  useEffect(() => {
+    if (membershipInfo) {
+      const level = membershipInfo.membership_type || MEMBERSHIP_LEVELS.NONE;
+      setCurrentMembershipLevel(level);
+    }
+  }, [membershipInfo]);
 
   // 获取当前状态的标题和提示文案
   const getStatusInfo = () => {
@@ -123,16 +170,74 @@ const MembershipCard = ({ onBack, onClose, onBuyMembership }) => {
     }
   };
 
+  // 获取价格信息
+  const getPriceInfo = (level) => {
+    if (!membershipConfig) return '-- USDT';
+
+    const prices = membershipConfig.membership_prices || {};
+    const price = prices[level];
+    return price ? `${parseFloat(price).toFixed(2)} USDT` : '-- USDT';
+  };
+
+  // 获取权益信息
+  const getBenefitsInfo = (level) => {
+    // 优先使用API配置中的权益信息
+    if (membershipConfig && membershipConfig.benefits) {
+      const benefits = membershipConfig.benefits[level];
+      if (benefits && benefits.length > 0) {
+        return benefits;
+      }
+    }
+
+    // 如果API没有权益信息，使用硬编码的权益
+    const hardcodedBenefits = {
+      [MEMBERSHIP_LEVELS.SILVER]: [
+        t('wallet.membership_silver_benefit_1'),
+        t('wallet.membership_silver_benefit_2'),
+        t('wallet.membership_silver_benefit_3')
+      ],
+      [MEMBERSHIP_LEVELS.GOLD]: [
+        t('wallet.membership_gold_benefit_1'),
+        t('wallet.membership_gold_benefit_2'),
+        t('wallet.membership_gold_benefit_3'),
+        t('wallet.membership_gold_benefit_4')
+      ]
+    };
+
+    return hardcodedBenefits[level] || [];
+  };
+
+  // 检查是否可以升级到指定等级
+  const canUpgradeToLevel = (targetLevel) => {
+    if (currentMembershipLevel === MEMBERSHIP_LEVELS.GOLD) {
+      return false; // 金牌会员无法再升级
+    }
+
+    if (currentMembershipLevel === MEMBERSHIP_LEVELS.SILVER && targetLevel === MEMBERSHIP_LEVELS.SILVER) {
+      return false; // 已经是银牌会员
+    }
+
+    if (currentMembershipLevel === MEMBERSHIP_LEVELS.NONE && targetLevel === MEMBERSHIP_LEVELS.GOLD) {
+      // 检查是否允许直接升级到金牌
+      return membershipConfig?.allow_direct_gold_upgrade !== false;
+    }
+
+    return true;
+  };
+
   const statusInfo = getStatusInfo();
 
-  // 权益配置
-  const benefitsConfig = {
-    [MEMBERSHIP_LEVELS.SILVER]: [t('wallet.membership_benefit_level')],
-    [MEMBERSHIP_LEVELS.GOLD]: [
-      t('wallet.membership_benefit_level'),
-      t('wallet.membership_benefit_network')
-    ]
-  };
+  // 显示加载状态
+  if (isDataLoading || isLoading) {
+    return (
+      <div className="w-full flex flex-col items-center justify-center py-[40px] md:py-10">
+        <div className="w-[32px] h-[32px] md:w-8 md:h-8 border-2 border-[#5671FB] border-t-transparent rounded-full animate-spin mb-[16px] md:mb-4" />
+        <p className="text-[14px] md:text-sm text-[#e4e7e7]">
+          {t('wallet.membership_loading')}
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full flex flex-col">
@@ -165,16 +270,20 @@ const MembershipCard = ({ onBack, onClose, onBuyMembership }) => {
             {currentMembershipLevel === MEMBERSHIP_LEVELS.NONE && (
               <MembershipLevelCard
                 level={MEMBERSHIP_LEVELS.SILVER}
-                price={t('wallet.membership_silver_price')}
-                benefits={benefitsConfig[MEMBERSHIP_LEVELS.SILVER]}
+                price={getPriceInfo(MEMBERSHIP_LEVELS.SILVER)}
+                benefits={getBenefitsInfo(MEMBERSHIP_LEVELS.SILVER)}
                 onBuy={handleBuyMembership}
+                isCurrentLevel={currentMembershipLevel === MEMBERSHIP_LEVELS.SILVER}
+                isDisabled={!canUpgradeToLevel(MEMBERSHIP_LEVELS.SILVER)}
               />
             )}
             <MembershipLevelCard
               level={MEMBERSHIP_LEVELS.GOLD}
-              price={t('wallet.membership_gold_price')}
-              benefits={benefitsConfig[MEMBERSHIP_LEVELS.GOLD]}
+              price={getPriceInfo(MEMBERSHIP_LEVELS.GOLD)}
+              benefits={getBenefitsInfo(MEMBERSHIP_LEVELS.GOLD)}
               onBuy={handleBuyMembership}
+              isCurrentLevel={currentMembershipLevel === MEMBERSHIP_LEVELS.GOLD}
+              isDisabled={!canUpgradeToLevel(MEMBERSHIP_LEVELS.GOLD)}
             />
           </>
         )}

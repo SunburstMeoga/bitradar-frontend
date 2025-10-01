@@ -16,7 +16,7 @@ import ReferralTreeCard from '../ReferralTreeCard';
 const WalletModal = ({ isOpen, onClose }) => {
   const { account } = useWeb3Store();
   const { isAuthenticated } = useAuthStore();
-  const { profile } = useUserStore();
+  const { profile, fetchMembershipInfo } = useUserStore();
   const { t } = useTranslation();
   const [currentCardIndex, setCurrentCardIndex] = useState(0); // 0: 钱包卡片, 1: AddReferrer卡片, 2: Send卡片, 3: Activity卡片, 4: SelectToken卡片, 5: Membership卡片, 6: PaymentConfirm卡片, 7: ReferralStats卡片, 8: ReferralTree卡片
   const [selectedMembershipLevel, setSelectedMembershipLevel] = useState(null);
@@ -69,8 +69,17 @@ const WalletModal = ({ isOpen, onClose }) => {
   };
 
   // 支付成功处理
-  const handlePaymentSuccess = (membershipLevel) => {
+  const handlePaymentSuccess = async (membershipLevel) => {
     console.log('支付成功，会员等级：', membershipLevel);
+
+    // 刷新会员信息以确保界面显示最新状态
+    try {
+      await fetchMembershipInfo();
+      console.log('✅ 支付成功后会员信息已刷新');
+    } catch (error) {
+      console.error('❌ 刷新会员信息失败:', error);
+    }
+
     // 返回到钱包卡片
     setCurrentCardIndex(0);
   };
