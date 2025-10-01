@@ -36,6 +36,14 @@ const DownArrowIcon = ({ color = '#f5384e' }) => (
   </svg>
 );
 
+// 倒计时图标SVG组件
+const CountdownIcon = ({ color = '#8f8f8f' }) => (
+  <svg width="24" height="24" viewBox="0 0 16 16" fill="none">
+    <circle cx="8" cy="8" r="6" stroke={color} strokeWidth="1.5" fill="none"/>
+    <path d="M8 4v4l3 2" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+
 // 下拉箭头SVG组件
 const DropdownArrowIcon = ({ color = '#fff' }) => (
   <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -173,12 +181,16 @@ const History = () => {
     }
 
     const totalTime = 60000; // 1分钟总时长
-    const progress = (totalTime - remainingTime) / totalTime; // 已过去的进度
     const remainingSeconds = Math.ceil(remainingTime / 1000);
+
+    // 计算进度条的宽度（从右边开始收缩）
+    // remainingTime / totalTime 表示剩余的比例
+    // 1 - (remainingTime / totalTime) 表示已消耗的比例，即进度条应该显示的宽度
+    const progressWidth = Math.min(Math.max(1 - (remainingTime / totalTime), 0), 1);
 
     return {
       isExpired: false,
-      progress: Math.min(Math.max(progress, 0), 1), // 确保在0-1之间
+      progressWidth, // 进度条宽度（0-1）
       remainingSeconds
     };
   };
@@ -356,7 +368,9 @@ const History = () => {
           >
             {/* 上半部分 */}
             <div
-              className="w-[312vw] md:w-full h-[26vw] md:h-auto flex justify-between items-center border-b pb-[12vw] md:pb-3"
+              className={`w-[312vw] md:w-full h-[26vw] md:h-auto flex justify-between items-center pb-[12vw] md:pb-3 ${
+                getCountdownInfo(item) && !getCountdownInfo(item).isExpired ? '' : 'border-b'
+              }`}
               style={{
                 borderBottomColor: '#3d3d3d'
               }}
@@ -393,54 +407,39 @@ const History = () => {
                 {(() => {
                   const countdownInfo = getCountdownInfo(item);
                   if (countdownInfo && !countdownInfo.isExpired) {
-                    // 显示倒计时
+                    // 显示倒计时图标
                     return (
                       <div className="flex items-center gap-[4vw] md:gap-1">
                         <span className="text-white font-size-[13vw] md:text-sm">
                           {countdownInfo.remainingSeconds}s
                         </span>
-                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                          <circle cx="8" cy="8" r="7" stroke="#3d3d3d" strokeWidth="2"/>
-                          <circle
-                            cx="8"
-                            cy="8"
-                            r="7"
-                            stroke={item.order_type === 'CALL' ? '#00bc4b' : '#f5384e'}
-                            strokeWidth="2"
-                            strokeDasharray={`${2 * Math.PI * 7}`}
-                            strokeDashoffset={`${2 * Math.PI * 7 * (1 - countdownInfo.progress)}`}
-                            transform="rotate(-90 8 8)"
-                            strokeLinecap="round"
-                          />
-                        </svg>
+                        <CountdownIcon color="#8f8f8f" />
                       </div>
                     );
                   } else {
-                    // 显示状态箭头
-                    return item.status === 'win' ? (
-                      <UpArrowIcon color="#00bc4b" />
-                    ) : item.status === 'lose' ? (
-                      <DownArrowIcon color="#f5384e" />
-                    ) : (
-                      <div className="w-[24px] h-[24px] rounded-full bg-gray-500 flex items-center justify-center">
-                        <span className="text-white text-xs">?</span>
-                      </div>
-                    );
+                    // 显示状态箭头，根据price_change判断
+                    const priceChange = parseFloat(item.price_change || 0);
+                    if (priceChange < 0) {
+                      return <DownArrowIcon color="#f5384e" />;
+                    } else {
+                      // priceChange > 0 或 priceChange === null 都显示绿色上箭头
+                      return <UpArrowIcon color="#00bc4b" />;
+                    }
                   }
                 })()}
               </div>
             </div>
 
-            {/* 倒计时进度条（如果订单正在结算中） */}
+            {/* 倒计时进度条（替代分割线位置） */}
             {(() => {
               const countdownInfo = getCountdownInfo(item);
               if (countdownInfo && !countdownInfo.isExpired) {
                 return (
-                  <div className="w-full h-[2px] my-[12vw] md:my-3 bg-[#3d3d3d] relative overflow-hidden">
+                  <div className="w-full h-[0.5px] bg-[#3d3d3d] relative overflow-hidden">
                     <div
                       className="absolute left-0 top-0 h-full transition-all duration-1000 ease-linear"
                       style={{
-                        width: `${countdownInfo.progress * 100}%`,
+                        width: `${countdownInfo.progressWidth * 100}%`,
                         backgroundColor: item.order_type === 'CALL' ? '#00bc4b' : '#f5384e'
                       }}
                     />
