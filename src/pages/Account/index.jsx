@@ -9,6 +9,7 @@ import { safeParseFloat, formatBalance } from '../../utils/format';
 import btcIcon from '../../assets/images/account-btc.png';
 import toast from 'react-hot-toast';
 import ReferralBindModal from '../../components/ReferralBindModal';
+import { lusdService } from '../../services';
 
 const Account = () => {
   const navigate = useNavigate();
@@ -23,6 +24,12 @@ const Account = () => {
   const [countdown, setCountdown] = useState(86400); // 24小时倒计时（秒）
   const [showReferralBindModal, setShowReferralBindModal] = useState(false);
   const balanceFetchedRef = useRef(false);
+
+  // LUSD领取相关状态
+  const [lusdClaimStatus, setLusdClaimStatus] = useState(null);
+  const [isLoadingClaimStatus, setIsLoadingClaimStatus] = useState(false);
+  const [isClaiming, setIsClaiming] = useState(false);
+  const [lusdCountdown, setLusdCountdown] = useState(0); // LUSD领取倒计时（秒）
 
   // 使用防重复调用的API hook
   const safeFetchBalance = useApiCall(fetchBalance, []);
@@ -39,13 +46,29 @@ const Account = () => {
     }
   }, [isAuthenticated]); // 移除 safeFetchBalance 依赖，避免循环依赖
 
-  // 余额数据（优先使用API数据，否则使用默认值）
+  // 余额数据（根据实际API响应结构获取）
   const balances = {
-    USDT: safeParseFloat(balance?.balanceMap?.USDT?.total || balance?.usdtBalance, 0),
-    USDR: safeParseFloat(balance?.balanceMap?.USDR?.total, 0),
-    LuckyUSD: safeParseFloat(balance?.balanceMap?.LuckyUSD?.total, 0),
-    Rocket: safeParseFloat(balance?.balanceMap?.Rocket?.total, 1500.00) // 默认值
+    USDT: safeParseFloat(balance?.usdt_balance, 0),
+    USDR: safeParseFloat(balance?.usdr_balance, 0),
+    LuckyUSD: safeParseFloat(balance?.lusd_balance, 0),
+    Rocket: safeParseFloat(balance?.rocket_balance, 0)
   };
+
+  // 调试余额数据
+  useEffect(() => {
+    if (balance) {
+      console.log('=== Account页面余额调试 ===');
+      console.log('原始balance数据:', balance);
+      console.log('USDT余额:', balance?.usdt_balance);
+      console.log('USDR余额:', balance?.usdr_balance);
+      console.log('LUSD余额:', balance?.lusd_balance);
+      console.log('Rocket余额:', balance?.rocket_balance);
+      console.log('计算后的balances:', balances);
+      console.log('当前选中标签:', activeTab);
+      console.log('当前标签余额:', balances[activeTab]);
+      console.log('========================');
+    }
+  }, [balance, activeTab]);
 
 
 
@@ -63,6 +86,31 @@ const Account = () => {
     return () => clearInterval(timer);
   }, []);
 
+  // LUSD领取倒计时效果
+  useEffect(() => {
+    if (lusdCountdown <= 0) return;
+
+    const timer = setInterval(() => {
+      setLusdCountdown(prev => {
+        if (prev <= 1) {
+          // 倒计时结束，重新查询状态
+          fetchLusdClaimStatus();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000); // 每秒更新一次
+
+    return () => clearInterval(timer);
+  }, [lusdCountdown]);
+
+  // 当切换到LuckyUSD标签时查询领取状态
+  useEffect(() => {
+    if (activeTab === 'LuckyUSD' && isAuthenticated) {
+      fetchLusdClaimStatus();
+    }
+  }, [activeTab, isAuthenticated]);
+
 
 
   // 格式化倒计时显示
@@ -72,6 +120,8 @@ const Account = () => {
     const secs = seconds % 60;
     return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
+
+
 
 
 
@@ -102,6 +152,114 @@ const Account = () => {
       return;
     }
     setShowReferralBindModal(true);
+  };
+
+  // 查询LUSD领取状态
+  const fetchLusdClaimStatus = async () => {
+    if (!isAuthenticated) return;
+
+    try {
+      setIsLoadingClaimStatus(true);
+      const result = await lusdService.getClaimStatus();
+
+      if (result.success) {
+        setLusdClaimStatus(result.data);
+        // 计算并设置倒计时
+        if (result.data.next_claim_time) {
+          try {
+            const nextClaimTime = new Date(result.data.next_claim_time);
+            const now = new Date();
+            const diffMs = nextClaimTime.getTime() - now.getTime();
+            const countdownSeconds = diffMs > 0 ? Math.floor(diffMs / 1000) : 0;
+            setLusdCountdown(countdownSeconds);
+          } catch (error) {
+            console.error('计算LUSD倒计时失败:', error);
+            setLusdCountdown(0);
+          }
+        } else {
+          setLusdCountdown(0);
+        }
+      }
+    } catch (error) {
+      console.error('查询LUSD领取状态失败:', error);
+      // 不显示错误toast，避免干扰用户体验
+    } finally {
+      setIsLoadingClaimStatus(false);
+    }
+  };
+
+  // 领取LUSD或显示不可领取原因
+  const handleClaimLusd = async () => {
+    if (!isAuthenticated) {
+      toast.error('请先登录');
+      return;
+    }
+
+    if (!isConnected) {
+      toast.error('请先连接钱包');
+      return;
+    }
+
+    // 如果没有领取状态数据，先查询状态
+    if (!lusdClaimStatus) {
+      toast.error('正在查询领取状态，请稍后再试');
+      fetchLusdClaimStatus();
+      return;
+    }
+
+    // 检查是否可以领取
+    if (!lusdClaimStatus.can_claim) {
+      // 根据具体原因显示不同的提示
+      if (!lusdClaimStatus.balance_ok) {
+        toast.error(`您的 LUSD 余额为 ${lusdClaimStatus.current_balance}，大于等于 1.00，暂时不需要领取`);
+        return;
+      }
+
+      if (!lusdClaimStatus.time_ok) {
+        const remainingMinutes = lusdClaimStatus.remaining_minutes || 0;
+        const remainingTime = lusdService.formatRemainingTime(remainingMinutes);
+        toast.error(`请在 ${remainingTime} 后再次领取`);
+        return;
+      }
+
+      // 如果next_claim_time为null的情况
+      if (!lusdClaimStatus.next_claim_time) {
+        toast.error('暂时不可领取，请稍后再试');
+        return;
+      }
+
+      // 其他未知原因
+      toast.error('当前不可领取，请稍后再试');
+      return;
+    }
+
+    // 可以领取，执行领取操作
+    try {
+      setIsClaiming(true);
+      const result = await lusdService.claimLusd();
+
+      if (result.success) {
+        toast.success(result.message || '成功领取LUSD！');
+
+        // 刷新余额和领取状态
+        await Promise.all([
+          safeFetchBalance(),
+          fetchLusdClaimStatus()
+        ]);
+      }
+    } catch (error) {
+      console.error('领取LUSD失败:', error);
+
+      if (error.isTimeError) {
+        toast.error(`请在 ${lusdService.formatRemainingTime(error.remaining_minutes)} 后再次领取`);
+      } else if (error.isBalanceError) {
+        toast.error(error.message || '余额不符合领取条件');
+      } else {
+        toast.error(error.message || '领取失败，请稍后重试');
+      }
+    } finally {
+      setIsClaiming(false);
+    }
   };
 
 
@@ -190,19 +348,39 @@ const Account = () => {
               </span>
             </div>
           )}
+
+
         </div>
       </div>
 
-      {/* 第四部分：倒计时（只在选中LuckyUSD时显示） */}
+      {/* 第四部分：LUSD领取状态/倒计时（只在选中LuckyUSD时显示） */}
       {activeTab === 'LuckyUSD' && (
         <div className="px-[16vw] md:px-4 pb-[24vw] md:pb-6">
           <div
-            className="w-[343vw] md:w-full h-[50vw] md:h-12 flex items-center justify-center rounded-[8vw] md:rounded-lg border border-gray-400"
+            onClick={handleClaimLusd}
+            className="w-[343vw] md:w-full h-[50vw] md:h-12 flex items-center justify-center rounded-[8vw] md:rounded-lg border border-gray-400 cursor-pointer hover:opacity-80 transition-opacity"
             style={{ backgroundColor: 'rgb(64, 64, 64)' }}
           >
-            <span className="text-white text-size-[18vw] md:text-lg font-medium">
-              {t('account.next_distribution')}: {formatCountdown(countdown)}
-            </span>
+            {isLoadingClaimStatus ? (
+              <div className="flex items-center space-x-2">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                <span className="text-white text-size-[16vw] md:text-base">查询领取状态中...</span>
+              </div>
+            ) : lusdClaimStatus ? (
+              <span className="text-white text-size-[18vw] md:text-lg font-medium">
+                {lusdClaimStatus.can_claim ? (
+                  isClaiming ? '领取中...' : '领取LUSD'
+                ) : lusdClaimStatus.next_claim_time ? (
+                  `下次领取: ${formatCountdown(lusdCountdown)}`
+                ) : (
+                  '暂时不可领取'
+                )}
+              </span>
+            ) : (
+              <span className="text-white text-size-[18vw] md:text-lg font-medium">
+                {t('account.next_distribution')}: {formatCountdown(countdown)}
+              </span>
+            )}
           </div>
         </div>
       )}
@@ -221,19 +399,21 @@ const Account = () => {
         </div>
       </div>
 
-      {/* 推荐码绑定入口 */}
-      <div className="px-[16vw] md:px-4 pb-[24vw] md:pb-6">
-        <div
-          onClick={handleReferralBindClick}
-          className="w-[343vw] md:w-full h-[50vw] md:h-12 flex items-center justify-between px-[16vw] md:px-4 rounded-[8vw] md:rounded-lg cursor-pointer hover:opacity-80 transition-opacity"
-          style={{ backgroundColor: 'rgb(41, 41, 41)' }}
-        >
-          <span className="text-white text-size-[16vw] md:text-lg">{t('network_details.referral_bind.title')}</span>
-          <svg className="w-[16vw] md:w-4 h-[16vw] md:h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-          </svg>
+      {/* 推荐码绑定入口 - 已隐藏 */}
+      {false && (
+        <div className="px-[16vw] md:px-4 pb-[24vw] md:pb-6">
+          <div
+            onClick={handleReferralBindClick}
+            className="w-[343vw] md:w-full h-[50vw] md:h-12 flex items-center justify-between px-[16vw] md:px-4 rounded-[8vw] md:rounded-lg cursor-pointer hover:opacity-80 transition-opacity"
+            style={{ backgroundColor: 'rgb(41, 41, 41)' }}
+          >
+            <span className="text-white text-size-[16vw] md:text-lg">{t('network_details.referral_bind.title')}</span>
+            <svg className="w-[16vw] md:w-4 h-[16vw] md:h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+            </svg>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* 第六部分：交易记录入口 */}
       <div className="px-[16vw] md:px-4">

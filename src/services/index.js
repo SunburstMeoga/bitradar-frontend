@@ -7,6 +7,7 @@ export { default as tokenService } from './tokenService.js';
 export { default as referralService } from './referralService.js';
 export { default as networkService } from './networkService.js';
 export { default as membershipService } from './membershipService.js';
+export { default as lusdService } from './lusdService.js';
 export { ApiService, TokenManager, apiClient } from './api.js';
 
 // 便捷的服务实例导出
@@ -18,6 +19,7 @@ import tokenService from './tokenService.js';
 import referralService from './referralService.js';
 import networkService from './networkService.js';
 import membershipService from './membershipService.js';
+import lusdService from './lusdService.js';
 
 export const services = {
   auth: authService,
@@ -27,7 +29,8 @@ export const services = {
   token: tokenService,
   referral: referralService,
   network: networkService,
-  membership: membershipService
+  membership: membershipService,
+  lusd: lusdService
 };
 
 export default services;
