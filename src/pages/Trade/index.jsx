@@ -243,12 +243,20 @@ const Trade = () => {
 
     // 移除所有非数字字符（包括小数点）
     inputValue = inputValue.replace(/[^\d]/g, '');
+    
+    // 处理特殊情况：如果输入为空或为0，设置为空字符串
+    // 这样可以避免在退格键后显示0，然后输入变成0xxx的问题
+    if (inputValue === '' || inputValue === '0') {
+      setTradeAmount(0);
+      setSliderValue(0);
+      return;
+    }
 
-    // 转换为整数，如果为空则为0
-    const value = inputValue === '' ? 0 : parseInt(inputValue, 10);
+    // 转换为整数
+    const value = parseInt(inputValue, 10);
 
-    // 确保输入值在有效范围内：不超过用户余额，且不超过1000
-    const clampedValue = Math.min(value, Math.floor(userBalance), 1000);
+    // 确保输入值在有效范围内：不小于1且不超过用户余额
+    const clampedValue = Math.min(Math.max(value, 1), Math.floor(userBalance));
     setTradeAmount(clampedValue);
     setSliderValue(clampedValue);
   };

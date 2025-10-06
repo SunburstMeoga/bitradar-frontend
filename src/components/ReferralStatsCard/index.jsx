@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { referralService } from '../../services';
 import toast from 'react-hot-toast';
+import { copyToClipboard } from '../../utils/clipboard';
 
 // 复制图标SVG组件
 const CopyIcon = ({ color = "#949E9E" }) => (
@@ -71,8 +72,13 @@ const ReferralStatsCard = ({ onBack, onClose, onViewTree }) => {
     if (!statsData?.invite_code) return;
 
     try {
-      await navigator.clipboard.writeText(statsData.invite_code);
-      toast.success(t('wallet.invite_code_copied'));
+      // 使用新的剪贴板工具函数
+      const success = await copyToClipboard(statsData.invite_code);
+      if (success) {
+        toast.success(t('wallet.invite_code_copied'));
+      } else {
+        toast.error(t('wallet.copy_failed'));
+      }
     } catch (err) {
       console.error('复制失败:', err);
       toast.error(t('wallet.copy_failed'));
@@ -86,8 +92,13 @@ const ReferralStatsCard = ({ onBack, onClose, onViewTree }) => {
     try {
       const currentUrl = window.location.origin + window.location.pathname;
       const referralLink = `${currentUrl}?ref=${statsData.invite_code}`;
-      await navigator.clipboard.writeText(referralLink);
-      toast.success(t('wallet.referral_link_copied'));
+      // 使用新的剪贴板工具函数
+      const success = await copyToClipboard(referralLink);
+      if (success) {
+        toast.success(t('wallet.referral_link_copied'));
+      } else {
+        toast.error(t('wallet.copy_failed'));
+      }
     } catch (err) {
       console.error('复制失败:', err);
       toast.error(t('wallet.copy_failed'));

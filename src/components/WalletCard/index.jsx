@@ -5,6 +5,7 @@ import { formatAddress, getBNBBalance } from '../../utils/web3';
 import { MEMBERSHIP_LEVELS, MEMBERSHIP_COLORS } from '../MembershipCard';
 import { referralService } from '../../services';
 import toast from 'react-hot-toast';
+import { copyToClipboard } from '../../utils/clipboard';
 
 
 // 导入图片
@@ -239,10 +240,14 @@ const WalletCard = ({ onClose, onSendClick, onActivityClick, onAddReferrerClick,
   // 复制地址到剪贴板
   const handleCopyAddress = async () => {
     try {
-      await navigator.clipboard.writeText(account);
-      toast.success(t('wallet.address_copied'));
-    } catch (err) {
-      console.error('复制失败:', err);
+      const success = await copyToClipboard(account);
+      if (success) {
+        toast.success(t('wallet.address_copied'));
+      } else {
+        toast.error(t('wallet.copy_failed'));
+      }
+    } catch (error) {
+      console.error('复制地址失败:', error);
       toast.error(t('wallet.copy_failed'));
     }
   };
@@ -252,10 +257,14 @@ const WalletCard = ({ onClose, onSendClick, onActivityClick, onAddReferrerClick,
     if (!referrerAddress) return;
 
     try {
-      await navigator.clipboard.writeText(referrerAddress);
-      toast.success(t('wallet.referrer_address_copied'));
-    } catch (err) {
-      console.error('复制失败:', err);
+      const success = await copyToClipboard(referrerAddress);
+      if (success) {
+        toast.success(t('wallet.referrer_address_copied'));
+      } else {
+        toast.error(t('wallet.copy_failed'));
+      }
+    } catch (error) {
+      console.error('复制推荐人地址失败:', error);
       toast.error(t('wallet.copy_failed'));
     }
   };
@@ -275,8 +284,12 @@ const WalletCard = ({ onClose, onSendClick, onActivityClick, onAddReferrerClick,
         const result = await referralService.getMyInviteCode();
         if (result.success && result.data && result.data.invite_code) {
           // 复制推荐码
-          await navigator.clipboard.writeText(result.data.invite_code);
-          toast.success(t('wallet.referral_link_generated_and_copied'));
+          const success = await copyToClipboard(result.data.invite_code);
+          if (success) {
+            toast.success(t('wallet.referral_link_generated_and_copied'));
+          } else {
+            toast.error(t('wallet.copy_failed'));
+          }
           return true;
         } else {
           throw new Error('获取推荐码失败：数据格式错误');
