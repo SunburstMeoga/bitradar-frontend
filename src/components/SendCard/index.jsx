@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import toast from 'react-hot-toast';
 
 // 返回按钮SVG组件
 const BackIcon = () => (
@@ -70,6 +71,10 @@ const SendCard = ({ onBack, onClose, onSelectToken }) => {
   // 处理粘贴功能
   const handlePaste = async () => {
     try {
+      // 检查是否支持clipboard API
+      if (!navigator.clipboard || !navigator.clipboard.readText) {
+        throw new Error('Clipboard API not supported');
+      }
       const text = await navigator.clipboard.readText();
       setAddress(text);
       setIsAddressFocused(true);
@@ -78,6 +83,8 @@ const SendCard = ({ onBack, onClose, onSelectToken }) => {
       }
     } catch (err) {
       console.error('粘贴失败:', err);
+      // 提供备用方案或用户提示
+      toast.error('粘贴功能不可用，请手动输入地址');
     }
   };
 

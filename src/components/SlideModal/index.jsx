@@ -163,7 +163,7 @@ const SlideModal = ({
 
       {/* 弹窗卡片容器 */}
       <div
-        className={`relative bg-[#1f1f1f] rounded-[12px] w-[330px] md:w-[380px] box-border pb-[20vw] md:pb-5  ${className}`}
+        className={`relative bg-[#1f1f1f] rounded-[12px] w-[330px] md:w-[380px] box-border ${className}`}
         style={{
           height: modalHeight,
           maxHeight: '70vh',
@@ -208,7 +208,7 @@ const SlideModal = ({
             className="w-full h-full"
           >
             <div
-              className="modal-content overflow-y-auto scrollbar-hide px-[20vw] md:px-8 h-full"
+              className="modal-content overflow-y-auto scrollbar-hide px-[20vw] md:px-8 h-full pb-[20vw] md:pb-5"
               style={{
                 scrollbarWidth: 'none', /* Firefox */
                 msOverflowStyle: 'none' /* IE and Edge */

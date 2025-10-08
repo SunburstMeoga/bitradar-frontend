@@ -74,7 +74,7 @@ class ReferralService extends ApiService {
       console.log('🔗 绑定推荐关系:', { referralCode, walletAddress });
 
       const response = await this.post('/referral/use-invite-code', {
-        referral_code: referralCode,
+        inviteCode: referralCode,
         wallet_address: walletAddress
       });
 

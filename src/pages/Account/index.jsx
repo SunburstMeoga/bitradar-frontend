@@ -370,10 +370,14 @@ const Account = () => {
               <span className="text-white text-size-[18vw] md:text-lg font-medium">
                 {lusdClaimStatus.can_claim ? (
                   isClaiming ? '领取中...' : '领取LUSD'
-                ) : lusdClaimStatus.next_claim_time ? (
-                  `下次领取: ${formatCountdown(lusdCountdown)}`
+                ) : balances.LuckyUSD < 1 ? (
+                  lusdClaimStatus.next_claim_time ? (
+                    `下次领取: ${formatCountdown(lusdCountdown)}`
+                  ) : (
+                    '暂时不可领取'
+                  )
                 ) : (
-                  '暂时不可领取'
+                  '不可领取'
                 )}
               </span>
             ) : (

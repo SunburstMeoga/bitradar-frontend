@@ -118,7 +118,11 @@ const NetworkDetails = () => {
       }
     };
 
-    if (treeStructure.direct_referrals) {
+    // 显示当前用户的直接下级用户（children数组）
+    if (treeStructure.children && treeStructure.children.length > 0) {
+      processLevel(treeStructure.children, 1);
+    } else if (treeStructure.direct_referrals && treeStructure.direct_referrals.length > 0) {
+      // 兼容旧的数据结构
       processLevel(treeStructure.direct_referrals, 1);
     }
 

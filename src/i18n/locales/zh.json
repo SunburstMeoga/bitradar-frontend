@@ -283,7 +283,7 @@
       "deposit": "充值",
       "withdraw": "提现",
       "trade": "交易",
-      "reward": "奖励"
+      "reward": "领取"
     },
     "transaction_types": {
       "check_in": "签到",

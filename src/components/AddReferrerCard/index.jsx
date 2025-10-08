@@ -97,6 +97,10 @@ const AddReferrerCard = ({ onBack, onClose, onSuccess }) => {
   // 处理粘贴功能
   const handlePaste = async () => {
     try {
+      // 检查是否支持clipboard API
+      if (!navigator.clipboard || !navigator.clipboard.readText) {
+        throw new Error('Clipboard API not supported');
+      }
       const text = await navigator.clipboard.readText();
       setInviteCode(text);
       setIsCodeFocused(true);
@@ -107,6 +111,8 @@ const AddReferrerCard = ({ onBack, onClose, onSuccess }) => {
       await validateInviteCode(text);
     } catch (err) {
       console.error('粘贴失败:', err);
+      // 提供备用方案或用户提示
+      toast.error('粘贴功能不可用，请手动输入推荐码');
     }
   };
 
@@ -132,9 +138,12 @@ const AddReferrerCard = ({ onBack, onClose, onSuccess }) => {
 
     // 延迟验证，避免频繁请求
     if (code.trim()) {
+      // 使用 useRef 来存储最新的输入值，避免闭包问题
+      const currentCode = code;
       setTimeout(() => {
-        if (code === inviteCode) { // 确保是最新的输入
-          validateInviteCode(code);
+        // 检查当前输入框的值是否与延迟执行时的值一致
+        if (textareaRef.current && textareaRef.current.value === currentCode) {
+          validateInviteCode(currentCode);
         }
       }, 500);
     } else {
