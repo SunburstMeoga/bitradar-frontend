@@ -78,7 +78,8 @@ class ReferralService extends ApiService {
         wallet_address: walletAddress
       });
 
-      if (response.success && response.data) {
+      // 成功判断兼容：有标准success/data结构或仅返回成功message
+      if (response?.success && response?.data) {
         console.log('✅ 绑定推荐关系成功:', response.data);
         return {
           success: true,
@@ -86,7 +87,20 @@ class ReferralService extends ApiService {
         };
       }
 
-      throw new Error(response.message || '绑定推荐关系失败');
+      // 某些情况接口仅返回成功的 message 而无 success/data
+      if (typeof response?.message === 'string') {
+        const msg = response.message;
+        const successHints = ['成功', '已建立', 'success'];
+        if (successHints.some(hint => msg.toLowerCase().includes(hint))) {
+          console.log('✅ 绑定推荐关系成功(消息判定):', msg);
+          return {
+            success: true,
+            data: { message: msg }
+          };
+        }
+      }
+
+      throw new Error(response?.message || '绑定推荐关系失败');
     } catch (error) {
       console.error('绑定推荐关系失败:', error);
       throw error;

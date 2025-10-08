@@ -2,6 +2,12 @@ import { ApiService, TokenManager } from './api.js';
 import i18n from '../i18n';
 
 class AuthService extends ApiService {
+  constructor() {
+    super();
+    // 防重入：避免并发触发多次签名与登录
+    this._isSigningIn = false;
+    this._loginPromise = null;
+  }
   /**
    * Web3钱包签名登录
    * @param {string} message - 签名消息
@@ -152,30 +158,45 @@ class AuthService extends ApiService {
    * @returns {Promise<Object>} 登录结果
    */
   async web3Login(account, customMessage = null) {
-    try {
-      console.log('🚀 开始Web3登录流程...');
-
-      // 1. 获取签名消息（支持多语言）
-      const message = customMessage || this.getSignMessage();
-      console.log('📝 签名消息:', message);
-
-      // 2. 签名消息
-      const signature = await this.signMessage(message, account);
-
-      // 3. 登录
-      console.log('🔐 正在验证签名并登录...');
-      const result = await this.login(message, signature);
-
-      if (result.success) {
-        console.log('🎉 登录成功！');
-        console.log('用户信息:', result.user);
-      }
-
-      return result;
-    } catch (error) {
-      console.error('❌ Web3登录失败:', error);
-      throw error;
+    // 如果已有登录流程在进行中，直接返回同一个promise，避免重复触发签名
+    if (this._isSigningIn && this._loginPromise) {
+      console.log('⏳ 已有登录流程正在进行，复用当前登录promise');
+      return this._loginPromise;
     }
+
+    this._isSigningIn = true;
+    this._loginPromise = (async () => {
+      try {
+        console.log('🚀 开始Web3登录流程...');
+
+        // 1. 获取签名消息（支持多语言）
+        const message = customMessage || this.getSignMessage();
+        console.log('📝 签名消息:', message);
+
+        // 2. 签名消息
+        const signature = await this.signMessage(message, account);
+
+        // 3. 登录
+        console.log('🔐 正在验证签名并登录...');
+        const result = await this.login(message, signature);
+
+        if (result.success) {
+          console.log('🎉 登录成功！');
+          console.log('用户信息:', result.user);
+        }
+
+        return result;
+      } catch (error) {
+        console.error('❌ Web3登录失败:', error);
+        throw error;
+      } finally {
+        // 重置防重入标记
+        this._isSigningIn = false;
+        this._loginPromise = null;
+      }
+    })();
+
+    return this._loginPromise;
   }
 }
 

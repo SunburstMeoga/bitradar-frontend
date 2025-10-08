@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useWeb3Store, useAuthStore, useUserStore } from '../../store';
-import { connectWallet, formatAddress, autoReconnectWallet, onAccountsChanged, onChainChanged } from '../../utils/web3';
+import { connectWallet, formatAddress, autoReconnectWallet, onAccountsChanged, onChainChanged, removeListeners } from '../../utils/web3';
 import binanceIcon from '../../assets/icons/binance.png';
 import downIcon from '../../assets/icons/down.png';
 import WalletModal from '../WalletModal';
@@ -109,13 +109,14 @@ const SecondaryHeader = ({ title, onBack }) => {
       // 可以在这里添加网络切换的逻辑
     };
 
-    // 添加事件监听
+    // 为避免重复注册，先移除旧的监听器，再添加新的监听器
+    removeListeners();
     onAccountsChanged(handleAccountsChanged);
     onChainChanged(handleChainChanged);
 
-    // 清理函数
+    // 清理函数：组件卸载时移除监听器，防止重复触发
     return () => {
-      // 这里可以添加清理监听器的逻辑
+      removeListeners();
     };
   }, [setAccount, setIsConnected, setChainId, setWeb3, setProvider, logout]);
 

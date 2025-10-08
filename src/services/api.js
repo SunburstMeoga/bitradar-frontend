@@ -123,41 +123,21 @@ apiClient.interceptors.response.use(
 
 // 错误处理函数
 const handleApiError = (error) => {
-  // 如果错误被标记为跳过toast显示，则不显示
-  if (error.skipToast) {
-    return;
-  }
-
-  if (error.response) {
-    const { status, data } = error.response;
-    const message = data?.message || '请求失败';
-
-    switch (status) {
-      case 400:
-        toast.error(`请求参数错误: ${message}`);
-        break;
-      case 401:
-        toast.error('认证失败，请重新登录');
-        break;
-      case 403:
-        toast.error('权限不足');
-        break;
-      case 404:
-        toast.error('请求的资源不存在');
-        break;
-      case 429:
-        toast.error('请求过于频繁，请稍后再试');
-        break;
-      case 500:
-        toast.error('服务器内部错误');
-        break;
-      default:
-        toast.error(`请求失败: ${message}`);
+  // 全局错误处理不再弹出toast，由具体请求场景负责用户提示
+  // 这里只做日志记录，避免重复弹窗
+  try {
+    if (error.response) {
+      const { status, data } = error.response;
+      const message = data?.message || '请求失败';
+      console.error('API请求失败:', { status, message, url: error.config?.url });
+    } else if (error.request) {
+      console.error('API请求网络错误: 无响应', { url: error.config?.url });
+    } else {
+      console.error('API请求错误:', error.message);
     }
-  } else if (error.request) {
-    toast.error('网络连接失败，请检查网络设置');
-  } else {
-    toast.error(`请求错误: ${error.message}`);
+  } catch (logError) {
+    // 避免日志记录本身抛错
+    console.warn('记录API错误失败:', logError);
   }
 };
 
