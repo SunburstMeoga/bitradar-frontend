@@ -128,6 +128,9 @@ const WalletCard = ({ onClose, onSendClick, onActivityClick, onAddReferrerClick,
   const [hasReferralRelation, setHasReferralRelation] = useState(false);
   const [isCheckingReferral, setIsCheckingReferral] = useState(true);
   const [isGeneratingReferralCode, setIsGeneratingReferralCode] = useState(false);
+  // 用户信息加载状态（用于在请求过程中显示骨架/loading）
+  const [isProfileLoading, setIsProfileLoading] = useState(false);
+  const [isMembershipLoading, setIsMembershipLoading] = useState(false);
 
 
   // 从URL参数获取推荐人地址
@@ -147,8 +150,7 @@ const WalletCard = ({ onClose, onSendClick, onActivityClick, onAddReferrerClick,
     }
 
     // 基于用户profile中的invited_by字段判断是否有推荐人
-    // const hasReferrer = profile.invited_by && profile.invited_by > 0;
-    const hasReferrer =false
+    const hasReferrer = profile.invited_by && profile.invited_by > 0;
 
     console.log('WalletCard检查推荐关系:', {
       invited_by: profile.invited_by,
@@ -200,18 +202,28 @@ const WalletCard = ({ onClose, onSendClick, onActivityClick, onAddReferrerClick,
   // 获取用户资料数据
   useEffect(() => {
     if (isAuthenticated && !profile) {
-      fetchProfile().catch(error => {
-        console.error('获取用户资料失败:', error);
-      });
+      setIsProfileLoading(true);
+      fetchProfile()
+        .catch(error => {
+          console.error('获取用户资料失败:', error);
+        })
+        .finally(() => {
+          setIsProfileLoading(false);
+        });
     }
   }, [isAuthenticated, profile, fetchProfile]);
 
   // 获取会员信息
   useEffect(() => {
     if (isAuthenticated && !membershipInfo) {
-      fetchMembershipInfo().catch(error => {
-        console.error('获取会员信息失败:', error);
-      });
+      setIsMembershipLoading(true);
+      fetchMembershipInfo()
+        .catch(error => {
+          console.error('获取会员信息失败:', error);
+        })
+        .finally(() => {
+          setIsMembershipLoading(false);
+        });
     }
   }, [isAuthenticated, membershipInfo, fetchMembershipInfo]);
 
@@ -398,30 +410,25 @@ const WalletCard = ({ onClose, onSendClick, onActivityClick, onAddReferrerClick,
   ];
 
   // 菜单项配置
+  // 推荐相关入口在检查推荐关系时默认隐藏；检查完成后：
+  // - 有推荐人：不显示“推荐统计”和“填写推荐码”入口
+  // - 无推荐人：显示“填写推荐码”入口
+  const referralMenuItems = isCheckingReferral
+    ? []
+    : (hasReferralRelation
+        ? []
+        : [{
+            id: 'referrer',
+            label: hasReferrer ? t('wallet.referrer') : t('wallet.add_referrer'),
+            icon: ReferrerIcon,
+            textColor: '#9D9D9D',
+            showArrow: !hasReferrer,
+            showReferrerInfo: hasReferrer,
+            onClick: hasReferrer ? () => {} : handleAddReferrerClick
+          }]);
+
   const menuItems = [
-    // 根据用户推荐关系状态显示不同的推荐选项
-    ...(hasReferralRelation ? [
-      // 已有推荐关系：显示推荐统计入口
-      {
-        id: 'referral-stats',
-        label: t('wallet.referral_stats'),
-        icon: ReferrerIcon,
-        textColor: '#9D9D9D',
-        showArrow: true,
-        onClick: onViewReferralStatsClick
-      }
-    ] : [
-      // 无推荐关系：显示添加推荐人入口
-      {
-        id: 'referrer',
-        label: hasReferrer ? t('wallet.referrer') : t('wallet.add_referrer'),
-        icon: ReferrerIcon,
-        textColor: '#9D9D9D',
-        showArrow: !hasReferrer,
-        showReferrerInfo: hasReferrer,
-        onClick: hasReferrer ? () => {} : handleAddReferrerClick
-      }
-    ]),
+    ...referralMenuItems,
     {
       id: 'generate-referral',
       label: isGeneratingReferralCode ? t('wallet.generating_referral_code') : t('wallet.generate_referral_link'),
@@ -483,19 +490,26 @@ const WalletCard = ({ onClose, onSendClick, onActivityClick, onAddReferrerClick,
           </button>
         </div>
 
-        {/* 会员等级状态 */}
-        <div className="flex items-center justify-center gap-[4px] md:gap-1 mb-[12px] md:mb-3">
-          <div
-            className="w-[8px] h-[8px] md:w-2 md:h-2 rounded-full"
-            style={{ backgroundColor: getMembershipDisplayInfo().color }}
-          />
-          <span
-            className="text-[14px] md:text-sm"
-            style={{ color: getMembershipDisplayInfo().color, fontWeight: 500 }}
-          >
-            {getMembershipDisplayInfo().text}
-          </span>
-        </div>
+        {/* 会员等级状态：在数据请求中显示骨架屏 */}
+        {isProfileLoading || isMembershipLoading ? (
+          <div className="flex items-center justify-center gap-[6px] md:gap-1 mb-[12px] md:mb-3">
+            <div className="w-[8px] h-[8px] md:w-2 md:h-2 rounded-full bg-[#3a3a3a]" />
+            <div className="h-[16px] md:h-4 w-[120px] md:w-24 rounded bg-[#3a3a3a] animate-pulse" />
+          </div>
+        ) : (
+          <div className="flex items-center justify-center gap-[4px] md:gap-1 mb-[12px] md:mb-3">
+            <div
+              className="w-[8px] h-[8px] md:w-2 md:h-2 rounded-full"
+              style={{ backgroundColor: getMembershipDisplayInfo().color }}
+            />
+            <span
+              className="text-[14px] md:text-sm"
+              style={{ color: getMembershipDisplayInfo().color, fontWeight: 500 }}
+            >
+              {getMembershipDisplayInfo().text}
+            </span>
+          </div>
+        )}
 
         {/* BNB余额 */}
         <div className="text-center mb-[20px] md:mb-5">
