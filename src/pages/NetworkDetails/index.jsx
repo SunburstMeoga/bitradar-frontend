@@ -100,12 +100,17 @@ const NetworkDetails = () => {
           count: users.length,
           users: users.map(user => ({
             user_id: user.user_id,
-            vip_level: user.vip_level,
+            wallet_address: user.wallet_address,
+            invite_code: user.invite_code,
+            vip_level: user.vip_level || 1, // 默认VIP等级为1
             stake_amount: parseFloat(user.stake_amount || '0'),
-            relationship: user.relationship,
-            level_difference: user.level_difference,
-            network_reward_eligible: user.network_reward_eligible,
-            flat_reward_eligible: user.flat_reward_eligible
+            relationship: user.relationship || 'direct',
+            level_difference: user.level_difference || 1,
+            network_reward_eligible: user.network_reward_eligible || false,
+            flat_reward_eligible: user.flat_reward_eligible || false,
+            direct_invites: user.direct_invites || 0,
+            total_invites: user.total_invites || 0,
+            total_rewards: user.total_rewards || '0'
           }))
         };
 
@@ -121,9 +126,6 @@ const NetworkDetails = () => {
     // 显示当前用户的直接下级用户（children数组）
     if (treeStructure.children && treeStructure.children.length > 0) {
       processLevel(treeStructure.children, 1);
-    } else if (treeStructure.direct_referrals && treeStructure.direct_referrals.length > 0) {
-      // 兼容旧的数据结构
-      processLevel(treeStructure.direct_referrals, 1);
     }
 
     return levels.filter(level => level); // 过滤掉空的层级
@@ -176,10 +178,22 @@ const NetworkDetails = () => {
     setExpandedLevel(expandedLevel === level ? null : level);
   };
 
-  // 格式化用户ID显示（因为API返回的是user_id而不是address）
-  const formatUserId = (userId) => {
-    if (!userId) return '';
-    return `用户 #${userId}`;
+  // 格式化用户ID显示（显示钱包地址或用户ID）
+  const formatUserId = (user) => {
+    if (!user) return '';
+    
+    // 优先显示钱包地址的简化版本
+    if (user.wallet_address) {
+      const address = user.wallet_address;
+      return `${address.slice(0, 6)}...${address.slice(-4)}`;
+    }
+    
+    // 如果没有钱包地址，显示用户ID
+    if (user.user_id) {
+      return `用户 #${user.user_id}`;
+    }
+    
+    return '未知用户';
   };
 
   // 格式化金额显示，小数点后字体小一半，带跳动效果
@@ -315,7 +329,7 @@ const NetworkDetails = () => {
                       {/* 用户信息 */}
                       <div className="flex justify-between items-center mb-[8vw] md:mb-2">
                         <div className="text-white text-size-[14vw] md:text-sm font-medium">
-                          {formatUserId(user.user_id)}
+                          {formatUserId(user)}
                         </div>
                         <div className="text-yellow-400 text-size-[12vw] md:text-xs">
                           VIP{user.vip_level}

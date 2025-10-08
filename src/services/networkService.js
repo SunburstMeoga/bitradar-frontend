@@ -24,11 +24,14 @@ class NetworkService extends ApiService {
 
         // 适配页面期望的数据结构
         const treeStructure = {
-          direct_referrals: response.tree.direct_referrals || [], // 如果有下级推荐数组
+          children: response.tree.children || [], // 使用API返回的children字段
           user_id: response.tree.user_id,
           wallet_address: response.tree.wallet_address,
           invite_code: response.tree.invite_code,
-          level: response.tree.level
+          level: response.tree.level,
+          direct_invites: response.tree.direct_invites || 0,
+          total_invites: response.tree.total_invites || 0,
+          total_rewards: response.tree.total_rewards || '0'
         };
 
         return {
