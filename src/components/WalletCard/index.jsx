@@ -147,7 +147,8 @@ const WalletCard = ({ onClose, onSendClick, onActivityClick, onAddReferrerClick,
     }
 
     // 基于用户profile中的invited_by字段判断是否有推荐人
-    const hasReferrer = profile.invited_by && profile.invited_by > 0;
+    // const hasReferrer = profile.invited_by && profile.invited_by > 0;
+    const hasReferrer =false
 
     console.log('WalletCard检查推荐关系:', {
       invited_by: profile.invited_by,
