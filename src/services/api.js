@@ -25,16 +25,19 @@ class TokenManager {
   }
 
   static getRefreshToken() {
-    return localStorage.getItem('refreshToken');
+    // 不再持久化refreshToken到localStorage，改为内存保存，避免冗余
+    return TokenManager._refreshToken || null;
   }
 
   static setRefreshToken(token) {
-    localStorage.setItem('refreshToken', token);
+    // 仅在内存中保存refreshToken
+    TokenManager._refreshToken = token || null;
   }
 
   static clearTokens() {
     localStorage.removeItem('authToken');
-    localStorage.removeItem('refreshToken');
+    // 清理内存中的refreshToken
+    TokenManager._refreshToken = null;
   }
 
   static isTokenExpired(token) {

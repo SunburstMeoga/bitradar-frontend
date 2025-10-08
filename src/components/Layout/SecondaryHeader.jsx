@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useWeb3Store } from '../../store';
+import { useWeb3Store, useAuthStore } from '../../store';
 import { connectWallet, formatAddress, autoReconnectWallet, onAccountsChanged, onChainChanged } from '../../utils/web3';
 import binanceIcon from '../../assets/icons/binance.png';
 import downIcon from '../../assets/icons/down.png';
@@ -24,6 +24,7 @@ const SecondaryHeader = ({ title, onBack }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { account, isConnected, isConnecting, setAccount, setIsConnected, setIsConnecting, setChainId, setWeb3, setProvider } = useWeb3Store();
+  const { logout } = useAuthStore();
   const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
 
   // 页面加载时自动重连钱包
@@ -65,6 +66,17 @@ const SecondaryHeader = ({ title, onBack }) => {
         setChainId(null);
         setWeb3(null);
         setProvider(null);
+        // 清理本地token登录信息与钱包地址
+        try {
+          logout();
+        } catch (e) {
+          console.warn('登出失败:', e);
+        }
+        try {
+          localStorage.removeItem('web3-storage');
+        } catch (e) {
+          console.warn('清理本地地址失败:', e);
+        }
       } else {
         // 用户切换了账户
         setAccount(accounts[0]);
@@ -85,7 +97,7 @@ const SecondaryHeader = ({ title, onBack }) => {
     return () => {
       // 这里可以添加清理监听器的逻辑
     };
-  }, [setAccount, setIsConnected, setChainId, setWeb3, setProvider]);
+  }, [setAccount, setIsConnected, setChainId, setWeb3, setProvider, logout]);
 
   const handleConnect = async () => {
     try {

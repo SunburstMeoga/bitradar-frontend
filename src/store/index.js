@@ -121,10 +121,10 @@ export const useAuthStore = create(
       }),
       {
         name: 'auth-store',
+        // 仅持久化必要的认证状态，不再持久化token，避免与localStorage中的authToken重复
         partialize: (state) => ({
           isAuthenticated: state.isAuthenticated,
-          user: state.user,
-          token: state.token
+          user: state.user
         }),
       }
     ),

@@ -61,7 +61,7 @@ const Account = () => {
       console.log('原始balance数据:', balance);
       console.log('USDT余额:', balance?.usdt_balance);
       console.log('USDR余额:', balance?.usdr_balance);
-      console.log('LUSD余额:', balance?.lusd_balance);
+      console.log('LuckyUSD余额:', balance?.lusd_balance);
       console.log('Rocket余额:', balance?.rocket_balance);
       console.log('计算后的balances:', balances);
       console.log('当前选中标签:', activeTab);
@@ -154,7 +154,7 @@ const Account = () => {
     setShowReferralBindModal(true);
   };
 
-  // 查询LUSD领取状态
+  // 查询LuckyUSD领取状态
   const fetchLusdClaimStatus = async () => {
     if (!isAuthenticated) return;
 
@@ -173,7 +173,7 @@ const Account = () => {
             const countdownSeconds = diffMs > 0 ? Math.floor(diffMs / 1000) : 0;
             setLusdCountdown(countdownSeconds);
           } catch (error) {
-            console.error('计算LUSD倒计时失败:', error);
+            console.error('计算LuckyUSD倒计时失败:', error);
             setLusdCountdown(0);
           }
         } else {
@@ -181,14 +181,14 @@ const Account = () => {
         }
       }
     } catch (error) {
-      console.error('查询LUSD领取状态失败:', error);
+      console.error('查询LuckyUSD领取状态失败:', error);
       // 不显示错误toast，避免干扰用户体验
     } finally {
       setIsLoadingClaimStatus(false);
     }
   };
 
-  // 领取LUSD或显示不可领取原因
+  // 领取LuckyUSD或显示不可领取原因
   const handleClaimLusd = async () => {
     if (!isAuthenticated) {
       toast.error('请先登录');
@@ -211,7 +211,7 @@ const Account = () => {
     if (!lusdClaimStatus.can_claim) {
       // 根据具体原因显示不同的提示
       if (!lusdClaimStatus.balance_ok) {
-        toast.error(`您的 LUSD 余额为 ${lusdClaimStatus.current_balance}，大于等于 1.00，暂时不需要领取`);
+        toast.error(`您的 LuckyUSD 余额为 ${lusdClaimStatus.current_balance}，大于等于 1.00，暂时不需要领取`);
         return;
       }
 
@@ -239,7 +239,7 @@ const Account = () => {
       const result = await lusdService.claimLusd();
 
       if (result.success) {
-        toast.success(result.message || '成功领取LUSD！');
+        toast.success(result.message || '成功领取LuckyUSD！');
 
         // 刷新余额和领取状态
         await Promise.all([
@@ -248,7 +248,7 @@ const Account = () => {
         ]);
       }
     } catch (error) {
-      console.error('领取LUSD失败:', error);
+      console.error('领取LuckyUSD失败:', error);
 
       if (error.isTimeError) {
         toast.error(`请在 ${lusdService.formatRemainingTime(error.remaining_minutes)} 后再次领取`);
@@ -353,7 +353,7 @@ const Account = () => {
         </div>
       </div>
 
-      {/* 第四部分：LUSD领取状态/倒计时（只在选中LuckyUSD时显示） */}
+      {/* 第四部分：LuckyUSD领取状态/倒计时（只在选中LuckyUSD时显示） */}
       {activeTab === 'LuckyUSD' && (
         <div className="px-[16vw] md:px-4 pb-[24vw] md:pb-6">
           <div
@@ -369,7 +369,7 @@ const Account = () => {
             ) : lusdClaimStatus ? (
               <span className="text-white text-size-[18vw] md:text-lg font-medium">
                 {lusdClaimStatus.can_claim ? (
-                  isClaiming ? '领取中...' : '领取LUSD'
+                  isClaiming ? '领取中...' : '领取LuckyUSD'
                 ) : balances.LuckyUSD < 1 ? (
                   lusdClaimStatus.next_claim_time ? (
                     `下次领取: ${formatCountdown(lusdCountdown)}`

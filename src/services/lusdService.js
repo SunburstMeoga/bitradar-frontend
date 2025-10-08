@@ -2,16 +2,16 @@ import { ApiService } from './api.js';
 
 class LusdService extends ApiService {
   /**
-   * 查询LUSD领取状态
+   * 查询LuckyUSD领取状态
    * @returns {Promise<Object>} 领取状态数据
    */
   async getClaimStatus() {
     try {
-      console.log('🔍 查询LUSD领取状态...');
+      console.log('🔍 查询LuckyUSD领取状态...');
       const response = await this.get('/lusd-claim/status');
 
       if (response.success && response.data) {
-        console.log('✅ LUSD领取状态查询成功:', {
+        console.log('✅ LuckyUSD领取状态查询成功:', {
           can_claim: response.data.can_claim,
           remaining_minutes: response.data.remaining_minutes,
           current_balance: response.data.current_balance,
@@ -29,22 +29,22 @@ class LusdService extends ApiService {
 
       throw new Error(response.message || '查询领取状态失败');
     } catch (error) {
-      console.error('❌ 查询LUSD领取状态失败:', error);
+      console.error('❌ 查询LuckyUSD领取状态失败:', error);
       throw error;
     }
   }
 
   /**
-   * 领取LUSD测试币
+   * 领取LuckyUSD测试币
    * @returns {Promise<Object>} 领取结果
    */
   async claimLusd() {
     try {
-      console.log('💰 正在领取LUSD...');
+      console.log('💰 正在领取LuckyUSD...');
       const response = await this.post('/lusd-claim/claim');
 
       if (response.success && response.data) {
-        console.log('🎉 LUSD领取成功:', {
+        console.log('🎉 LuckyUSD领取成功:', {
           claimed_amount: response.data.claimed_amount,
           balance_before: response.data.balance_before,
           balance_after: response.data.balance_after,
@@ -58,9 +58,9 @@ class LusdService extends ApiService {
         };
       }
 
-      throw new Error(response.message || '领取LUSD失败');
+      throw new Error(response.message || '领取LuckyUSD失败');
     } catch (error) {
-      console.error('❌ 领取LUSD失败:', error);
+      console.error('❌ 领取LuckyUSD失败:', error);
       
       // 处理特定的错误情况
       if (error.response?.status === 400) {

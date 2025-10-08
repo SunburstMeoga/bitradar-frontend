@@ -64,7 +64,7 @@ const TokenSelector = ({ selectedToken, onTokenChange }) => {
 
   const tokenOptions = [
     { value: 'all', label: t('history.all_tokens'), displayName: t('history.all') },
-    { value: 'LUSD', label: 'LUSD', displayName: 'LUSD' },
+    { value: 'LUSD', label: 'LuckyUSD', displayName: 'LuckyUSD' },
     { value: 'USDT', label: 'USDT', displayName: 'USDT' },
     { value: 'USDR', label: 'USDR', displayName: 'USDR' }
   ];

@@ -57,6 +57,17 @@ const Header = () => {
         setChainId(null);
         setWeb3(null);
         setProvider(null);
+        // 清理本地token登录信息与钱包地址
+        try {
+          logout();
+        } catch (e) {
+          console.warn('登出失败:', e);
+        }
+        try {
+          localStorage.removeItem('web3-storage');
+        } catch (e) {
+          console.warn('清理本地地址失败:', e);
+        }
       } else {
         // 用户切换了账户
         setAccount(accounts[0]);
@@ -77,7 +88,7 @@ const Header = () => {
     return () => {
       // 这里可以添加清理监听器的逻辑
     };
-  }, [setAccount, setIsConnected, setChainId, setWeb3, setProvider]);
+  }, [setAccount, setIsConnected, setChainId, setWeb3, setProvider, logout]);
 
   const handleConnect = async () => {
     try {

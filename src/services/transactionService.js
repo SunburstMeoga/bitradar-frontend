@@ -158,7 +158,7 @@ class TransactionService extends ApiService {
       'TRADING_MINING_REWARD': '交易挖礦獎勵',
       'STAKE_REWARD': '质押收益',
       'MEMBERSHIP_UPGRADE': '会员升级',
-      'LUSD_CLAIM': 'LUSD 领取'
+      'LUSD_CLAIM': 'LuckyUSD 领取'
     };
     
     return typeMap[type] || type;
@@ -220,7 +220,7 @@ class TransactionService extends ApiService {
       { code: 'TRADING_MINING_REWARD', name: '交易挖礦獎勵', category: 'reward' },
       { code: 'STAKE_REWARD', name: '质押收益', category: 'reward' },
       { code: 'MEMBERSHIP_UPGRADE', name: '会员升级', category: 'trade' },
-      { code: 'LUSD_CLAIM', name: 'LUSD 领取', category: 'reward' }
+      { code: 'LUSD_CLAIM', name: 'LuckyUSD 领取', category: 'reward' }
     ];
   }
 }

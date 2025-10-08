@@ -323,6 +323,12 @@ const WalletCard = ({ onClose, onSendClick, onActivityClick, onAddReferrerClick,
     logout();
     // 重置Web3状态
     reset();
+    // 清理本地钱包地址存储
+    try {
+      localStorage.removeItem('web3-storage');
+    } catch (e) {
+      console.warn('清理本地地址失败:', e);
+    }
     // 关闭弹窗
     onClose();
     toast.success('已断开钱包连接');
