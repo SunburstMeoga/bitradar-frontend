@@ -12,7 +12,7 @@ const Header = () => {
   const { t } = useTranslation();
   const { account, isConnected, isConnecting, setAccount, setIsConnected, setIsConnecting, setChainId, setWeb3, setProvider } = useWeb3Store();
   const { isAuthenticated, user, login, logout, checkAuth, isLoading: authLoading } = useAuthStore();
-  const { fetchUserInfo, fetchBalance } = useUserStore();
+  const { fetchUserInfo, fetchBalance, fetchMembershipInfo, fetchMembershipConfig } = useUserStore();
   const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
 
   // 页面加载时自动重连钱包
@@ -69,8 +69,30 @@ const Header = () => {
           console.warn('清理本地地址失败:', e);
         }
       } else {
-        // 用户切换了账户
-        setAccount(accounts[0]);
+        // 用户切换了账户 -> 重新登录并刷新用户数据
+        const switchedAccount = accounts[0];
+        setAccount(switchedAccount);
+
+        const reloginAndRefresh = async () => {
+          try {
+            // 重新进行Web3签名登录
+            await login(switchedAccount);
+
+            // 登录成功后刷新用户完整信息（含会员）
+            await Promise.all([
+              fetchUserInfo(),
+              fetchBalance(),
+              fetchMembershipInfo(),
+              fetchMembershipConfig()
+            ]);
+            // 仅刷新状态与数据，不进行整页刷新，保留当前路由与UI
+          } catch (error) {
+            console.error('账户切换后重新登录失败:', error);
+            toast.error(`账户切换登录失败: ${error.message}`);
+          }
+        };
+
+        reloginAndRefresh();
       }
     };
 
@@ -107,14 +129,16 @@ const Header = () => {
         await login(result.account);
         toast.success('钱包连接并登录成功！');
 
-        // 3. 登录成功后获取用户信息和余额
+        // 3. 登录成功后获取用户信息、余额与会员数据
         try {
           console.log('开始获取用户信息和余额...');
 
-          // 并行获取用户信息和余额
+          // 并行获取用户信息、余额与会员数据
           await Promise.all([
             fetchUserInfo(),
-            fetchBalance()
+            fetchBalance(),
+            fetchMembershipInfo(),
+            fetchMembershipConfig()
           ]);
 
           console.log('用户信息和余额获取完成');

@@ -20,7 +20,7 @@ import sliderIcon from '../../assets/icons/slider.png';
 const Trade = () => {
   const { t } = useTranslation();
   const { isAuthenticated, login } = useAuthStore();
-  const { balance, profile, fetchBalance, fetchProfile } = useUserStore();
+const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetchMembershipConfig } = useUserStore();
   const { setAccount, setChainId, setWeb3, setProvider, setIsConnected } = useWeb3Store();
 
   // 获取视口高度信息
@@ -328,11 +328,13 @@ const Trade = () => {
         await login(result.account);
         toast.success('钱包连接并登录成功！');
 
-        // 3. 获取用户信息和余额
+        // 3. 获取用户信息、余额与会员数据
         try {
           await Promise.all([
             fetchProfile(),
-            fetchBalance()
+            fetchBalance(),
+            fetchMembershipInfo(),
+            fetchMembershipConfig()
           ]);
         } catch (fetchError) {
           console.error('获取用户数据失败:', fetchError);

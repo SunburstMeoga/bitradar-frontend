@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useWeb3Store, useAuthStore } from '../../store';
+import { useWeb3Store, useAuthStore, useUserStore } from '../../store';
 import { connectWallet, formatAddress, autoReconnectWallet, onAccountsChanged, onChainChanged } from '../../utils/web3';
 import binanceIcon from '../../assets/icons/binance.png';
 import downIcon from '../../assets/icons/down.png';
@@ -24,7 +24,8 @@ const SecondaryHeader = ({ title, onBack }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { account, isConnected, isConnecting, setAccount, setIsConnected, setIsConnecting, setChainId, setWeb3, setProvider } = useWeb3Store();
-  const { logout } = useAuthStore();
+  const { login, logout } = useAuthStore();
+  const { fetchUserInfo, fetchBalance, fetchMembershipInfo, fetchMembershipConfig } = useUserStore();
   const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
 
   // 页面加载时自动重连钱包
@@ -78,8 +79,27 @@ const SecondaryHeader = ({ title, onBack }) => {
           console.warn('清理本地地址失败:', e);
         }
       } else {
-        // 用户切换了账户
-        setAccount(accounts[0]);
+        // 用户切换了账户 -> 重新登录并刷新用户数据
+        const switchedAccount = accounts[0];
+        setAccount(switchedAccount);
+
+        const reloginAndRefresh = async () => {
+          try {
+            await login(switchedAccount);
+            await Promise.all([
+              fetchUserInfo(),
+              fetchBalance(),
+              fetchMembershipInfo(),
+              fetchMembershipConfig()
+            ]);
+            // 仅刷新状态与数据，不进行整页刷新，保留当前路由与UI
+          } catch (error) {
+            console.error('账户切换后重新登录失败:', error);
+            alert(`账户切换登录失败: ${error.message}`);
+          }
+        };
+
+        reloginAndRefresh();
       }
     };
 
@@ -108,6 +128,20 @@ const SecondaryHeader = ({ title, onBack }) => {
       setWeb3(result.web3);
       setProvider(result.provider);
       setIsConnected(true);
+
+      // 登录并刷新用户信息与会员数据
+      try {
+        await login(result.account);
+        await Promise.all([
+          fetchUserInfo(),
+          fetchBalance(),
+          fetchMembershipInfo(),
+          fetchMembershipConfig()
+        ]);
+      } catch (authError) {
+        console.error('登录或获取用户数据失败:', authError);
+        alert(`登录失败: ${authError.message}`);
+      }
     } catch (error) {
       console.error('Failed to connect wallet:', error);
       alert(error.message);
