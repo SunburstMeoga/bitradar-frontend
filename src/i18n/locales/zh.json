@@ -168,6 +168,7 @@
     "token_history": "代币记录",
     "loading": "加载中...",
     "no_more_data": "没有更多数据了",
+    "rocket_price": "Rocket币价格：0.1U/个",
     "transaction_types": {
       "check_in": "签到",
       "reward": "奖励",

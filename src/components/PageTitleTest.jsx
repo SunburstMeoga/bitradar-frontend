@@ -101,6 +101,16 @@ const PageTitleTest = () => {
         exchange: '교환',
         transaction_history: '거래 내역',
         not_found: '페이지를 찾을 수 없음'
+      },
+      vi: {
+        trade: 'Giao dịch',
+        home: 'Trang chủ',
+        history: 'Lịch sử',
+        account: 'Tài khoản',
+        network_details: 'Chi tiết mạng',
+        exchange: 'Đổi',
+        transaction_history: 'Lịch sử giao dịch',
+        not_found: 'Không tìm thấy trang'
       }
     };
 

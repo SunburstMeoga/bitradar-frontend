@@ -166,7 +166,8 @@ const WalletCard = ({ onClose, onSendClick, onActivityClick, onAddReferrerClick,
     const languageMap = {
       'zh': '简体中文',
       'en': 'English',
-      'ko': '한국인'
+      'ko': '한국인',
+      'vi': 'Tiếng Việt'
     };
     return languageMap[langCode] || 'English';
   };
@@ -406,7 +407,8 @@ const WalletCard = ({ onClose, onSendClick, onActivityClick, onAddReferrerClick,
   const languageOptions = [
     { code: 'zh', label: '简体中文' },
     { code: 'en', label: 'English' },
-    { code: 'ko', label: '한국인' }
+    { code: 'ko', label: '한국인' },
+    { code: 'vi', label: 'Tiếng Việt' }
   ];
 
   // 菜单项配置

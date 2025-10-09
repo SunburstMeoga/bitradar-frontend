@@ -353,6 +353,18 @@ const Account = () => {
         </div>
       </div>
 
+      {/* Rocket价格显示（仅在选中Rocket标签时显示） */}
+      {activeTab === 'Rocket' && (
+        <div className="px-[16vw] md:px-4 pb-[24vw] md:pb-6">
+          <div
+            className="w-[343vw] md:w-full rounded-[8vw] md:rounded-lg px-[16vw] md:px-4 py-[12vw] md:py-3"
+            style={{ backgroundColor: 'rgb(41, 41, 41)' }}
+          >
+            <span className="text-white text-size-[16vw] md:text-base">{t('account.rocket_price')}</span>
+          </div>
+        </div>
+      )}
+
       {/* 第四部分：LuckyUSD领取状态/倒计时（只在选中LuckyUSD时显示） */}
       {activeTab === 'LuckyUSD' && (
         <div className="px-[16vw] md:px-4 pb-[24vw] md:pb-6">

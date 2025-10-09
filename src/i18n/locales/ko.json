@@ -152,6 +152,7 @@
     "token_history": "토큰 기록",
     "loading": "로딩 중...",
     "no_more_data": "더 이상 데이터가 없습니다",
+    "rocket_price": "Rocket 코인 가격: 개당 0.1U",
     "transaction_types": {
       "check_in": "체크인",
       "reward": "보상",

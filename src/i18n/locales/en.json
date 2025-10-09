@@ -152,6 +152,7 @@
     "token_history": "Token History",
     "loading": "Loading...",
     "no_more_data": "No more data",
+    "rocket_price": "Rocket Price: 0.1U each",
     "transaction_types": {
       "check_in": "Check-in",
       "reward": "Reward",
