@@ -54,6 +54,9 @@ const Account = () => {
     Rocket: safeParseFloat(balance?.rocket_balance, 0)
   };
 
+  // Rocket 折算 USDT 比率（参考文案：0.1U/个）
+  const ROCKET_USDT_RATE = 0.1;
+
   // 调试余额数据
   useEffect(() => {
     if (balance) {
@@ -303,7 +306,7 @@ const Account = () => {
       {/* 第三部分：余额显示和兑换按钮 */}
       <div className="px-[16vw] md:px-4 pb-[24vw] md:pb-6">
         <div className="flex items-center justify-between">
-          <div className="flex items-baseline">
+          <div className="flex flex-col items-start">
             {isLoading ? (
               <div className="flex items-center">
                 <div className="animate-pulse bg-gray-600 h-[44vw] md:h-10 w-[80vw] md:w-32 rounded"></div>
@@ -313,12 +316,19 @@ const Account = () => {
               </div>
             ) : (
               <>
-                <span className="text-white text-size-[44vw] md:text-4xl font-semibold" style={{ fontWeight: 600 }}>
-                  {integerPart}
-                </span>
-                <span className="text-[rgb(87,87,87)] text-size-[28vw] md:text-2xl font-semibold" style={{ fontWeight: 600 }}>
-                  .{decimalPart} {activeTab}
-                </span>
+                <div className="flex items-baseline">
+                  <span className="text-white text-size-[44vw] md:text-4xl font-semibold" style={{ fontWeight: 600 }}>
+                    {integerPart}
+                  </span>
+                  <span className="text-[rgb(87,87,87)] text-size-[28vw] md:text-2xl font-semibold" style={{ fontWeight: 600 }}>
+                    .{decimalPart} {activeTab}
+                  </span>
+                </div>
+                {activeTab === 'Rocket' && (
+                  <span className="text-[rgb(87,87,87)] text-size-[28vw] md:text-2xl font-semibold mt-[2vw] md:mt-1" style={{ fontWeight: 600 }}>
+                    {`≈${(balances.Rocket * ROCKET_USDT_RATE).toFixed(2)}U`}
+                  </span>
+                )}
               </>
             )}
           </div>
@@ -353,17 +363,7 @@ const Account = () => {
         </div>
       </div>
 
-      {/* Rocket价格显示（仅在选中Rocket标签时显示） */}
-      {activeTab === 'Rocket' && (
-        <div className="px-[16vw] md:px-4 pb-[24vw] md:pb-6">
-          <div
-            className="w-[343vw] md:w-full rounded-[8vw] md:rounded-lg px-[16vw] md:px-4 py-[12vw] md:py-3"
-            style={{ backgroundColor: 'rgb(41, 41, 41)' }}
-          >
-            <span className="text-white text-size-[16vw] md:text-base">{t('account.rocket_price')}</span>
-          </div>
-        </div>
-      )}
+      {/* 删除原先的 Rocket 价格栏 */}
 
       {/* 第四部分：LuckyUSD领取状态/倒计时（只在选中LuckyUSD时显示） */}
       {activeTab === 'LuckyUSD' && (

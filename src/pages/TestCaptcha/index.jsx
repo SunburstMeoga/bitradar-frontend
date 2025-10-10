@@ -1,9 +1,11 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import CaptchaModal from '../../components/Captcha/CaptchaModal.jsx';
 
 export default function TestCaptcha() {
   const [open, setOpen] = useState(true);
   const [status, setStatus] = useState('');
+  const { t } = useTranslation();
 
   return (
     <div style={{ padding: 16 }}>
@@ -43,8 +45,8 @@ export default function TestCaptcha() {
         title="安全验证"
         description="请输入下方验证码完成验证。"
         captchaType="math"
-        placeholder="请输入计算结果"
-        reloadText="重新加载"
+        placeholder={t('captcha.placeholder_math')}
+        reloadText={t('captcha.reload_text')}
         onSuccess={() => setStatus('success')}
         onFail={() => setStatus('failure')}
       />
