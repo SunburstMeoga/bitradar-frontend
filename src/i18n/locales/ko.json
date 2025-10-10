@@ -312,4 +312,14 @@
     "created_at": "생성 시간",
     "expires_at": "만료 시간"
   }
+  ,
+  "captcha": {
+    "title": "보안 인증",
+    "description": "아래 캡차를 입력해 주세요",
+    "reload_text": "잘 안보이면, 새로고침",
+    "placeholder_math": "계산 결과를 입력하세요",
+    "verify_button": "검증",
+    "success": "검증 성공",
+    "fail": "검증 실패"
+  }
 }

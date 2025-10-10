@@ -14,6 +14,7 @@ import TokenHistory from '../pages/TransactionHistory';
 import ActiveOrders from '../pages/ActiveOrders';
 import OrderDetail from '../pages/OrderDetail';
 import TestActiveOrders from '../pages/TestActiveOrders';
+import TestCaptcha from '../pages/TestCaptcha';
 import TestLayout from '../pages/TestLayout';
 import NotFound from '../pages/NotFound';
 import PageTitleTest from '../components/PageTitleTest';
@@ -150,6 +151,10 @@ export const router = createBrowserRouter([
   {
     path: '/test-active-orders',
     element: <TestActiveOrders />,
+  },
+  {
+    path: '/test-captcha',
+    element: <TestCaptcha />,
   },
   {
     path: '*',

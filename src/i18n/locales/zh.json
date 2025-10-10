@@ -328,4 +328,14 @@
     "created_at": "创建时间",
     "expires_at": "到期时间"
   }
+  ,
+  "captcha": {
+    "title": "安全验证",
+    "description": "请输入下方验证码完成验证",
+    "reload_text": "看不清，换一组",
+    "placeholder_math": "请输入计算结果",
+    "verify_button": "验证",
+    "success": "验证通过",
+    "fail": "验证失败"
+  }
 }

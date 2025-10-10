@@ -313,4 +313,14 @@
     "created_at": "Tạo lúc",
     "expires_at": "Hết hạn"
   }
+  ,
+  "captcha": {
+    "title": "Xác minh an toàn",
+    "description": "Vui lòng hoàn thành mã xác minh bên dưới",
+    "reload_text": "Khó đọc? Đổi một nhóm",
+    "placeholder_math": "Nhập kết quả phép tính",
+    "verify_button": "Xác minh",
+    "success": "Xác minh thành công",
+    "fail": "Xác minh thất bại"
+  }
 }

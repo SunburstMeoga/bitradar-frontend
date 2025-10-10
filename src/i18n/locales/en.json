@@ -312,4 +312,14 @@
     "created_at": "Created At",
     "expires_at": "Expires At"
   }
+  ,
+  "captcha": {
+    "title": "Security Verification",
+    "description": "Please complete the captcha below",
+    "reload_text": "Can't read? Get a new one",
+    "placeholder_math": "Enter calculation result",
+    "verify_button": "Verify",
+    "success": "Verification passed",
+    "fail": "Verification failed"
+  }
 }
