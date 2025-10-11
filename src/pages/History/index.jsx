@@ -171,7 +171,7 @@ const History = () => {
     const connectWebSocket = () => {
       try {
         console.log('🔌 History页面连接WebSocket...');
-        wsRef.current = new WebSocket('ws://54.254.151.178:9012/ws/price');
+        wsRef.current = new WebSocket('wss://ws.bitrockets.xyz/ws/price');
 
         wsRef.current.onopen = () => {
           console.log('✅ History页面WebSocket连接成功');

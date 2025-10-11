@@ -79,7 +79,9 @@ const NetworkDetails = () => {
 
   // 从API数据中提取的统计信息
   const overviewData = networkData ? {
-    teamMembers: networkData.statistics?.total_referrals || 0,
+    teamMembers: Array.isArray(networkData?.tree_structure?.children)
+      ? networkData.tree_structure.children.length
+      : 0,
     totalDeposit: parseFloat(networkData.statistics?.total_network_volume || '0'),
     totalWithdrawal: 0 // API中没有提现数据，暂时设为0
   } : {
@@ -273,8 +275,8 @@ const NetworkDetails = () => {
           <div className="ml-auto">{formatNumber(overviewData.teamMembers, '16vw', 'text-lg')}</div>
         </div>
 
-        {/* 总质押金额和总提现金额 */}
-        <div className="flex gap-[12vw] md:gap-3">
+        {/* 总质押金额 */}
+        <div className="flex">
           <div
             className="flex-1 flex items-center px-[16vw] md:px-4 py-[16vw] md:py-4 rounded-[8vw] md:rounded-lg"
             style={{ backgroundColor: 'rgb(41, 41, 41)' }}
@@ -282,15 +284,6 @@ const NetworkDetails = () => {
             <div className="flex flex-col">
               <span className="text-white text-size-[16vw] md:text-lg">{t('network_details.total_deposit')}</span>
               <div className="mt-[4vw] md:mt-1">{formatAmount(overviewData.totalDeposit, '14vw', 'text-white')}</div>
-            </div>
-          </div>
-          <div
-            className="flex-1 flex items-center px-[16vw] md:px-4 py-[16vw] md:py-4 rounded-[8vw] md:rounded-lg"
-            style={{ backgroundColor: 'rgb(41, 41, 41)' }}
-          >
-            <div className="flex flex-col">
-              <span className="text-white text-size-[16vw] md:text-lg">{t('network_details.total_withdrawal')}</span>
-              <div className="mt-[4vw] md:mt-1">{formatAmount(overviewData.totalWithdrawal, '14vw', 'text-white')}</div>
             </div>
           </div>
         </div>

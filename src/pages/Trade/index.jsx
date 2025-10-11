@@ -512,9 +512,10 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
     // 更新当前价格
     setCurrentPrice(newPrice);
 
-    // 计算价格变化百分比（基于前一个价格）
-    if (prevPrice && prevPrice !== newPrice) {
-      const changePercent = ((newPrice - prevPrice) / prevPrice) * 100;
+    // 基于60秒前价格计算涨跌幅
+    const baseline = typeof priceData.price60sAgo === 'number' ? priceData.price60sAgo : null;
+    if (baseline && baseline > 0) {
+      const changePercent = ((newPrice - baseline) / baseline) * 100;
       setPriceChange(changePercent);
     }
 

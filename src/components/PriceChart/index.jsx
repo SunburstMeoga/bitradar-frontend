@@ -423,6 +423,7 @@ const PriceChart = ({ onPriceUpdate, userBets = [] }) => {
   const blinkStartTimeRef = useRef(null); // 记录闪烁开始时间
   const wsRef = useRef(null); // WebSocket连接引用
   const reconnectTimeoutRef = useRef(null); // 重连定时器引用
+  const latestBaselineRef = useRef(null); // 记录60秒前的基准价格
 
 
 
@@ -499,8 +500,8 @@ const PriceChart = ({ onPriceUpdate, userBets = [] }) => {
 
     const connectWebSocket = () => {
       try {
-        console.log('🔌 正在连接WebSocket到: ws://54.254.151.178:9012/ws/price');
-        wsRef.current = new WebSocket('ws://54.254.151.178:9012/ws/price');
+        console.log('🔌 正在连接WebSocket到: wss://ws.bitrockets.xyz/ws/price');
+        wsRef.current = new WebSocket('wss://ws.bitrockets.xyz/ws/price');
 
         wsRef.current.onopen = () => {
           console.log('✅ WebSocket连接成功');
@@ -535,13 +536,16 @@ const PriceChart = ({ onPriceUpdate, userBets = [] }) => {
               setCurrentPrice(newPrice);
 
               // 更新价格数据 - 滑动窗口：新数据进来，最老数据移出
-              let dataPointsCount = 0;
+              // 更新价格数据并计算60秒前的基准价格
               setPriceData(prevData => {
                 const newDataPoint = [newTimestamp, newPrice];
                 const updatedData = [...prevData, newDataPoint];
                 // 保持120个数据点
                 const finalData = updatedData.slice(-120);
-                dataPointsCount = finalData.length;
+                // 计算60秒前的价格（如果不足60个数据点，则取最早的数据）
+                const baselineIndex = finalData.length > 60 ? finalData.length - 60 : 0;
+                const baselinePoint = finalData[baselineIndex];
+                latestBaselineRef.current = Array.isArray(baselinePoint) ? baselinePoint[1] : null;
                 return finalData;
               });
 
@@ -556,7 +560,9 @@ const PriceChart = ({ onPriceUpdate, userBets = [] }) => {
                   hour12: false,
                   minute: '2-digit',
                   second: '2-digit'
-                })
+                }),
+                // 透传60秒前的基准价格给父组件
+                price60sAgo: latestBaselineRef.current
               };
 
               console.log('💰 WebSocket价格更新:', {
@@ -564,7 +570,7 @@ const PriceChart = ({ onPriceUpdate, userBets = [] }) => {
                 price: newPrice.toFixed(2),
                 timestamp: newTimestamp,
                 time: new Date(newTimestamp).toLocaleTimeString(),
-                dataPointsCount: dataPointsCount
+                price60sAgo: latestBaselineRef.current
               });
             }
           } catch (error) {
