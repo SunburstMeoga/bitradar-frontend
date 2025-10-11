@@ -75,6 +75,7 @@
     "referral_link_copied": "Referral Link Copied",
     "referral_link_generated_and_copied": "Referral Code Generated and Copied",
     "copy_failed": "Copy Failed",
+    "copy_failed_manual": "Copy failed, please copy manually",
     "membership_buy": "Buy Membership",
     "membership_title_none": "No Membership Level",
     "membership_title_silver": "Silver Member",

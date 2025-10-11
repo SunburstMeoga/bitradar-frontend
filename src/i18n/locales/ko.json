@@ -71,6 +71,7 @@
     "skip_for_now": "나중에 하기",
     "confirm": "확인",
     "address_copied": "주소가 복사되었습니다",
+    "copy_failed_manual": "복사 실패, 수동으로 복사해 주세요",
     "referrer_address_copied": "추천인 주소가 복사되었습니다",
     "referral_link_copied": "추천 링크가 복사되었습니다",
     "referral_link_generated_and_copied": "추천 코드가 생성되고 복사되었습니다",

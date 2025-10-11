@@ -91,6 +91,7 @@
     "referrer_address_copied": "推荐人地址已复制",
     "referral_link_copied": "推荐链接已复制",
     "copy_failed": "复制失败",
+    "copy_failed_manual": "复制失败，请手动复制",
     "membership_buy": "购买会员",
     "membership_title_none": "暂无会员等级",
     "membership_title_silver": "银牌会员",

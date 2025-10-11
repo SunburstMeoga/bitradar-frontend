@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useWeb3Store, useAuthStore, useUserStore } from '../../store';
 import { formatAddress, getBNBBalance } from '../../utils/web3';
@@ -128,6 +128,8 @@ const WalletCard = ({ onClose, onSendClick, onActivityClick, onAddReferrerClick,
   const [hasReferralRelation, setHasReferralRelation] = useState(false);
   const [isCheckingReferral, setIsCheckingReferral] = useState(true);
   const [isGeneratingReferralCode, setIsGeneratingReferralCode] = useState(false);
+  const [referralCode, setReferralCode] = useState('');
+  const inviteInputRef = useRef(null);
   // 用户信息加载状态（用于在请求过程中显示骨架/loading）
   const [isProfileLoading, setIsProfileLoading] = useState(false);
   const [isMembershipLoading, setIsMembershipLoading] = useState(false);
@@ -283,8 +285,8 @@ const WalletCard = ({ onClose, onSendClick, onActivityClick, onAddReferrerClick,
     }
   };
 
-  // 生成并复制推荐码
-  const handleGenerateReferralLink = async () => {
+  // 生成推荐码（仅显示，不自动复制）
+  const handleGenerateInviteCode = async () => {
     if (isGeneratingReferralCode) return; // 防止重复点击
 
     setIsGeneratingReferralCode(true);
@@ -297,13 +299,7 @@ const WalletCard = ({ onClose, onSendClick, onActivityClick, onAddReferrerClick,
       try {
         const result = await referralService.getMyInviteCode();
         if (result.success && result.data && result.data.invite_code) {
-          // 复制推荐码
-          const success = await copyToClipboard(result.data.invite_code);
-          if (success) {
-            toast.success(t('wallet.referral_link_generated_and_copied'));
-          } else {
-            toast.error(t('wallet.copy_failed'));
-          }
+          setReferralCode(result.data.invite_code);
           return true;
         } else {
           throw new Error('获取推荐码失败：数据格式错误');
@@ -328,6 +324,31 @@ const WalletCard = ({ onClose, onSendClick, onActivityClick, onAddReferrerClick,
       await attemptGetReferralCode();
     } finally {
       setIsGeneratingReferralCode(false);
+    }
+  };
+
+  // 复制邀请码，失败时选择文本方便手动复制
+  const handleCopyInviteCode = async () => {
+    if (!referralCode) return;
+    try {
+      const success = await copyToClipboard(referralCode);
+      if (success) {
+        toast.success(t('wallet.invite_code_copied'));
+      } else {
+        // 选中文本以便用户手动复制
+        if (inviteInputRef.current) {
+          inviteInputRef.current.focus();
+          inviteInputRef.current.select();
+        }
+        toast.error(t('wallet.copy_failed_manual'));
+      }
+    } catch (error) {
+      console.error('复制邀请码失败:', error);
+      if (inviteInputRef.current) {
+        inviteInputRef.current.focus();
+        inviteInputRef.current.select();
+      }
+      toast.error(t('wallet.copy_failed_manual'));
     }
   };
 
@@ -438,7 +459,7 @@ const WalletCard = ({ onClose, onSendClick, onActivityClick, onAddReferrerClick,
       textColor: isGeneratingReferralCode ? '#666' : '#9D9D9D',
       showArrow: false,
       isLoading: isGeneratingReferralCode,
-      onClick: handleGenerateReferralLink
+      onClick: handleGenerateInviteCode
     },
     {
       id: 'buy-membership',
@@ -521,6 +542,29 @@ const WalletCard = ({ onClose, onSendClick, onActivityClick, onAddReferrerClick,
             style={{ color: '#949E9E', fontWeight: 500 }}
           />
         </div>
+
+        {/* 推荐码展示区域：仅在生成后显示，位于地址与余额之后、功能列表之前 */}
+        {referralCode && (
+          <div className="w-full mb-[12px] md:mb-3 flex flex-col items-center">
+            <div className="w-[290px] md:w-full bg-[#2a2a2a] rounded-[8px] md:rounded-lg p-[12px] md:p-3 flex items-center justify-between">
+              <div className="flex flex-col flex-1 mr-2">
+                <span className="text-[12px] md:text-xs text-[#9D9D9D] mb-[6px] md:mb-1">{t('wallet.referrer_address')}</span>
+                <input
+                  ref={inviteInputRef}
+                  value={referralCode}
+                  readOnly
+                  className="w-full bg-[#1f1f1f] text-[#e4e7e7] text-[14px] md:text-sm rounded-[6px] md:rounded-md px-2 py-1"
+                />
+              </div>
+              <button
+                onClick={handleCopyInviteCode}
+                className="ml-2 px-3 py-2 bg-[#3D3D3D] hover:bg-[#4A4A4A] text-white text-[12px] md:text-sm rounded-[6px] md:rounded-md"
+              >
+                {t('common.copy')}
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* 菜单项 */}
         <div className="space-y-[8px] md:space-y-2">

@@ -66,6 +66,7 @@
     "validating": "Đang xác minh...",
     "valid_referral_code": "Mã giới thiệu hợp lệ",
     "address_copied": "Đã sao chép địa chỉ",
+    "copy_failed_manual": "Sao chép thất bại, vui lòng sao chép thủ công",
     "referrer_address_copied": "Đã sao chép địa chỉ người giới thiệu",
     "referral_link_copied": "Đã sao chép liên kết giới thiệu",
     "referral_link_generated_and_copied": "Mã giới thiệu đã được tạo và sao chép",
