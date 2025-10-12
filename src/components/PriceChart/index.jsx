@@ -533,7 +533,7 @@ const PriceChart = ({ onPriceUpdate, userBets = [], onVisibleUserBetsChange }) =
           }
           loadingHideTimeoutRef.current = setTimeout(() => {
             setIsLoading(false);
-          }, 1000);
+          }, 2000);
         } else {
           throw new Error('历史价格数据格式错误');
         }
@@ -1078,7 +1078,8 @@ const PriceChart = ({ onPriceUpdate, userBets = [], onVisibleUserBetsChange }) =
     <div className="w-[375vw] md:w-full h-full relative" style={{ backgroundColor: '#121212' }}>
       {isLoading || !hasEnoughData ? (
         // Loading状态
-        <div className="absolute inset-0 flex items-center justify-center">
+        <div className="absolute inset-0 flex flex-col items-center justify-center">
+          <div className="w-[32vw] md:w-8 h-[32vw] md:h-8 border-2 border-[#95C02A] border-t-transparent rounded-full animate-spin mb-[8vw] md:mb-2" />
           <div className="text-white text-size-[16vw] md:text-base">Loading...</div>
         </div>
       ) : (
