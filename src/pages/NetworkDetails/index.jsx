@@ -284,14 +284,7 @@ const NetworkDetails = () => {
         {/* 过滤条件隐藏 */}
         <div className="hidden"></div>
 
-        {/* 团队总人数 */}
-        <div
-          className="w-full h-[50vw] md:h-12 flex items-center px-[16vw] md:px-4 mb-[12vw] md:mb-3 rounded-[8vw] md:rounded-lg border border-gray-400"
-          style={{ backgroundColor: 'rgba(64, 64, 64, 0.3)' }}
-        >
-          <span className="text-white text-size-[16vw] md:text-lg">{t('network_details.team_members')}</span>
-          <div className="ml-auto">{formatNumber(overviewData.teamMembers, '16vw', 'text-lg')}</div>
-        </div>
+       
 
         {/* 总质押金额隐藏，不删除 */}
       </div>
@@ -315,6 +308,14 @@ const NetworkDetails = () => {
 
       {selectedTab === 'membership' && (
         <div>
+           {/* 团队总人数 */}
+        <div
+          className="w-full h-[50vw] md:h-12 flex items-center px-[16vw] md:px-4 mb-[12vw] md:mb-3 rounded-[8vw] md:rounded-lg border border-gray-400"
+          style={{ backgroundColor: 'rgba(64, 64, 64, 0.3)' }}
+        >
+          <span className="text-white text-size-[16vw] md:text-lg">{t('network_details.team_members')}</span>
+          <div className="ml-auto">{formatNumber(overviewData.teamMembers, '16vw', 'text-lg')}</div>
+        </div>
           {/* 概览统计：金牌、银牌、我的上级 */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-[12vw] md:gap-3 mb-[16vw] md:mb-4">
             <div className="p-[16vw] md:p-4 rounded-[8vw] md:rounded-lg" style={{ backgroundColor: 'rgb(41, 41, 41)' }}>
