@@ -14,7 +14,9 @@
     "no": "否",
     "save": "保存",
     "submit": "提交",
-    "close": "关闭"
+    "close": "关闭",
+    "not_available": "暂未开通",
+    "login_failed": "登录失败"
   },
   "page_titles": {
     "trade": "交易",

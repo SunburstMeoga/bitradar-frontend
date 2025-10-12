@@ -13,7 +13,9 @@
     "no": "아니오",
     "save": "저장",
     "submit": "제출",
-    "close": "닫기"
+    "close": "닫기",
+    "not_available": "아직 개통되지 않았습니다",
+    "login_failed": "로그인 실패"
   },
   "page_titles": {
     "trade": "거래",

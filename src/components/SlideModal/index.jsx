@@ -208,10 +208,13 @@ const SlideModal = ({
             className="w-full h-full"
           >
             <div
-              className="modal-content overflow-y-auto scrollbar-hide px-[20vw] md:px-8 h-full pb-[20vw] md:pb-5"
+              className="modal-content overflow-y-auto scrollbar-hide px-[20vw] md:px-8 h-full md:pb-5"
               style={{
                 scrollbarWidth: 'none', /* Firefox */
-                msOverflowStyle: 'none' /* IE and Edge */
+                msOverflowStyle: 'none', /* IE and Edge */
+                WebkitOverflowScrolling: 'touch',
+                overscrollBehavior: 'contain',
+                paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 20px)'
               }}
             >
               {Array.isArray(children) ? children[currentIndex] : children}

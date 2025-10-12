@@ -281,29 +281,8 @@ const NetworkDetails = () => {
           {/* 收益明细按钮隐藏，不删除 */}
         </div>
 
-        {/* 过滤条件 */}
-        <div className="flex items-center gap-[12vw] md:gap-3 mb-[12vw] md:mb-3">
-          <label className="flex items-center gap-[6vw] md:gap-2 text-white text-size-[12vw] md:text-xs">
-            <input
-              type="checkbox"
-              checked={includeInactive}
-              onChange={(e) => setIncludeInactive(e.target.checked)}
-            />
-            {t('network_details.include_inactive')}
-          </label>
-          <label className="flex items-center gap-[6vw] md:gap-2 text-white text-size-[12vw] md:text-xs">
-            {t('network_details.query_depth')}
-            <select
-              className="bg-[#2a2a2a] text-white rounded-[6vw] md:rounded px-[8vw] md:px-2 py-[4vw] md:py-1"
-              value={queryDepth}
-              onChange={(e) => setQueryDepth(Number(e.target.value))}
-            >
-              <option value={3}>3</option>
-              <option value={5}>5</option>
-              <option value={10}>10</option>
-            </select>
-          </label>
-        </div>
+        {/* 过滤条件隐藏 */}
+        <div className="hidden"></div>
 
         {/* 团队总人数 */}
         <div

@@ -135,12 +135,14 @@ const Account = () => {
 
   // 处理兑换按钮点击
   const handleExchangeClick = () => {
-    navigate('/exchange');
+    // 功能未开通，提示而不跳转
+    toast(t('common.not_available'));
   };
 
   // 处理提现按钮点击
   const handleWithdrawClick = () => {
-    navigate('/withdraw');
+    // 功能未开通，提示而不跳转
+    toast(t('common.not_available'));
   };
 
   // 处理代币记录点击

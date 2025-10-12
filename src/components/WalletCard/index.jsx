@@ -436,6 +436,7 @@ const WalletCard = ({ onClose, onSendClick, onActivityClick, onAddReferrerClick,
   // 推荐相关入口在检查推荐关系时默认隐藏；检查完成后：
   // - 有推荐人：不显示“推荐统计”和“填写推荐码”入口
   // - 无推荐人：显示“填写推荐码”入口
+  // 恢复此前逻辑：仅当未绑定推荐关系且未填写推荐码时显示入口
   const referralMenuItems = isCheckingReferral
     ? []
     : (hasReferralRelation

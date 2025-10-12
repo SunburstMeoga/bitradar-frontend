@@ -85,7 +85,8 @@ const Header = () => {
               fetchMembershipInfo(),
               fetchMembershipConfig()
             ]);
-            // 仅刷新状态与数据，不进行整页刷新，保留当前路由与UI
+            // 登录后整页刷新，确保所有页面状态与数据一致
+            window.location.reload();
           } catch (error) {
             console.error('账户切换后重新登录失败:', error);
             toast.error(`账户切换登录失败: ${error.message}`);

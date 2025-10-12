@@ -13,7 +13,9 @@
     "no": "Không",
     "save": "Lưu",
     "submit": "Gửi",
-    "close": "Đóng"
+    "close": "Đóng",
+    "not_available": "Chưa mở",
+    "login_failed": "Đăng nhập thất bại"
   },
   "page_titles": {
     "trade": "Giao dịch",

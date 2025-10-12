@@ -13,7 +13,9 @@
     "no": "No",
     "save": "Save",
     "submit": "Submit",
-    "close": "Close"
+    "close": "Close",
+    "not_available": "Not available yet",
+    "login_failed": "Login failed"
   },
   "page_titles": {
     "trade": "Trade",
