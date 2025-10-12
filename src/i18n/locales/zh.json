@@ -231,7 +231,19 @@
       "level_rates": "层级费率",
       "min_referrals": "最少推荐人数",
       "calculation_period": "结算周期"
-    }
+    },
+    "tabs": {
+      "membership_network": "会员资格推广网体",
+      "mining_network": "交易挖矿网体",
+      "finance_network": "理财网体"
+    },
+    "include_inactive": "包含未激活用户",
+    "query_depth": "查询深度",
+    "no_data": "暂无数据",
+    "gold_members": "金牌会员人数",
+    "silver_members": "银牌会员人数",
+    "my_upline": "我的上级",
+    "rocket_rewards": "ROCKET奖励详情"
   },
   "exchange": {
     "title": "兑换",

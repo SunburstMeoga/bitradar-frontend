@@ -217,7 +217,19 @@
       "level_rates": "레벨 비율",
       "min_referrals": "최소 추천인 수",
       "calculation_period": "계산 주기"
-    }
+    },
+    "tabs": {
+      "membership_network": "회원 홍보 네트워크",
+      "mining_network": "거래 마이닝 네트워크",
+      "finance_network": "금융 네트워크"
+    },
+    "include_inactive": "비활성 사용자 포함",
+    "query_depth": "조회 깊이",
+    "no_data": "데이터 없음",
+    "gold_members": "골드 회원 수",
+    "silver_members": "실버 회원 수",
+    "my_upline": "나의 상급자",
+    "rocket_rewards": "ROCKET 보상 상세"
   },
   "exchange": {
     "title": "교환",
