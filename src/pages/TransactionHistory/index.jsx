@@ -202,7 +202,12 @@ const TransactionHistory = () => {
 
   // 获取交易类型的翻译（适配API返回的transaction_type）
   const getTransactionTypeText = (transactionType) => {
-    // 使用transactionService的格式化方法
+    // 优先使用 i18n 多语言映射，若未配置则回退到服务内置格式
+    const i18nKey = `token_history.transaction_types.${transactionType}`;
+    const translated = t(i18nKey);
+    if (translated && translated !== i18nKey) {
+      return translated;
+    }
     return transactionService.formatTransactionType(transactionType);
   };
 

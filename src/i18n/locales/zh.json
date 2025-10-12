@@ -314,7 +314,20 @@
       "rocket_reward": "Rocket奖励",
       "rocket_withdraw": "Rocket提现",
       "rocket_bonus": "Rocket红利",
-      "trade": "交易"
+      "trade": "交易",
+      "DEPOSIT": "充值",
+      "WITHDRAW": "提现",
+      "BET": "下注",
+      "WIN": "获胜",
+      "LOSE": "失败",
+      "REFUND": "退款（平局）",
+      "TEST_ADD": "测试添加",
+      "REFERRAL_REWARD": "推荐奖励",
+      "FEE": "手续费",
+      "TRADING_MINING_REWARD": "交易挖矿奖励",
+      "STAKE_REWARD": "质押收益",
+      "MEMBERSHIP_UPGRADE": "会员升级",
+      "LUSD_CLAIM": "LUSD 领取"
     }
   },
   "active_orders": {

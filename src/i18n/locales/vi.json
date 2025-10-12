@@ -166,7 +166,20 @@
       "rocket_reward": "Thưởng Rocket",
       "rocket_withdraw": "Rút Rocket",
       "rocket_bonus": "Thưởng Rocket",
-      "trade": "Giao dịch"
+      "trade": "Giao dịch",
+      "DEPOSIT": "Nạp",
+      "WITHDRAW": "Rút",
+      "BET": "Cược",
+      "WIN": "Thắng",
+      "LOSE": "Thua",
+      "REFUND": "Hoàn (Hòa)",
+      "TEST_ADD": "Thêm thử nghiệm",
+      "REFERRAL_REWARD": "Thưởng giới thiệu",
+      "FEE": "Phí",
+      "TRADING_MINING_REWARD": "Thưởng đào giao dịch",
+      "STAKE_REWARD": "Phần thưởng staking",
+      "MEMBERSHIP_UPGRADE": "Nâng cấp thành viên",
+      "LUSD_CLAIM": "Nhận LUSD"
     },
     "time_ago": {
       "seconds": "giây trước",

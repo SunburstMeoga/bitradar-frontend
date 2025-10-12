@@ -298,7 +298,20 @@
       "rocket_reward": "Rocket Reward",
       "rocket_withdraw": "Rocket Withdraw",
       "rocket_bonus": "Rocket Bonus",
-      "trade": "Trade"
+      "trade": "Trade",
+      "DEPOSIT": "Deposit",
+      "WITHDRAW": "Withdraw",
+      "BET": "Bet",
+      "WIN": "Win",
+      "LOSE": "Lose",
+      "REFUND": "Refund (Draw)",
+      "TEST_ADD": "Test Add",
+      "REFERRAL_REWARD": "Referral Reward",
+      "FEE": "Fee",
+      "TRADING_MINING_REWARD": "Trading Mining Reward",
+      "STAKE_REWARD": "Staking Reward",
+      "MEMBERSHIP_UPGRADE": "Membership Upgrade",
+      "LUSD_CLAIM": "LUSD Claim"
     }
   },
   "active_orders": {

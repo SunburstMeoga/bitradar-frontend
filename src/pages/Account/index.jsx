@@ -328,7 +328,7 @@ const Account = () => {
                 </div>
                 {activeTab === 'Rocket' && (
                   <span className="text-[rgb(87,87,87)] text-size-[28vw] md:text-2xl font-semibold mt-[2vw] md:mt-1" style={{ fontWeight: 600 }}>
-                    {`≈${(balances.Rocket * ROCKET_USDT_RATE).toFixed(2)}U`}
+                    {`≈${(balances.Rocket * ROCKET_USDT_RATE).toFixed(2)}USDT`}
                   </span>
                 )}
               </>

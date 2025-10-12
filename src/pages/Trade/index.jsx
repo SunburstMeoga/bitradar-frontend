@@ -20,7 +20,7 @@ import sliderIcon from '../../assets/icons/slider.png';
 const Trade = () => {
   const { t } = useTranslation();
   const { isAuthenticated, login } = useAuthStore();
-const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetchMembershipConfig } = useUserStore();
+const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetchMembershipConfig, fetchOrders } = useUserStore();
   const { setAccount, setChainId, setWeb3, setProvider, setIsConnected } = useWeb3Store();
 
   // 获取视口高度信息
@@ -102,6 +102,64 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
 
   // 使用防重复调用的API hook
   const safeFetchBalance = useApiCall(fetchBalance, []);
+
+  // 跟踪待结算订单ID，订单结算后刷新余额
+  const pendingOrderIdsRef = useRef(new Set());
+
+  const pollPendingOrders = useCallback(async () => {
+    if (!isAuthenticated) return;
+    try {
+      // 仅当有认证时轮询订单历史，检测订单是否从未结算转为已结算
+      const betTokenSymbol = selectedToken === 'LuckyUSD' ? 'LUSD' : (selectedToken || 'all');
+      const result = await fetchOrders(1, 20, betTokenSymbol, false);
+      if (result && result.success && Array.isArray(result.data)) {
+        const updatedOrders = result.data;
+        let hasAnySettled = false;
+        const newPendingIds = new Set(pendingOrderIdsRef.current);
+
+        // 根据订单盈亏字段判断结算：profit_loss !== "0" 表示已结算
+        updatedOrders.forEach(order => {
+          const id = order.id;
+          const isPending = order.profit_loss === "0";
+          if (isPending) {
+            newPendingIds.add(id);
+          } else if (pendingOrderIdsRef.current.has(id)) {
+            // 从待结算转为已结算
+            newPendingIds.delete(id);
+            hasAnySettled = true;
+          }
+        });
+
+        // 更新引用
+        pendingOrderIdsRef.current = newPendingIds;
+
+        // 只要有订单结算，立即刷新余额
+        if (hasAnySettled && typeof fetchBalance === 'function') {
+          await fetchBalance();
+        }
+      }
+    } catch (error) {
+      console.error('❌ 轮询订单状态失败:', error);
+    }
+  }, [isAuthenticated, selectedToken, fetchOrders, fetchBalance]);
+
+  // 启动轮询：每5秒检查一次订单状态，若有结算则刷新余额
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    const interval = setInterval(() => {
+      pollPendingOrders();
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [isAuthenticated, pollPendingOrders]);
+
+  // 在认证或切换代币后立即执行一次检查以初始化待结算集合
+  useEffect(() => {
+    if (isAuthenticated) {
+      pollPendingOrders();
+    } else {
+      pendingOrderIdsRef.current = new Set();
+    }
+  }, [isAuthenticated, selectedToken, pollPendingOrders]);
 
 
 

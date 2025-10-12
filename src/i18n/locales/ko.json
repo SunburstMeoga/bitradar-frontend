@@ -300,7 +300,20 @@
       "rocket_reward": "Rocket 보상",
       "rocket_withdraw": "Rocket 출금",
       "rocket_bonus": "Rocket 보너스",
-      "trade": "거래"
+      "trade": "거래",
+      "DEPOSIT": "입금",
+      "WITHDRAW": "출금",
+      "BET": "베팅",
+      "WIN": "승리",
+      "LOSE": "패배",
+      "REFUND": "환불(무승부)",
+      "TEST_ADD": "테스트 추가",
+      "REFERRAL_REWARD": "추천 보상",
+      "FEE": "수수료",
+      "TRADING_MINING_REWARD": "거래 채굴 보상",
+      "STAKE_REWARD": "스테이킹 수익",
+      "MEMBERSHIP_UPGRADE": "회원 업그레이드",
+      "LUSD_CLAIM": "LUSD 수령"
     }
   },
   "active_orders": {
