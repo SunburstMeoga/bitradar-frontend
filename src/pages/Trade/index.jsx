@@ -30,10 +30,17 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
   usePageTitle('trade');
 
   const [tradeAmount, setTradeAmount] = useState(0);
+  const [inputValue, setInputValue] = useState('');
   const [sliderValue, setSliderValue] = useState(0);
   const [currentPrice, setCurrentPrice] = useState(67234.56);
   const [priceChange, setPriceChange] = useState(2.34);
-  const [selectedToken, setSelectedToken] = useState('');
+  const [selectedToken, setSelectedToken] = useState(() => {
+    try {
+      return localStorage.getItem('selectedTradeToken') || '';
+    } catch (_) {
+      return '';
+    }
+  });
   const [isTokenModalOpen, setIsTokenModalOpen] = useState(false);
   const [userBets, setUserBets] = useState([]); // 用户下注记录
   const [isPlacingBet, setIsPlacingBet] = useState(false); // 下注加载状态
@@ -162,11 +169,20 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
 
         // 设置默认选中的代币
         if (formattedTokens.length > 0) {
-          // 如果当前没有选中代币，或者选中的代币不在新列表中，选择第一个代币
-          const currentTokenExists = selectedToken && formattedTokens.some(token => token.name === selectedToken);
-          if (!currentTokenExists) {
-            setSelectedToken(formattedTokens[0].name);
-            console.log('🪙 设置默认选中代币:', formattedTokens[0].name);
+          // 优先使用本地存储的币种选择
+          let stored = '';
+          try { stored = localStorage.getItem('selectedTradeToken') || ''; } catch (_) {}
+          const storedExists = stored && formattedTokens.some(token => token.name === stored);
+          if (storedExists) {
+            setSelectedToken(stored);
+            console.log('🪙 使用本地存储的选中代币:', stored);
+          } else {
+            // 如果当前没有选中代币，或者选中的代币不在新列表中，选择第一个代币
+            const currentTokenExists = selectedToken && formattedTokens.some(token => token.name === selectedToken);
+            if (!currentTokenExists) {
+              setSelectedToken(formattedTokens[0].name);
+              console.log('🪙 设置默认选中代币:', formattedTokens[0].name);
+            }
           }
         }
 
@@ -214,9 +230,18 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
       setTokenOptions(defaultTokens);
 
       // 设置默认选中的代币
-      if (defaultTokens.length > 0 && !selectedToken) {
-        setSelectedToken(defaultTokens[0].name);
-        console.log('🪙 使用fallback，设置默认选中代币:', defaultTokens[0].name);
+      if (defaultTokens.length > 0) {
+        // 优先使用本地存储的选中代币
+        let stored = '';
+        try { stored = localStorage.getItem('selectedTradeToken') || ''; } catch (_) {}
+        const storedExists = stored && defaultTokens.some(token => token.name === stored);
+        if (storedExists) {
+          setSelectedToken(stored);
+          console.log('🪙 使用本地存储，设置默认选中代币:', stored);
+        } else if (!selectedToken) {
+          setSelectedToken(defaultTokens[0].name);
+          console.log('🪙 使用fallback，设置默认选中代币:', defaultTokens[0].name);
+        }
       }
     } finally {
       setIsLoadingTokens(false);
@@ -230,7 +255,9 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
 
     const value = parseFloat(e.target.value);
     setSliderValue(value);
-    setTradeAmount(Math.floor(value));
+    const floored = Math.floor(value);
+    setTradeAmount(floored);
+    setInputValue(String(floored));
   };
 
   // 处理输入框变化
@@ -239,26 +266,35 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
     if (isSliderDisabled) return;
 
     // 只允许输入整数，过滤掉小数点和非数字字符
-    let inputValue = e.target.value;
+    const raw = e.target.value;
+    let sanitized = String(raw).replace(/[^\d]/g, '');
 
-    // 移除所有非数字字符（包括小数点）
-    inputValue = inputValue.replace(/[^\d]/g, '');
-    
-    // 处理特殊情况：如果输入为空或为0，设置为空字符串
-    // 这样可以避免在退格键后显示0，然后输入变成0xxx的问题
-    if (inputValue === '' || inputValue === '0') {
+    // 允许输入为空，直接显示为空并重置数值
+    if (sanitized === '') {
+      setInputValue('');
       setTradeAmount(0);
       setSliderValue(0);
       return;
     }
 
-    // 转换为整数
-    const value = parseInt(inputValue, 10);
+    // 不允许前导0，移除所有前导0
+    sanitized = sanitized.replace(/^0+/, '');
 
-    // 确保输入值在有效范围内：不小于1且不超过用户余额
-    const clampedValue = Math.min(Math.max(value, 1), Math.floor(userBalance));
+    // 如果移除前导0后为空，视为清空
+    if (sanitized === '') {
+      setInputValue('');
+      setTradeAmount(0);
+      setSliderValue(0);
+      return;
+    }
+
+    const value = parseInt(sanitized, 10);
+    const max = Math.floor(userBalance);
+    const min = userBalance >= 1 ? 1 : 0; // 余额>=1时，最小值为1，否则为0
+    const clampedValue = Math.min(Math.max(value, min), max);
     setTradeAmount(clampedValue);
     setSliderValue(clampedValue);
+    setInputValue(String(clampedValue));
   };
 
   // 处理币种选择框点击
@@ -269,6 +305,9 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
   // 处理币种选择
   const handleTokenSelect = (tokenName) => {
     setSelectedToken(tokenName);
+    try {
+      localStorage.setItem('selectedTradeToken', tokenName);
+    } catch (_) {}
     setIsTokenModalOpen(false);
 
     // 币种切换时重置滑动条值，使用统一的余额获取逻辑
@@ -295,14 +334,17 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
       // 余额为0时，滑动条和交易金额都设为0
       setSliderValue(0);
       setTradeAmount(0);
+      setInputValue('0');
     } else if (newBalance >= 1) {
       // 余额>=1时，设置默认值为1
       setSliderValue(1);
       setTradeAmount(1);
+      setInputValue('1');
     } else {
       // 余额在0-1之间时，设置为0（因为只能输入整数）
       setSliderValue(0);
       setTradeAmount(0);
+      setInputValue('0');
     }
   };
 
@@ -471,11 +513,19 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
           isWin: null,
           profit: null,
           status: 'active',
+          // 当前交易对（用于持久化和切换后过滤显示）
+          pair: orderData.tradingPairSymbol,
           // 保存API返回的完整数据
           apiData: responseOrderData
         };
 
-        setUserBets(prev => [...prev, newBet]);
+        setUserBets(prev => {
+          const next = [...prev, newBet];
+          try {
+            localStorage.setItem('tradeUserBets', JSON.stringify(next));
+          } catch (_) {}
+          return next;
+        });
         console.log('✅ 下注成功:', newBet);
 
         // 刷新用户余额
@@ -589,6 +639,41 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
     }
   }, [isAuthenticated, profile, fetchProfile]);
 
+  // 挂载时恢复本地持久化的下注点
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('tradeUserBets');
+      if (raw) {
+        const stored = JSON.parse(raw);
+        if (Array.isArray(stored)) {
+          // 恢复所有持久化的下注点（不再按选中代币过滤）
+          setUserBets(stored);
+        }
+      }
+    } catch (e) {
+      console.warn('读取本地下注点失败:', e);
+    }
+  }, []);
+
+  // 当切换交易对时，从本地存储恢复（当前仅一个交易对，这里不做过滤）
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('tradeUserBets');
+      if (raw) {
+        const stored = JSON.parse(raw);
+        if (Array.isArray(stored)) {
+          setUserBets(stored);
+        }
+      } else {
+        setUserBets([]);
+      }
+    } catch (_) {
+      // 忽略解析错误
+    }
+  }, [selectedToken]);
+
+  // 移除通用的持久化effect，改为在新增下注或图表回传时写入
+
   // 监听余额变化和代币选择变化，输出调试信息
   useEffect(() => {
     if (selectedToken && balance) {
@@ -606,29 +691,24 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
       // 余额为0时，滑动条和交易金额都设为0
       setSliderValue(0);
       setTradeAmount(0);
+      setInputValue('0');
     } else if (currentBalance >= 1 && tradeAmount === 0) {
       // 余额>=1且当前交易金额为0时，设置默认值为1
       setSliderValue(1);
       setTradeAmount(1);
+      setInputValue('1');
     }
   }, [balance, selectedToken]); // 只依赖余额数据和选中的币种
 
-  // 清理过期的下注记录（只清理未结算且超过结算时间5秒的记录）
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const now = Date.now();
-      setUserBets(prev => prev.filter(bet => {
-        // 保留已结算的记录（永久显示）
-        if (bet.status === 'settled') return true;
-
-        // 对于活跃记录，只有在超过结算时间5秒后才清理
-        // 这样给结算逻辑足够的时间来处理
-        const timeAfterSettlement = now - bet.settlementTime;
-        return timeAfterSettlement < 5000; // 结算后5秒才清理
-      }));
-    }, 1000); // 每1秒检查一次
-
-    return () => clearInterval(interval);
+  // 接收图表可见下注点的回传，保持与图表同步并持久化
+  const handleVisibleUserBetsChange = useCallback((visibleBets) => {
+    setUserBets(prev => {
+      const prevIds = prev.map(b => b.id);
+      const nextIds = visibleBets.map(b => b.id);
+      const sameLength = prevIds.length === nextIds.length;
+      const sameContent = sameLength && prevIds.every((id, i) => id === nextIds[i]);
+      return sameContent ? prev : visibleBets;
+    });
   }, []);
 
 
@@ -649,7 +729,7 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
           />
           <div className="h-[34vw] md:h-9 flex flex-col justify-between -mt-[7vw] md:mt-0">
             <p className="text-white text-size-[15vw] md:text-base font-semibold h-[18vw] md:h-auto">BTC-USD</p>
-            <p className="text-white text-size-[13vw] md:text-sm h-[15vw] md:h-auto">{t('trade.binary_options')}</p>
+            {/* <p className="text-white text-size-[13vw] md:text-sm h-[15vw] md:h-auto">{t('trade.binary_options')}</p> */}
           </div>
         </div>
 
@@ -688,6 +768,7 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
         <PriceChart
           userBets={userBets}
           onPriceUpdate={handlePriceUpdate}
+          onVisibleUserBetsChange={handleVisibleUserBetsChange}
         />
       </div>
 
@@ -708,13 +789,10 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
           <div className="w-full flex items-center mb-[6vw] md:mb-2">
             <div className="flex-1 min-w-0">
               <input
-                type="number"
-                value={tradeAmount}
+                type="text"
+                value={inputValue}
                 onChange={handleInputChange}
                 disabled={isSliderDisabled}
-                min="0"
-                max="1000"
-                step="1"
                 pattern="[0-9]*"
                 inputMode="numeric"
                 className="w-full h-[40vw] md:h-10 bg-transparent border-none outline-none text-[#c5ff33] text-size-[34vw] md:text-2xl font-semibold"

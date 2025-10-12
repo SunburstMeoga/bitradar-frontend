@@ -407,9 +407,62 @@ function drawRoundedRect(ctx, x, y, width, height, radius) {
   ctx.closePath();
 }
 
+// 参考线插件：绘制最近一次下注的水平参考线
+const referenceLinePlugin = {
+  id: 'referenceLine',
+  afterDatasetsDraw: (chart) => {
+    const ref = chart.options.referenceLine;
+    if (!ref) return;
+
+    const { ctx, scales } = chart;
+    if (!scales.y) return;
+
+    const yScale = scales.y;
+    const y = yScale.getPixelForValue(ref.price);
+    const color = ref.direction === 'up' ? '#00bc4b' : (ref.direction === 'down' ? '#f5384e' : '#C5FF33');
+
+    ctx.save();
+    ctx.setLineDash([6, 6]);
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 1;
+    ctx.globalAlpha = 0.9;
+    ctx.beginPath();
+    ctx.moveTo(chart.chartArea.left, y);
+    ctx.lineTo(chart.chartArea.right, y);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // 绘制右侧标签
+    const label = 'Last Bet';
+    const fontSize = window.innerWidth >= 768 ? 12 : 10;
+    const paddingH = 4;
+    const paddingV = 2;
+    ctx.font = `${fontSize}px Arial`;
+    const textWidth = ctx.measureText(label).width;
+    const labelWidth = textWidth + paddingH * 2;
+    const labelHeight = fontSize + paddingV * 2;
+    const rightX = chart.chartArea.right - labelWidth - 2; // 贴近图表区域右侧
+
+    // 背景
+    ctx.fillStyle = color;
+    ctx.globalAlpha = 1;
+    ctx.beginPath();
+    ctx.roundRect(rightX, y - labelHeight / 2, labelWidth, labelHeight, 4);
+    ctx.fill();
+
+    // 文本
+    ctx.fillStyle = '#000';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(label, rightX + labelWidth / 2, y);
+
+    ctx.restore();
+  }
+};
+
 ChartJS.register(customDrawPlugin, userBetsPlugin);
 
-const PriceChart = ({ onPriceUpdate, userBets = [] }) => {
+const PriceChart = ({ onPriceUpdate, userBets = [], onVisibleUserBetsChange }) => {
   const chartRef = useRef(null);
 
   const [priceData, setPriceData] = useState([]); // 存储价格数据（120个数据点）
@@ -418,6 +471,7 @@ const PriceChart = ({ onPriceUpdate, userBets = [] }) => {
   const [timeUpdate, setTimeUpdate] = useState(0); // 用于强制更新时间
   const [isLoading, setIsLoading] = useState(true); // 加载状态
   const [isHistoryLoaded, setIsHistoryLoaded] = useState(false); // 历史数据是否已加载
+  const [referenceLine, setReferenceLine] = useState(null); // 最近一次下注参考线
   const animationRef = useRef(null);
   const previousPriceRef = useRef(null);
   const blinkStartTimeRef = useRef(null); // 记录闪烁开始时间
@@ -651,6 +705,10 @@ const PriceChart = ({ onPriceUpdate, userBets = [] }) => {
     if (combinedData.length === 0) return { min: 0, max: 100000 };
 
     const prices = combinedData.map(item => item.price);
+    // 将参考线价格纳入范围计算，避免参考线超出可见区域
+    const refPrice = referenceLine && typeof referenceLine.price === 'number' ? referenceLine.price : null;
+    if (refPrice !== null) prices.push(refPrice);
+
     const minPrice = Math.min(...prices);
     const maxPrice = Math.max(...prices);
     const range = maxPrice - minPrice;
@@ -660,7 +718,7 @@ const PriceChart = ({ onPriceUpdate, userBets = [] }) => {
       min: minPrice - padding,
       max: maxPrice + padding
     };
-  }, [combinedData]);
+  }, [combinedData, referenceLine]);
 
   // 生成时间标签（6个时间点）- 基于120个数据点
   const timeLabels = useMemo(() => {
@@ -758,6 +816,21 @@ const PriceChart = ({ onPriceUpdate, userBets = [] }) => {
 
     return () => clearInterval(interval);
   }, []);
+
+  // 根据可见时间窗口过滤下注点并回传给父组件，同时同步到本地存储
+  const lastVisibleIdsRef = useRef(null);
+  useEffect(() => {
+    if (!combinedData || combinedData.length === 0) return;
+    const leftTs = combinedData[0].timestamp;
+    const filtered = (userBets || []).filter(b => typeof b.timestamp === 'number' && b.timestamp >= leftTs);
+    const idsSig = JSON.stringify(filtered.map(b => b.id));
+    // 如果可见集合未变化，则不回传，避免循环更新
+    if (lastVisibleIdsRef.current === idsSig) return;
+    lastVisibleIdsRef.current = idsSig;
+    if (typeof onVisibleUserBetsChange === 'function') {
+      onVisibleUserBetsChange(filtered);
+    }
+  }, [combinedData, userBets, onVisibleUserBetsChange]);
 
   // 闪烁动画循环
   useEffect(() => {

@@ -265,7 +265,6 @@ const AddReferrerCard = ({ onBack, onClose, onSuccess }) => {
           </div>
           <div className="text-[12px] md:text-xs text-[#949E9E] leading-[16px] md:leading-relaxed space-y-[4px] md:space-y-1 pl-[8px] md:pl-2">
             <div>• {t('wallet.staking_rewards')}</div>
-            <div>• {t('wallet.fee_rewards')}</div>
           </div>
         </div>
 
