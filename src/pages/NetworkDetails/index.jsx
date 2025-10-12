@@ -258,12 +258,12 @@ const NetworkDetails = () => {
         <div className="flex items-center justify-center min-h-[200px]">
           <div className="text-center">
             <p className="text-red-400 text-size-[16vw] md:text-lg mb-4">{error}</p>
-            <button
+            <div
               onClick={loadNetworkData}
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
             >
               {t('common.retry')}
-            </button>
+            </div>
           </div>
         </div>
       </div>
@@ -319,18 +319,18 @@ const NetworkDetails = () => {
 
       {/* Tabs */}
       <div className="mb-[16vw] md:mb-4 flex items-center gap-[8vw] md:gap-2">
-        <button
+        <div
           onClick={() => setSelectedTab('membership')}
           className={`px-[12vw] md:px-3 py-[6vw] md:py-1.5 rounded-[6vw] md:rounded text-size-[12vw] md:text-xs ${selectedTab === 'membership' ? 'bg-blue-600 text-white' : 'bg-[#2a2a2a] text-white'} hover:opacity-80`}
         >
           {t('network_details.tabs.membership_network')}
-        </button>
-        <button
+        </div>
+        <div
           onClick={() => setSelectedTab('mining')}
           className={`px-[12vw] md:px-3 py-[6vw] md:py-1.5 rounded-[6vw] md:rounded text-size-[12vw] md:text-xs ${selectedTab === 'mining' ? 'bg-blue-600 text-white' : 'bg-[#2a2a2a] text-white'} hover:opacity-80`}
         >
           {t('network_details.tabs.mining_network')}
-        </button>
+        </div>
         {/* 理财网体Tab先隐藏，不删除 */}
       </div>
 
@@ -375,7 +375,7 @@ const NetworkDetails = () => {
             {levelData.length > 0 ? levelData.map((level) => (
               <div key={level.level}>
                 {/* 层级标题 */}
-                <button
+                <div
                   onClick={() => handleLevelToggle(level.level)}
                   className="w-full h-[50vw] md:h-12 flex items-center justify-between px-[16vw] md:px-4 rounded-[8vw] md:rounded-lg hover:opacity-80 transition-opacity"
                   style={{ backgroundColor: 'rgb(41, 41, 41)' }}
@@ -384,7 +384,7 @@ const NetworkDetails = () => {
                     {t('network_details.level_title', { level: level.level, count: level.count })}
                   </span>
                   <ArrowDownIcon isExpanded={expandedLevel === level.level} />
-                </button>
+                </div>
 
                 {/* 展开的用户列表 */}
                 {expandedLevel === level.level && (
@@ -417,14 +417,14 @@ const NetworkDetails = () => {
                               {t(`network_details.relationship_${user.relationship}`)}
                             </span>
                           </div>
-                          <div className="flex flex-col items-center">
+                          {/* <div className="flex flex-col items-center">
                             <span className="text-[#8f8f8f] mb-[4vw] md:mb-1">{t('network_details.reward_eligible')}</span>
                             <span className={`text-size-[12vw] md:text-xs ${
                               user.network_reward_eligible || user.flat_reward_eligible ? 'text-green-400' : 'text-red-400'
                             }`}>
                               {user.network_reward_eligible || user.flat_reward_eligible ? t('common.yes') : t('common.no')}
                             </span>
-                          </div>
+                          </div> */}
                         </div>
                       </div>
                     ))}

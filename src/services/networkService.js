@@ -146,18 +146,38 @@ class NetworkService extends ApiService {
       
       const response = await this.get('/referral/rewards');
       
-      if (response.success && response.data) {
-        console.log('✅ 获取推荐奖励统计成功:', response.data);
+      const isSuccess = (response && (response.success === true || response.status === 200 || response.code === 0));
+      if (isSuccess) {
+        const data =
+          response?.data !== undefined
+            ? response.data
+            : response?.rewards !== undefined
+            ? { rewards: response.rewards }
+            : Array.isArray(response)
+            ? response
+            : response?.list !== undefined
+            ? { rewards: response.list }
+            : {};
+
+        console.log('✅ 获取推荐奖励统计成功:', data);
         return {
           success: true,
-          data: response.data
+          data
         };
       }
 
-      throw new Error(response.message || '获取推荐奖励统计失败');
+      const message = response?.message || '获取推荐奖励统计失败';
+      console.warn('⚠️ 推荐奖励接口未成功:', message, response);
+      return {
+        success: false,
+        message
+      };
     } catch (error) {
       console.error('获取推荐奖励统计失败:', error);
-      throw error;
+      return {
+        success: false,
+        message: error.message || '获取推荐奖励统计失败'
+      };
     }
   }
 
