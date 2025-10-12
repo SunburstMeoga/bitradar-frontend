@@ -478,7 +478,7 @@ const PriceChart = ({ onPriceUpdate, userBets = [], onVisibleUserBetsChange }) =
   const wsRef = useRef(null); // WebSocket连接引用
   const reconnectTimeoutRef = useRef(null); // 重连定时器引用
   const latestBaselineRef = useRef(null); // 记录60秒前的基准价格
-  const loadingHideTimeoutRef = useRef(null); // 控制加载状态延迟隐藏的定时器
+  // 移除加载延迟隐藏逻辑，直接在数据就绪后隐藏加载
 
 
 
@@ -527,13 +527,8 @@ const PriceChart = ({ onPriceUpdate, userBets = [], onVisibleUserBetsChange }) =
 
           setPriceData(historyData);
           setIsHistoryLoaded(true);
-          // 延迟隐藏Loading，给canvas绘制留出时间
-          if (loadingHideTimeoutRef.current) {
-            clearTimeout(loadingHideTimeoutRef.current);
-          }
-          loadingHideTimeoutRef.current = setTimeout(() => {
-            setIsLoading(false);
-          }, 2000);
+          // 历史数据已就绪后立即隐藏Loading（保留转圈样式，但不延迟）
+          setIsLoading(false);
         } else {
           throw new Error('历史价格数据格式错误');
         }
@@ -552,15 +547,7 @@ const PriceChart = ({ onPriceUpdate, userBets = [], onVisibleUserBetsChange }) =
     }
   }, [isHistoryLoaded]); // 依赖历史数据加载状态
 
-  // 组件卸载时清理延迟隐藏Loading的定时器
-  useEffect(() => {
-    return () => {
-      if (loadingHideTimeoutRef.current) {
-        clearTimeout(loadingHideTimeoutRef.current);
-        loadingHideTimeoutRef.current = null;
-      }
-    };
-  }, []);
+  // 组件卸载时无需清理加载延迟定时器（已移除）。
 
   // 用于存储最新的价格数据，供父组件回调使用
   const latestPriceDataRef = useRef(null);
@@ -890,20 +877,9 @@ const PriceChart = ({ onPriceUpdate, userBets = [], onVisibleUserBetsChange }) =
     priceChanged: priceChanged, // 传递价格变化状态给插件
     blinkStartTime: blinkStartTimeRef.current, // 传递闪烁开始时间给插件
     userBets: userBets, // 传递用户下注数据给插件
-    // 动画配置 - 滑动窗口平滑动画
-    animation: {
-      duration: 1000, // 1000ms动画时长
-      easing: 'easeInOutQuart', // 平滑的缓动函数
-    },
-    // 数据更新时的动画
-    transitions: {
-      active: {
-        animation: {
-          duration: 1000, // 数据更新时使用1000ms动画
-          easing: 'easeInOutQuart',
-        }
-      }
-    },
+    // 禁用初始与更新动画，避免进入页面时的上升/淡入效果
+    animation: false,
+    transitions: {},
     interaction: {
       intersect: false,
       mode: 'index',
