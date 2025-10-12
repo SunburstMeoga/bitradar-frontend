@@ -478,6 +478,7 @@ const PriceChart = ({ onPriceUpdate, userBets = [], onVisibleUserBetsChange }) =
   const wsRef = useRef(null); // WebSocket连接引用
   const reconnectTimeoutRef = useRef(null); // 重连定时器引用
   const latestBaselineRef = useRef(null); // 记录60秒前的基准价格
+  const loadingHideTimeoutRef = useRef(null); // 控制加载状态延迟隐藏的定时器
 
 
 
@@ -526,7 +527,13 @@ const PriceChart = ({ onPriceUpdate, userBets = [], onVisibleUserBetsChange }) =
 
           setPriceData(historyData);
           setIsHistoryLoaded(true);
-          setIsLoading(false);
+          // 延迟隐藏Loading，给canvas绘制留出时间
+          if (loadingHideTimeoutRef.current) {
+            clearTimeout(loadingHideTimeoutRef.current);
+          }
+          loadingHideTimeoutRef.current = setTimeout(() => {
+            setIsLoading(false);
+          }, 1000);
         } else {
           throw new Error('历史价格数据格式错误');
         }
@@ -544,6 +551,16 @@ const PriceChart = ({ onPriceUpdate, userBets = [], onVisibleUserBetsChange }) =
       fetchHistoryData();
     }
   }, [isHistoryLoaded]); // 依赖历史数据加载状态
+
+  // 组件卸载时清理延迟隐藏Loading的定时器
+  useEffect(() => {
+    return () => {
+      if (loadingHideTimeoutRef.current) {
+        clearTimeout(loadingHideTimeoutRef.current);
+        loadingHideTimeoutRef.current = null;
+      }
+    };
+  }, []);
 
   // 用于存储最新的价格数据，供父组件回调使用
   const latestPriceDataRef = useRef(null);
