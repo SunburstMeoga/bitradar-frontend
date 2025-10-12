@@ -86,7 +86,7 @@ const SlideModal = ({
       5: '450px', // Membership卡片 - 中等偏高
       6: '400px'  // PaymentConfirm卡片 - 中等
     };
-    const estimatedHeight = estimatedHeights[currentIndex] || '70vh';
+    const estimatedHeight = estimatedHeights[currentIndex] || '80vh';
     setModalHeight(estimatedHeight);
   }, [currentIndex]);
 
@@ -94,7 +94,7 @@ const SlideModal = ({
   useEffect(() => {
     if (!isOpen) {
       // 弹窗关闭时重置高度为默认值，为下次打开做准备
-      setModalHeight('70vh');
+      setModalHeight('80vh');
       return;
     }
 
@@ -111,7 +111,7 @@ const SlideModal = ({
         // 计算20vw对应的px值（基于375px设计稿）
         const bottomPaddingVw = (20 / 375) * window.innerWidth; // 20vw转px
         const totalModalHeight = titleHeight + contentHeight + bottomPaddingVw;
-        const maxViewportHeight = window.innerHeight * 0.7; // 70vh
+        const maxViewportHeight = window.innerHeight * 0.8; // 80vh
 
         // 恢复原始样式
         contentElement.style.maxHeight = originalMaxHeight;
@@ -120,8 +120,8 @@ const SlideModal = ({
           // 弹窗总高度 ≤ 70vh：按内容撑开
           setModalHeight(`${totalModalHeight}px`);
         } else {
-          // 弹窗总高度 > 70vh：使用70vh，内容区域滚动
-          setModalHeight('70vh');
+          // 弹窗总高度 > 80vh：使用80vh，内容区域滚动
+          setModalHeight('80vh');
         }
       }
     }, 50); // 减少延迟时间从100ms到50ms
@@ -166,7 +166,7 @@ const SlideModal = ({
         className={`relative bg-[#1f1f1f] rounded-[12px] w-[330px] md:w-[380px] box-border ${className}`}
         style={{
           height: modalHeight,
-          maxHeight: '70vh',
+          maxHeight: '80vh',
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden'
@@ -208,13 +208,13 @@ const SlideModal = ({
             className="w-full h-full"
           >
             <div
-              className="modal-content overflow-y-auto scrollbar-hide px-[20vw] md:px-8 h-full md:pb-5"
+              className="modal-content overflow-y-auto scrollbar-hide px-[20vw] md:px-8 h-full md:pb-6"
               style={{
                 scrollbarWidth: 'none', /* Firefox */
                 msOverflowStyle: 'none', /* IE and Edge */
                 WebkitOverflowScrolling: 'touch',
                 overscrollBehavior: 'contain',
-                paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 20px)'
+                paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 88px)'
               }}
             >
               {Array.isArray(children) ? children[currentIndex] : children}

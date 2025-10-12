@@ -772,7 +772,7 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
 
 
   return (
-    <div className="h-full flex flex-col" style={{ backgroundColor: '#121212' }}>
+    <div className="min-h-screen flex flex-col pb-[86vw] md:pb-20" style={{ backgroundColor: '#121212' }}>
       {/* 价格信息栏 */}
       <div
         className="w-full h-[64vw] md:h-16 px-[16vw] md:px-4 flex items-center justify-between border-t border-b mt-[10vw] md:mt-3"
