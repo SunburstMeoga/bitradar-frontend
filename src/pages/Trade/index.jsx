@@ -457,19 +457,19 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
     }
   };
 
-  // 验证码通过后继续下注
+  // 验证码通过后继续下注（参考 /test-captcha 逻辑：成功即关闭并继续流程）
   const handleCaptchaSuccess = () => {
     setIsCaptchaVerified(true);
     setIsCaptchaOpen(false);
     const dir = pendingDirectionRef.current;
-    if (dir) {
-      // 关闭弹窗后继续当前下注流程
-      setTimeout(() => {
-        handlePlaceBet(dir);
-      }, 0);
-    }
     setIsCaptchaRequired(false);
     pendingDirectionRef.current = null;
+    if (dir) {
+      // 直接走下注内部流程，避免再次触发验证码判断导致闪烁
+      setTimeout(() => {
+        placeBetInternal(dir);
+      }, 0);
+    }
   };
 
   const handleCaptchaFail = () => {
@@ -478,67 +478,9 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
   };
 
   // 处理用户下注
-  const handlePlaceBet = async (direction) => {
-    console.log('🎯 开始下注流程，参数检查:', {
-      tradeAmount,
-      currentPrice,
-      isPlacingBet,
-      direction,
-      selectedToken,
-      isAuthenticated
-    });
-
-    if (tradeAmount === 0 || !currentPrice || isPlacingBet) {
-      console.log('❌ 下注条件不满足:', {
-        tradeAmountZero: tradeAmount === 0,
-        noPriceData: !currentPrice,
-        isPlacingBet
-      });
-      return;
-    }
-
-    // 检查用户是否已认证
-    if (!isAuthenticated) {
-      console.log('❌ 用户未认证');
-      toast.error('请先连接钱包并登录');
-      return;
-    }
-
-    // 检查是否有有效的token
-    const currentToken = localStorage.getItem('authToken');
-    console.log('🔐 当前认证token:', currentToken ? `${currentToken.substring(0, 20)}...` : '无');
-
-    if (!currentToken) {
-      console.log('❌ 没有认证token');
-      toast.error('认证token无效，请重新登录');
-      return;
-    }
-
-    // 检查选中的代币
-    if (!selectedToken || selectedToken === '') {
-      toast.error('请选择下注代币');
-      return;
-    }
-
-    // 检查余额是否足够
-    const userBalance = getCurrentTokenBalance();
-    if (userBalance < tradeAmount) {
-      toast.error('余额不足');
-      return;
-    }
-
-    // 10% 概率触发验证码；一旦被要求，直到通过前都需验证
-    const shouldGateByCaptcha = isCaptchaRequired || (!isCaptchaVerified && Math.random() < 0.1);
-    if (shouldGateByCaptcha) {
-      setIsCaptchaRequired(true);
-      setIsCaptchaOpen(true);
-      pendingDirectionRef.current = direction;
-      toast('请完成安全验证后继续下注');
-      return;
-    }
-
+  // 下注内部流程：不做验证码判断，纯下注逻辑
+  const placeBetInternal = async (direction) => {
     setIsPlacingBet(true);
-
     try {
       const now = Date.now();
 
@@ -555,6 +497,7 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
 
       console.log('🎯 发送下注请求 (新格式):', orderData);
       console.log('🎯 当前认证状态:', isAuthenticated);
+      const userBalance = getCurrentTokenBalance();
       console.log('🎯 当前用户余额:', userBalance);
       console.log('🎯 选中的代币:', selectedToken);
       console.log('🎯 交易金额:', tradeAmount);
@@ -647,6 +590,70 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
       // 单次下注结束后重置验证状态，以便下次继续按10%概率拦截
       setIsCaptchaVerified(false);
     }
+  };
+
+  // 公开的下注入口：包含前置校验与验证码拦截
+  const handlePlaceBet = async (direction) => {
+    console.log('🎯 开始下注流程，参数检查:', {
+      tradeAmount,
+      currentPrice,
+      isPlacingBet,
+      direction,
+      selectedToken,
+      isAuthenticated
+    });
+
+    if (tradeAmount === 0 || !currentPrice || isPlacingBet) {
+      console.log('❌ 下注条件不满足:', {
+        tradeAmountZero: tradeAmount === 0,
+        noPriceData: !currentPrice,
+        isPlacingBet
+      });
+      return;
+    }
+
+    // 检查用户是否已认证
+    if (!isAuthenticated) {
+      console.log('❌ 用户未认证');
+      toast.error('请先连接钱包并登录');
+      return;
+    }
+
+    // 检查是否有有效的token
+    const currentToken = localStorage.getItem('authToken');
+    console.log('🔐 当前认证token:', currentToken ? `${currentToken.substring(0, 20)}...` : '无');
+
+    if (!currentToken) {
+      console.log('❌ 没有认证token');
+      toast.error('认证token无效，请重新登录');
+      return;
+    }
+
+    // 检查选中的代币
+    if (!selectedToken || selectedToken === '') {
+      toast.error('请选择下注代币');
+      return;
+    }
+
+    // 检查余额是否足够
+    const userBalance = getCurrentTokenBalance();
+    if (userBalance < tradeAmount) {
+      toast.error('余额不足');
+      return;
+    }
+
+    // 10% 概率触发验证码；一旦被要求，直到通过前都需验证
+    const shouldGateByCaptcha = isCaptchaRequired || (!isCaptchaVerified && Math.random() < 0.1);
+    if (shouldGateByCaptcha) {
+      setIsCaptchaRequired(true);
+      setIsCaptchaOpen(true);
+      pendingDirectionRef.current = direction;
+      toast('请完成安全验证后继续下注');
+      return;
+    }
+
+    // 通过拦截后，执行内部流程
+    await placeBetInternal(direction);
   };
 
   // 处理价格更新的回调函数，使用useCallback稳定引用
