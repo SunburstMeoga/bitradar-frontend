@@ -92,11 +92,20 @@ const NetworkDetails = () => {
   const [miningLimit, setMiningLimit] = useState(20);
   const [loadingMining, setLoadingMining] = useState(false);
 
+  // 递归统计所有层级的团队成员数量（children 的总数）
+  const countDescendants = (node) => {
+    if (!node || !Array.isArray(node.children)) return 0;
+    let total = 0;
+    for (const child of node.children) {
+      total += 1; // 统计当前子节点
+      total += countDescendants(child); // 递归统计子节点的子节点
+    }
+    return total;
+  };
+
   // 从API数据中提取的统计信息
   const overviewData = networkData ? {
-    teamMembers: Array.isArray(networkData?.tree_structure?.children)
-      ? networkData.tree_structure.children.length
-      : 0,
+    teamMembers: countDescendants(networkData?.tree_structure),
     totalDeposit: parseFloat(networkData.statistics?.total_network_volume || '0'),
     totalWithdrawal: 0 // API中没有提现数据，暂时设为0
   } : {
@@ -119,6 +128,7 @@ const NetworkDetails = () => {
             user_id: user.user_id,
             wallet_address: user.wallet_address,
             invite_code: user.invite_code,
+            membership_type: user.membership_type, // 保留会员类型（gold/silver）用于统计
             vip_level: user.vip_level || 1, // 默认VIP等级为1
             stake_amount: parseFloat(user.stake_amount || '0'),
             relationship: user.relationship || 'direct',
@@ -374,7 +384,7 @@ const NetworkDetails = () => {
               <div className="text-white text-size-[14vw] md:text-sm font-medium">
                 {(() => {
                   const allUsers = levelData.flatMap(l => l.users || []);
-                  const gold = allUsers.filter(u => (u.vip_level || 1) >= 2).length;
+                  const gold = allUsers.filter(u => u.membership_type === 'gold').length;
                   return gold;
                 })()}
               </div>
@@ -384,8 +394,7 @@ const NetworkDetails = () => {
               <div className="text-white text-size-[14vw] md:text-sm font-medium">
                 {(() => {
                   const allUsers = levelData.flatMap(l => l.users || []);
-                  const gold = allUsers.filter(u => (u.vip_level || 1) >= 2).length;
-                  const silver = Math.max(allUsers.filter(u => (u.vip_level || 1) >= 1).length - gold, 0);
+                  const silver = allUsers.filter(u => u.membership_type === 'silver').length;
                   return silver;
                 })()}
               </div>
