@@ -320,6 +320,55 @@ class NetworkService extends ApiService {
       };
     }
   }
+
+  /**
+   * 统一查询用户的所有ROCKET奖励记录（需要认证）
+   * GET /rewards/all-rocket-rewards
+   * @param {Object} params
+   * @param {string} [params.filter] - 奖励类型筛选：'membership' | 'trading_mining' | undefined
+   * @param {number} [params.page] - 页码，默认 1
+   * @param {number} [params.limit] - 每页数量，默认 20
+   * @returns {Promise<Object>} 奖励记录、摘要与分页
+   */
+  async getAllRocketRewards(params = {}) {
+    try {
+      const page = params.page ?? 1;
+      const limit = params.limit ?? 20;
+      const filter = params.filter ?? undefined;
+
+      const query = new URLSearchParams();
+      if (page) query.append('page', page);
+      if (limit) query.append('limit', limit);
+      if (filter) query.append('filter', filter);
+
+      const url = `/rewards/all-rocket-rewards${query.toString() ? `?${query.toString()}` : ''}`;
+      console.log('🚀 获取统一ROCKET奖励记录...', { page, limit, filter });
+      const response = await this.get(url);
+
+      const ok = response?.success === true && response?.data;
+      if (ok) {
+        const { records = [], summary = {}, pagination = {}, reward_types = {} } = response.data;
+        console.log('✅ 统一ROCKET奖励记录获取成功:', {
+          count: Array.isArray(records) ? records.length : 0,
+          summary,
+          pagination,
+          reward_types_keys: Object.keys(reward_types || {})
+        });
+        return {
+          success: true,
+          data: { records, summary, pagination, reward_types }
+        };
+      }
+
+      throw new Error(response?.message || '获取统一ROCKET奖励失败');
+    } catch (error) {
+      console.error('❌ 获取统一ROCKET奖励失败:', error);
+      return {
+        success: false,
+        message: error.message || '获取统一ROCKET奖励失败'
+      };
+    }
+  }
 }
 
 export default new NetworkService();

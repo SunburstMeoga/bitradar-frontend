@@ -249,6 +249,19 @@
       "total_reward": "Tổng phần thưởng",
       "reward_count": "Số lượng bản ghi"
     },
+    "reward_types": {
+      "referral_reward": "Thưởng giới thiệu vàng",
+      "membership_upgrade_reward": "Thưởng nâng cấp thành viên",
+      "network_reward": "Thưởng mạng vàng",
+      "peer_level_reward": "Thưởng ngang cấp vàng",
+      "trading_mining_self": "Thưởng đào giao dịch",
+      "trading_mining_layer": "Thưởng theo tầng thành viên",
+      "layer_1": "Thưởng tầng L1",
+      "layer_2": "Thưởng tầng L2",
+      "layer_3": "Thưởng tầng L3",
+      "layer_4": "Thưởng tầng L4",
+      "layer_5": "Thưởng tầng L5"
+    },
     "mining_summary": {
       "self_reward_total": "Tổng đào của bản thân",
       "record_count": "Số lượng bản ghi"

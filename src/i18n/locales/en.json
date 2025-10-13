@@ -243,6 +243,19 @@
       "total_reward": "Total Reward",
       "reward_count": "Record Count"
     },
+    "reward_types": {
+      "referral_reward": "Gold Referral Reward",
+      "membership_upgrade_reward": "Membership Upgrade Reward",
+      "network_reward": "Gold Network Reward",
+      "peer_level_reward": "Gold Peer-Level Reward",
+      "trading_mining_self": "Trading Mining Reward",
+      "trading_mining_layer": "Membership Layer Reward",
+      "layer_1": "L1 Level Reward",
+      "layer_2": "L2 Level Reward",
+      "layer_3": "L3 Level Reward",
+      "layer_4": "L4 Level Reward",
+      "layer_5": "L5 Level Reward"
+    },
     "mining_summary": {
       "self_reward_total": "Self Mining Total",
       "layer_1_reward": "L1 Level Reward",

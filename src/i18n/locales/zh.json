@@ -259,6 +259,19 @@
       "total_reward": "总奖励",
       "reward_count": "记录数"
     },
+    "reward_types": {
+      "referral_reward": "金牌推广奖励",
+      "membership_upgrade_reward": "会员升级奖励",
+      "network_reward": "金牌网体奖励",
+      "peer_level_reward": "金牌平级奖励",
+      "trading_mining_self": "交易挖矿奖励",
+      "trading_mining_layer": "会员层级奖励",
+      "layer_1": "L1层级奖励",
+      "layer_2": "L2层级奖励",
+      "layer_3": "L3层级奖励",
+      "layer_4": "L4层级奖励",
+      "layer_5": "L5层级奖励"
+    },
     "mining_summary": {
       "self_reward_total": "自身挖矿总额",
       "layer_1_reward": "L1层级奖励",

@@ -244,6 +244,19 @@
       "total_reward": "총 보상",
       "reward_count": "기록 수"
     },
+    "reward_types": {
+      "referral_reward": "골드 추천 보상",
+      "membership_upgrade_reward": "회원 업그레이드 보상",
+      "network_reward": "골드 네트워크 보상",
+      "peer_level_reward": "골드 동일 레벨 보상",
+      "trading_mining_self": "거래 마이닝 보상",
+      "trading_mining_layer": "회원 레벨 보상",
+      "layer_1": "L1 레벨 보상",
+      "layer_2": "L2 레벨 보상",
+      "layer_3": "L3 레벨 보상",
+      "layer_4": "L4 레벨 보상",
+      "layer_5": "L5 레벨 보상"
+    },
     "mining_summary": {
       "self_reward_total": "자신의 마이닝 합계",
       "layer_1_reward": "L1 레벨 보상",
