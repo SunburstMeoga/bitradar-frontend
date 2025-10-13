@@ -232,6 +232,94 @@ class NetworkService extends ApiService {
       throw error;
     }
   }
+
+  /**
+   * 获取金牌推广奖励记录（需要认证）
+   * GET /referral-activity/gold-member-rewards
+   * @param {Object} params
+   * @param {number} params.page - 页码，默认 1
+   * @param {number} params.limit - 每页数量，默认 20
+   * @returns {Promise<Object>} 奖励记录、摘要与分页
+   */
+  async getGoldMemberRewards(params = {}) {
+    try {
+      const page = params.page ?? 1;
+      const limit = params.limit ?? 20;
+
+      const query = new URLSearchParams();
+      if (page) query.append('page', page);
+      if (limit) query.append('limit', limit);
+
+      const url = `/referral-activity/gold-member-rewards${query.toString() ? `?${query.toString()}` : ''}`;
+      console.log('🎖️ 获取金牌推广奖励记录...', { page, limit });
+      const response = await this.get(url);
+
+      if (response?.success && response?.data) {
+        const { records = [], summary = {}, pagination = {} } = response.data;
+        console.log('✅ 金牌推广奖励记录获取成功:', {
+          count: Array.isArray(records) ? records.length : 0,
+          summary,
+          pagination
+        });
+        return {
+          success: true,
+          data: { records, summary, pagination }
+        };
+      }
+
+      throw new Error(response?.message || '获取金牌推广奖励失败');
+    } catch (error) {
+      console.error('❌ 获取金牌推广奖励失败:', error);
+      return {
+        success: false,
+        message: error.message || '获取金牌推广奖励失败'
+      };
+    }
+  }
+
+  /**
+   * 获取交易挖矿奖励记录（需要认证）
+   * GET /referral-activity/trading-mining-rewards
+   * @param {Object} params
+   * @param {number} params.page - 页码，默认 1
+   * @param {number} params.limit - 每页数量，默认 20
+   * @returns {Promise<Object>} 奖励记录、摘要与分页
+   */
+  async getTradingMiningRewards(params = {}) {
+    try {
+      const page = params.page ?? 1;
+      const limit = params.limit ?? 20;
+
+      const query = new URLSearchParams();
+      if (page) query.append('page', page);
+      if (limit) query.append('limit', limit);
+
+      const url = `/referral-activity/trading-mining-rewards${query.toString() ? `?${query.toString()}` : ''}`;
+      console.log('⛏️ 获取交易挖矿奖励记录...', { page, limit });
+      const response = await this.get(url);
+
+      if (response?.success && response?.data) {
+        const { records = [], summary = {}, pagination = {} } = response.data;
+        console.log('✅ 交易挖矿奖励记录获取成功:', {
+          count: Array.isArray(records) ? records.length : 0,
+          summary,
+          pagination
+        });
+        return {
+          success: true,
+          data: { records, summary, pagination }
+        };
+      }
+
+      throw new Error(response?.message || '获取交易挖矿奖励失败');
+    } catch (error) {
+      console.error('❌ 获取交易挖矿奖励失败:', error);
+      return {
+        success: false,
+        message: error.message || '获取交易挖矿奖励失败'
+      };
+    }
+  }
 }
 
 export default new NetworkService();

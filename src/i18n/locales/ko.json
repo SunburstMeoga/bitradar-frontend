@@ -231,7 +231,23 @@
     "gold_members": "골드 회원 수",
     "silver_members": "실버 회원 수",
     "my_upline": "나의 상급자",
-    "rocket_rewards": "ROCKET 보상 상세"
+    "rocket_rewards": "ROCKET 보상 상세",
+    "rocket_rewards_summary": {
+      "network_reward_total": "네트워크 보상 합계",
+      "peer_level_reward_total": "동일 레벨 보상 합계",
+      "total_reward": "총 보상",
+      "reward_count": "기록 수"
+    },
+    "mining_summary": {
+      "self_reward_total": "자신의 마이닝 합계",
+      "layer_1_reward": "L1 레벨 보상",
+      "layer_2_reward": "L2 레벨 보상",
+      "layer_3_reward": "L3 레벨 보상",
+      "layer_4_reward": "L4 레벨 보상",
+      "layer_5_reward": "L5 레벨 보상",
+      "total_layer_reward": "레벨 보상 총합 (L1-L5)",
+      "record_count": "기록 수"
+    }
   },
   "exchange": {
     "title": "교환",

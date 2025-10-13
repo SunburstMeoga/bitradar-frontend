@@ -235,6 +235,17 @@
       "level_rates": "Tỷ lệ theo cấp",
       "min_referrals": "Số người giới thiệu tối thiểu",
       "calculation_period": "Chu kỳ tính toán"
+    },
+    "rocket_rewards": "Chi tiết phần thưởng ROCKET",
+    "rocket_rewards_summary": {
+      "network_reward_total": "Tổng thưởng mạng",
+      "peer_level_reward_total": "Tổng thưởng cùng cấp",
+      "total_reward": "Tổng phần thưởng",
+      "reward_count": "Số lượng bản ghi"
+    },
+    "mining_summary": {
+      "self_reward_total": "Tổng đào của bản thân",
+      "record_count": "Số lượng bản ghi"
     }
   },
   "exchange": {

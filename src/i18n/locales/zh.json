@@ -245,7 +245,23 @@
     "gold_members": "金牌会员人数",
     "silver_members": "银牌会员人数",
     "my_upline": "我的上级",
-    "rocket_rewards": "ROCKET奖励详情"
+    "rocket_rewards": "ROCKET奖励详情",
+    "rocket_rewards_summary": {
+      "network_reward_total": "网体奖励总额",
+      "peer_level_reward_total": "平级奖总额",
+      "total_reward": "总奖励",
+      "reward_count": "记录数"
+    },
+    "mining_summary": {
+      "self_reward_total": "自身挖矿总额",
+      "layer_1_reward": "L1层级奖励",
+      "layer_2_reward": "L2层级奖励",
+      "layer_3_reward": "L3层级奖励",
+      "layer_4_reward": "L4层级奖励",
+      "layer_5_reward": "L5层级奖励",
+      "total_layer_reward": "推荐层级总额（L1-L5）",
+      "record_count": "记录数"
+    }
   },
   "exchange": {
     "title": "兑换",

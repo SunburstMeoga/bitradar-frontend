@@ -229,7 +229,23 @@
     "gold_members": "Gold Members",
     "silver_members": "Silver Members",
     "my_upline": "My Upline",
-    "rocket_rewards": "ROCKET Rewards Details"
+    "rocket_rewards": "ROCKET Rewards Details",
+    "rocket_rewards_summary": {
+      "network_reward_total": "Network Reward Total",
+      "peer_level_reward_total": "Peer-Level Reward Total",
+      "total_reward": "Total Reward",
+      "reward_count": "Record Count"
+    },
+    "mining_summary": {
+      "self_reward_total": "Self Mining Total",
+      "layer_1_reward": "L1 Level Reward",
+      "layer_2_reward": "L2 Level Reward",
+      "layer_3_reward": "L3 Level Reward",
+      "layer_4_reward": "L4 Level Reward",
+      "layer_5_reward": "L5 Level Reward",
+      "total_layer_reward": "Total Level Rewards (L1-L5)",
+      "record_count": "Record Count"
+    }
   },
   "exchange": {
     "title": "Exchange",
