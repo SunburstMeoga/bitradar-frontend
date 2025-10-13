@@ -4,7 +4,7 @@ import toast from 'react-hot-toast';
 import { MEMBERSHIP_LEVELS, MEMBERSHIP_COLORS } from '../MembershipCard';
 import { useUserStore } from '../../store';
 
-const PaymentConfirmCard = ({ membershipLevel, onBack, onClose, onPaymentSuccess }) => {
+const PaymentConfirmCard = ({ membershipLevel, onBack, onClose, onPaymentSuccess, onRequireReferralBinding }) => {
   const { t } = useTranslation();
   const {
     membershipInfo,
@@ -106,9 +106,9 @@ const PaymentConfirmCard = ({ membershipLevel, onBack, onClose, onPaymentSuccess
     return numericPrice;
   };
 
-  // 获取用户USDT余额
-  const getUSDTBalance = () => {
-    if (!balance) {
+  // 根据传入的余额对象获取USDT余额（避免使用旧闭包中的balance）
+  const getUSDTBalanceFrom = (balanceObj) => {
+    if (!balanceObj) {
       console.log('💰 余额检查: balance为空');
       return 0;
     }
@@ -116,8 +116,8 @@ const PaymentConfirmCard = ({ membershipLevel, onBack, onClose, onPaymentSuccess
     let usdtBalance = 0;
 
     // 优先使用 balanceMap 格式（如果存在）
-    if (balance.balanceMap && balance.balanceMap['USDT']) {
-      const usdtBalanceData = balance.balanceMap['USDT'];
+    if (balanceObj.balanceMap && balanceObj.balanceMap['USDT']) {
+      const usdtBalanceData = balanceObj.balanceMap['USDT'];
       // 优先使用total，其次available
       usdtBalance = parseFloat(usdtBalanceData.total || usdtBalanceData.available || 0);
       console.log('💰 使用balanceMap格式:', {
@@ -126,11 +126,11 @@ const PaymentConfirmCard = ({ membershipLevel, onBack, onClose, onPaymentSuccess
       });
     }
     // 使用直接字段格式
-    else if (balance.usdt_balance !== undefined) {
-      usdtBalance = parseFloat(balance.usdt_balance || 0);
+    else if (balanceObj.usdt_balance !== undefined) {
+      usdtBalance = parseFloat(balanceObj.usdt_balance || 0);
       console.log('💰 使用直接字段格式:', {
-        rawBalance: balance.usdt_balance,
-        rawBalanceType: typeof balance.usdt_balance,
+        rawBalance: balanceObj.usdt_balance,
+        rawBalanceType: typeof balanceObj.usdt_balance,
         parsedBalance: usdtBalance
       });
     }
@@ -170,16 +170,18 @@ const PaymentConfirmCard = ({ membershipLevel, onBack, onClose, onPaymentSuccess
 
     // 检查 4: 获取最新余额并检查是否足够
     await fetchBalance();
+    // 读取最新的余额状态以避免旧闭包数据
+    const updatedBalance = useUserStore.getState().balance;
 
     const requiredPrice = getUpgradePrice();
-    const currentBalance = getUSDTBalance();
+    const currentBalance = getUSDTBalanceFrom(updatedBalance);
 
     // 确保两个值都是数值类型
     const numericRequiredPrice = Number(requiredPrice);
     const numericCurrentBalance = Number(currentBalance);
 
     console.log('💰 余额检查详情:', {
-      balance: balance,
+      balance: updatedBalance,
       requiredPrice: {
         original: requiredPrice,
         numeric: numericRequiredPrice,
@@ -238,6 +240,18 @@ const PaymentConfirmCard = ({ membershipLevel, onBack, onClose, onPaymentSuccess
           onPaymentSuccess(membershipLevel);
         }
       } else {
+        // 如果需要先绑定邀请码，提示并触发弹窗
+        if (result?.requires_referral_binding) {
+          // 优化提示文案，使用国际化
+          const helpText = result?.data?.help_text;
+          const refined = t('wallet.referral_binding_required');
+          toast.error(helpText || refined);
+
+          if (onRequireReferralBinding) {
+            onRequireReferralBinding();
+          }
+          return;
+        }
         throw new Error(result.message || '升级失败');
       }
     } catch (error) {

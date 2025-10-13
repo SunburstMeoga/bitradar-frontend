@@ -97,23 +97,41 @@ class MembershipService extends ApiService {
       throw new Error(response.message || '会员升级失败');
     } catch (error) {
       console.error('❌ 会员升级失败:', error);
+      const status = error?.response?.status;
+      const data = error?.response?.data;
       
-      // 根据错误类型显示不同的提示
-      let errorMessage = error.message || '会员升级失败';
-      
-      if (error.response?.status === 400) {
-        const data = error.response.data;
+      // 专门处理 400 错误，并在需要绑定推荐码时返回该需求给 UI
+      if (status === 400 && data) {
+        if (data?.requires_referral_binding === true) {
+          const serverMessage = data?.message;
+          return {
+            success: false,
+            message: serverMessage || '购买会员前需先绑定邀请码',
+            data: data?.data,
+            requires_referral_binding: true,
+          };
+        }
+        // 其他已知错误类型提示
+        let errorMessage = data?.message || '会员升级失败';
         if (data.message?.includes('余额不足') || data.message?.includes('insufficient')) {
           errorMessage = '余额不足，无法完成升级';
         } else if (data.message?.includes('无效') || data.message?.includes('invalid')) {
           errorMessage = '无效的升级路径';
         }
+        toast.error(errorMessage);
+        return {
+          success: false,
+          message: errorMessage,
+          requires_referral_binding: false,
+        };
       }
       
-      toast.error(errorMessage);
+      const fallbackMessage = error.message || '会员升级失败';
+      toast.error(fallbackMessage);
       return {
         success: false,
-        message: errorMessage
+        message: fallbackMessage,
+        requires_referral_binding: false,
       };
     }
   }

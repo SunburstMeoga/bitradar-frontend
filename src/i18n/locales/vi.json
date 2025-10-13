@@ -202,6 +202,12 @@
     "relationship_direct": "Trực tiếp",
     "relationship_same_level": "Cùng cấp",
     "relationship_indirect": "Gián tiếp",
+    "membership_type": "Loại thành viên",
+    "membership_types": {
+      "gold": "Vàng",
+      "silver": "Bạc",
+      "none": "Không"
+    },
     "no_referrals": "Chưa có người giới thiệu",
     "earnings": {
       "title": "Chi tiết thu nhập",
@@ -321,7 +327,8 @@
       "rocket_reward": "Thưởng Rocket",
       "rocket_withdraw": "Rút Rocket",
       "rocket_bonus": "Thưởng Rocket",
-      "trade": "Giao dịch"
+      "trade": "Giao dịch",
+      "REFERRAL_ACTIVITY_LAYER_REWARD": "Phần thưởng cấp hoạt động giới thiệu"
     }
   },
   "active_orders": {

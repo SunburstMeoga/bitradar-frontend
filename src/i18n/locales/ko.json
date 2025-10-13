@@ -186,6 +186,12 @@
     "relationship_direct": "직접 추천",
     "relationship_same_level": "동일 레벨",
     "relationship_indirect": "간접 추천",
+    "membership_type": "회원 유형",
+    "membership_types": {
+      "gold": "골드",
+      "silver": "실버",
+      "none": "회원 없음"
+    },
     "no_referrals": "아직 추천인이 없습니다",
     "earnings": {
       "title": "수익 세부정보",
@@ -335,7 +341,8 @@
       "TRADING_MINING_REWARD": "거래 채굴 보상",
       "STAKE_REWARD": "스테이킹 수익",
       "MEMBERSHIP_UPGRADE": "회원 업그레이드",
-      "LUSD_CLAIM": "LUSD 수령"
+      "LUSD_CLAIM": "LUSD 수령",
+      "REFERRAL_ACTIVITY_LAYER_REWARD": "추천 활동 레벨 보상"
     }
   },
   "active_orders": {

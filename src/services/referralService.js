@@ -148,6 +148,48 @@ class ReferralService extends ApiService {
       throw error;
     }
   }
+
+  /**
+   * 获取推荐树详情，以便获取上级（邀请人）钱包地址
+   * @param {number|string} userId - 目标用户ID（可选，传入被邀请用户的ID以查询其上级）
+   * @returns {Promise<Object>} 包含邀请人钱包地址的数据
+   */
+  async getReferralTreeDetail(userId) {
+    try {
+      console.log('🔎 获取推荐树详情以获取上级钱包地址', { userId });
+
+      const query = userId ? `?user_id=${userId}` : '';
+      const response = await this.get(`/referral/tree-detail${query}`);
+
+      // 兼容不同返回结构：既可能在顶层，也可能在 data 中
+      const payload = response?.data !== undefined ? response.data : response;
+
+      // 尽可能提取邀请人钱包地址
+      const inviterWallet = (
+        payload?.inviter_wallet_address ||
+        payload?.inviter?.wallet_address ||
+        payload?.parent?.wallet_address ||
+        payload?.upline?.wallet_address ||
+        payload?.wallet_address ||
+        null
+      );
+
+      if ((response?.success || inviterWallet) && inviterWallet) {
+        console.log('✅ 获取上级钱包地址成功:', inviterWallet);
+        return {
+          success: true,
+          data: {
+            inviter_wallet_address: inviterWallet
+          }
+        };
+      }
+
+      throw new Error(response?.message || '获取推荐树详情失败');
+    } catch (error) {
+      console.error('获取推荐树详情失败:', error);
+      throw error;
+    }
+  }
 }
 
 export default new ReferralService();

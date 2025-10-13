@@ -120,6 +120,7 @@
     "membership_payment_title_gold": "购买金牌会员",
     "membership_payment_description": "支付{{price}}可获得以下权益",
     "membership_payment_confirm": "确认支付",
+    "referral_binding_required": "购买会员前需先绑定邀请码。请完成绑定后再继续购买。",
     "membership_payment_cancel": "取消",
     "membership_payment_success": "购买成功！",
     "membership_level_none": "暂无等级",
@@ -200,6 +201,12 @@
     "relationship_direct": "直推",
     "relationship_same_level": "平级",
     "relationship_indirect": "间推",
+    "membership_type": "会员类型",
+    "membership_types": {
+      "gold": "金牌",
+      "silver": "银牌",
+      "none": "无会员"
+    },
     "no_referrals": "暂无推荐用户",
     "earnings": {
       "title": "收益明细",
@@ -350,6 +357,8 @@
       "STAKE_REWARD": "质押收益",
       "MEMBERSHIP_UPGRADE": "会员升级",
       "LUSD_CLAIM": "LUSD 领取"
+      ,
+      "REFERRAL_ACTIVITY_LAYER_REWARD": "推荐活动层级奖励"
     }
   },
   "active_orders": {

@@ -312,7 +312,8 @@ export const useUserStore = create(
             return result;
           }
 
-          throw new Error('会员升级失败');
+          // 不抛错，直接返回结果给调用方，让 UI 根据具体错误处理
+          return result;
         } catch (error) {
           console.error('❌ 会员升级失败:', error);
           throw error;

@@ -104,6 +104,7 @@
     "membership_payment_title_gold": "Buy Gold Membership",
     "membership_payment_description": "Pay {{price}} to get the following benefits",
     "membership_payment_confirm": "Confirm Payment",
+    "referral_binding_required": "Please bind a referral code before purchasing membership. Complete binding to continue.",
     "membership_payment_cancel": "Cancel",
     "membership_payment_success": "Purchase Successful!",
     "membership_level_none": "No Level",
@@ -184,6 +185,12 @@
     "relationship_direct": "Direct",
     "relationship_same_level": "Same Level",
     "relationship_indirect": "Indirect",
+    "membership_type": "Membership Type",
+    "membership_types": {
+      "gold": "Gold",
+      "silver": "Silver",
+      "none": "None"
+    },
     "no_referrals": "No referrals yet",
     "earnings": {
       "title": "Earnings Details",
@@ -333,7 +340,8 @@
       "TRADING_MINING_REWARD": "Trading Mining Reward",
       "STAKE_REWARD": "Staking Reward",
       "MEMBERSHIP_UPGRADE": "Membership Upgrade",
-      "LUSD_CLAIM": "LUSD Claim"
+      "LUSD_CLAIM": "LUSD Claim",
+      "REFERRAL_ACTIVITY_LAYER_REWARD": "Referral Activity Layer Reward"
     }
   },
   "active_orders": {

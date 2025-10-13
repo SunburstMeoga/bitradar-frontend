@@ -12,6 +12,7 @@ import MembershipCard from '../MembershipCard';
 import PaymentConfirmCard from '../PaymentConfirmCard';
 import ReferralStatsCard from '../ReferralStatsCard';
 import ReferralTreeCard from '../ReferralTreeCard';
+import ReferralBindModal from '../ReferralBindModal';
 
 const WalletModal = ({ isOpen, onClose }) => {
   const { account } = useWeb3Store();
@@ -23,6 +24,7 @@ const WalletModal = ({ isOpen, onClose }) => {
   const [hasReferralRelation, setHasReferralRelation] = useState(false);
   const [isCheckingReferral, setIsCheckingReferral] = useState(true);
   const [shouldAutoShowInvite, setShouldAutoShowInvite] = useState(false);
+  const [isReferralBindOpen, setIsReferralBindOpen] = useState(false);
 
   // 处理卡片切换
   const handleCardChange = (index) => {
@@ -159,6 +161,11 @@ const WalletModal = ({ isOpen, onClose }) => {
     handleBackToWallet();
   };
 
+  // 处理需要绑定推荐码的场景：打开绑定弹窗
+  const handleRequireReferralBinding = () => {
+    setIsReferralBindOpen(true);
+  };
+
   // 配置每个卡片的标题
   const cardTitles = [
     '', // 钱包卡片没有标题
@@ -261,6 +268,7 @@ const WalletModal = ({ isOpen, onClose }) => {
         onBack={handleBackToMembership}
         onClose={handleClose}
         onPaymentSuccess={handlePaymentSuccess}
+        onRequireReferralBinding={handleRequireReferralBinding}
       />
 
       {/* ReferralStats卡片 */}
@@ -274,6 +282,13 @@ const WalletModal = ({ isOpen, onClose }) => {
       <ReferralTreeCard
         onBack={() => setCurrentCardIndex(7)} // 返回到ReferralStats卡片
         onClose={handleClose}
+      />
+
+      {/* 邀请码绑定弹窗 */}
+      <ReferralBindModal
+        isOpen={isReferralBindOpen}
+        onClose={() => setIsReferralBindOpen(false)}
+        walletAddress={account}
       />
     </SlideModal>
   );

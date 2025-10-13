@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import usePageTitle from '../../hooks/usePageTitle';
 import CountUp from 'react-countup';
 import networkService from '../../services/networkService';
+import referralService from '../../services/referralService';
 import { formatNumber as formatTwo } from '../../utils/format.js';
 import userService from '../../services/userService';
 import toast from 'react-hot-toast';
@@ -82,6 +83,7 @@ const NetworkDetails = () => {
   const [rewardConfig, setRewardConfig] = useState(null);
   const [error, setError] = useState(null);
   const [profile, setProfile] = useState(null);
+  const [uplineWallet, setUplineWallet] = useState(null);
   const [referralRewards, setReferralRewards] = useState([]);
   // 金牌奖励与交易挖矿奖励数据
   const [goldRewardsData, setGoldRewardsData] = useState({ records: [], summary: null, pagination: null });
@@ -193,6 +195,18 @@ const NetworkDetails = () => {
         setProfile(profileResponse.data);
       }
 
+      // 获取上级钱包地址：传入当前用户ID，让后端返回其 inviter 信息
+      try {
+        const targetUserId = profileResponse?.data?.id;
+        const detailResp = await referralService.getReferralTreeDetail(targetUserId);
+        const wallet = detailResp?.data?.inviter_wallet_address;
+        if (wallet) {
+          setUplineWallet(wallet);
+        }
+      } catch (e) {
+        console.warn('获取上级钱包地址失败:', e?.message || e);
+      }
+
       if (rewardsResponse && rewardsResponse.success) {
         // 兼容不同字段命名
         const list = Array.isArray(rewardsResponse.data?.rewards)
@@ -299,6 +313,11 @@ const NetworkDetails = () => {
     );
   };
 
+  const formatWalletShort = (address) => {
+    if (!address || typeof address !== 'string') return '';
+    return `${address.slice(0, 6)}...${address.slice(-4)}`;
+  };
+
   // 加载状态
   if (loading) {
     return (
@@ -403,7 +422,9 @@ const NetworkDetails = () => {
             <div className="p-[16vw] md:p-4 rounded-[8vw] md:rounded-lg" style={{ backgroundColor: 'rgb(41, 41, 41)' }}>
               <div className="text-[#8f8f8f] text-size-[12vw] md:text-xs mb-[4vw] md:mb-1">{t('network_details.my_upline')}</div>
               <div className="text-white text-size-[14vw] md:text-sm font-medium">
-                {profile?.invited_by ? `用户 #${profile.invited_by}` : t('network_details.no_referrals')}
+                {uplineWallet
+                  ? formatWalletShort(uplineWallet)
+                  : (profile?.invited_by ? `用户 #${profile.invited_by}` : t('network_details.no_referrals'))}
               </div>
             </div>
           </div>
@@ -446,26 +467,14 @@ const NetworkDetails = () => {
                           </div>
                         </div>
 
-                        {/* 用户数据 */}
-                        <div className="flex justify-between text-size-[12vw] md:text-xs">
+                        {/* 用户数据（仅显示会员类型，隐藏质押金额） */}
+                        <div className="flex justify-center text-size-[12vw] md:text-xs">
                           <div className="flex flex-col items-center">
-                            <span className="text-[#8f8f8f] mb-[4vw] md:mb-1">{t('network_details.stake_amount')}</span>
-                            {formatAmount(user.stake_amount, '12vw', 'text-white')}
-                          </div>
-                          <div className="flex flex-col items-center">
-                            <span className="text-[#8f8f8f] mb-[4vw] md:mb-1">{t('network_details.relationship')}</span>
+                            <span className="text-[#8f8f8f] mb-[4vw] md:mb-1">{t('network_details.membership_type')}</span>
                             <span className="text-white text-size-[12vw] md:text-xs">
-                              {t(`network_details.relationship_${user.relationship}`)}
+                              {t(`network_details.membership_types.${user.membership_type || 'none'}`)}
                             </span>
                           </div>
-                          {/* <div className="flex flex-col items-center">
-                            <span className="text-[#8f8f8f] mb-[4vw] md:mb-1">{t('network_details.reward_eligible')}</span>
-                            <span className={`text-size-[12vw] md:text-xs ${
-                              user.network_reward_eligible || user.flat_reward_eligible ? 'text-green-400' : 'text-red-400'
-                            }`}>
-                              {user.network_reward_eligible || user.flat_reward_eligible ? t('common.yes') : t('common.no')}
-                            </span>
-                          </div> */}
                         </div>
                       </div>
                     ))}
@@ -493,7 +502,8 @@ const NetworkDetails = () => {
               const networkReward = to2(s.total_network_reward ?? s.network_reward ?? s.totalNetworkReward ?? s.networkReward);
               const peerLevelReward = to2(s.total_peer_level_reward ?? s.peer_level_reward ?? s.totalPeerLevelReward ?? s.peerLevelReward);
               const totalReward = to2(s.total_reward ?? s.totalReward);
-              const rewardCount = s.reward_count ?? s.total ?? s.count ?? s.total_reward ?? '—';
+              const rewardCountRaw = s.reward_count ?? s.total ?? s.count ?? s.total_reward;
+              const rewardCount = (rewardCountRaw === null || rewardCountRaw === undefined) ? '—' : formatTwo(rewardCountRaw);
               return (
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-[12vw] md:gap-3 mb-[16vw] md:mb-4">
                   <div className="p-[16vw] md:p-4 rounded-[8vw] md:rounded-lg" style={{ backgroundColor: 'rgb(41, 41, 41)' }}>
@@ -529,9 +539,9 @@ const NetworkDetails = () => {
                       <span className="text-white text-size-[14vw] md:text-sm font-medium">{item.reward_type_name}（第{item.gold_member_position}位金牌）</span>
                       <span className="text-green-400 text-size-[14vw] md:text-sm font-medium">{formatTwo(item.reward_amount)}</span>
                     </div>
-                    <div className="flex justify-between text-size-[12vw] md:text-xs text-[#8f8f8f]">
-                      <span>结算：{item.settlement_date ? new Date(item.settlement_date).toLocaleString() : '—'}</span>
-                      <span>发放：{item.distributed_at ? new Date(item.distributed_at).toLocaleString() : '—'}</span>
+                    <div className="flex flex-col text-size-[12vw] md:text-xs text-[#8f8f8f]">
+                      <span>{t('network_details.record.settlement')}：{item.settlement_date ? new Date(item.settlement_date).toLocaleString() : '—'}</span>
+                      <span className="mt-[2vw] md:mt-0.5">{t('network_details.record.distributed')}：{item.distributed_at ? new Date(item.distributed_at).toLocaleString() : '—'}</span>
                     </div>
                   </div>
                 ))
@@ -566,107 +576,217 @@ const NetworkDetails = () => {
 
       {selectedTab === 'mining' && (
         <div>
-          {/* 摘要 */}
-          {miningRewardsData.summary && (() => {
-            const s = miningRewardsData.summary || {};
-            const to2 = (v) => (v === null || v === undefined ? '—' : formatTwo(v));
-            const selfReward = to2(s.self_mining_reward ?? s.self_reward ?? s.selfMiningReward);
-            const layer1 = to2(s.layer_1_reward);
-            const layer2 = to2(s.layer_2_reward);
-            const layer3 = to2(s.layer_3_reward);
-            const layer4 = to2(s.layer_4_reward);
-            const layer5 = to2(s.layer_5_reward);
-            const totalLayerReward = to2(s.total_reward ?? s.totalLayerReward);
-            const recordCount = s.reward_count ?? s.total ?? s.count ?? '—';
-            return (
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-[12vw] md:gap-3 mb-[16vw] md:mb-4">
-                <div className="p-[16vw] md:p-4 rounded-[8vw] md:rounded-lg" style={{ backgroundColor: 'rgb(41, 41, 41)' }}>
-                  <div className="text-[#8f8f8f] text-size-[12vw] md:text-xs mb-[4vw] md:mb-1">{t('network_details.mining_summary.self_reward_total')}</div>
-                  <div className="text-white text-size-[14vw] md:text-sm font-medium">{selfReward}</div>
-                </div>
-                <div className="p-[16vw] md:p-4 rounded-[8vw] md:rounded-lg" style={{ backgroundColor: 'rgb(41, 41, 41)' }}>
-                  <div className="text-[#8f8f8f] text-size-[12vw] md:text-xs mb-[4vw] md:mb-1">{t('network_details.mining_summary.layer_1_reward')}</div>
-                  <div className="text-white text-size-[14vw] md:text-sm font-medium">{layer1}</div>
-                </div>
-                <div className="p-[16vw] md:p-4 rounded-[8vw] md:rounded-lg" style={{ backgroundColor: 'rgb(41, 41, 41)' }}>
-                  <div className="text-[#8f8f8f] text-size-[12vw] md:text-xs mb-[4vw] md:mb-1">{t('network_details.mining_summary.layer_2_reward')}</div>
-                  <div className="text-white text-size-[14vw] md:text-sm font-medium">{layer2}</div>
-                </div>
-                <div className="p-[16vw] md:p-4 rounded-[8vw] md:rounded-lg" style={{ backgroundColor: 'rgb(41, 41, 41)' }}>
-                  <div className="text-[#8f8f8f] text-size-[12vw] md:text-xs mb-[4vw] md:mb-1">{t('network_details.mining_summary.layer_3_reward')}</div>
-                  <div className="text-white text-size-[14vw] md:text-sm font-medium">{layer3}</div>
-                </div>
-                <div className="p-[16vw] md:p-4 rounded-[8vw] md:rounded-lg" style={{ backgroundColor: 'rgb(41, 41, 41)' }}>
-                  <div className="text-[#8f8f8f] text-size-[12vw] md:text-xs mb-[4vw] md:mb-1">{t('network_details.mining_summary.layer_4_reward')}</div>
-                  <div className="text-white text-size-[14vw] md:text-sm font-medium">{layer4}</div>
-                </div>
-                <div className="p-[16vw] md:p-4 rounded-[8vw] md:rounded-lg" style={{ backgroundColor: 'rgb(41, 41, 41)' }}>
-                  <div className="text-[#8f8f8f] text-size-[12vw] md:text-xs mb-[4vw] md:mb-1">{t('network_details.mining_summary.layer_5_reward')}</div>
-                  <div className="text-white text-size-[14vw] md:text-sm font-medium">{layer5}</div>
-                </div>
-                <div className="p-[16vw] md:p-4 rounded-[8vw] md:rounded-lg" style={{ backgroundColor: 'rgb(41, 41, 41)' }}>
-                  <div className="text-[#8f8f8f] text-size-[12vw] md:text-xs mb-[4vw] md:mb-1">{t('network_details.mining_summary.total_layer_reward')}</div>
-                  <div className="text-white text-size-[14vw] md:text-sm font-medium">{totalLayerReward}</div>
-                </div>
-                <div className="p-[16vw] md:p-4 rounded-[8vw] md:rounded-lg" style={{ backgroundColor: 'rgb(41, 41, 41)' }}>
-                  <div className="text-[#8f8f8f] text-size-[12vw] md:text-xs mb-[4vw] md:mb-1">{t('network_details.mining_summary.record_count')}</div>
-                  <div className="text-white text-size-[14vw] md:text-sm font-medium">{recordCount}</div>
-                </div>
-              </div>
-            );
-          })()}
+          {/* 团队总人数（与会员资格推广一致） */}
+          <div
+            className="w-full h-[50vw] md:h-12 flex items-center px-[16vw] md:px-4 mb-[12vw] md:mb-3 rounded-[8vw] md:rounded-lg border border-gray-400"
+            style={{ backgroundColor: 'rgba(64, 64, 64, 0.3)' }}
+          >
+            <span className="text-white text-size-[16vw] md:text-lg">{t('network_details.team_members')}</span>
+            <div className="ml-auto">{formatNumber(overviewData.teamMembers, '16vw', 'text-lg')}</div>
+          </div>
 
-          {/* 列表 */}
-          <div className="space-y-[8vw] md:space-y-2">
-            {loadingMining ? (
-              <div className="text-center py-8">
-                <p className="text-[#8f8f8f] text-size-[16vw] md:text-lg">{t('common.loading')}</p>
+          {/* 概览统计：金牌、银牌、我的上级（与会员资格推广一致） */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-[12vw] md:gap-3 mb-[16vw] md:mb-4">
+            <div className="p-[16vw] md:p-4 rounded-[8vw] md:rounded-lg" style={{ backgroundColor: 'rgb(41, 41, 41)' }}>
+              <div className="text-[#8f8f8f] text-size-[12vw] md:text-xs mb-[4vw] md:mb-1">{t('network_details.gold_members')}</div>
+              <div className="text-white text-size-[14vw] md:text-sm font-medium">
+                {(() => {
+                  const allUsers = levelData.flatMap(l => l.users || []);
+                  const gold = allUsers.filter(u => u.membership_type === 'gold').length;
+                  return gold;
+                })()}
               </div>
-            ) : Array.isArray(miningRewardsData.records) && miningRewardsData.records.length > 0 ? (
-              miningRewardsData.records.map((item) => (
-                <div key={item.id} className="px-[16vw] md:px-4 py-[12vw] md:py-3 rounded-[8vw] md:rounded-lg" style={{ backgroundColor: 'rgb(41, 41, 41)' }}>
-                  <div className="flex justify-between items-center mb-[8vw] md:mb-2">
-                    <div className="flex items-center">
-                      <span className="text-white text-size-[14vw] md:text-sm font-medium">{item.reward_type_name}</span>
-                      {item.layer_level ? (
-                        <span className="ml-[4vw] md:ml-2 px-[6vw] md:px-2 py-[2vw] md:py-0.5 rounded-[4vw] md:rounded bg-[#2a2a2a] text-[#8f8f8f] text-size-[12vw] md:text-xs">
-                          {t('network_details.record.layer_tag_format', { n: item.layer_level })}
-                        </span>
-                      ) : null}
-                    </div>
-                    <span className="text-green-400 text-size-[14vw] md:text-sm font-medium">{formatTwo(item.reward_amount)}</span>
-                  </div>
-                  <div className="flex justify-between text-size-[12vw] md:text-xs text-[#8f8f8f]">
-                    <span>{t('network_details.record.settlement')}：{item.settlement_date ? new Date(item.settlement_date).toLocaleString() : '—'}</span>
-                    <span>{t('network_details.record.distributed')}：{item.distributed_at ? new Date(item.distributed_at).toLocaleString() : '—'}</span>
-                  </div>
+            </div>
+            <div className="p-[16vw] md:p-4 rounded-[8vw] md:rounded-lg" style={{ backgroundColor: 'rgb(41, 41, 41)' }}>
+              <div className="text-[#8f8f8f] text-size-[12vw] md:text-xs mb-[4vw] md:mb-1">{t('network_details.silver_members')}</div>
+              <div className="text-white text-size-[14vw] md:text-sm font-medium">
+                {(() => {
+                  const allUsers = levelData.flatMap(l => l.users || []);
+                  const silver = allUsers.filter(u => u.membership_type === 'silver').length;
+                  return silver;
+                })()}
+              </div>
+            </div>
+            <div className="p-[16vw] md:p-4 rounded-[8vw] md:rounded-lg" style={{ backgroundColor: 'rgb(41, 41, 41)' }}>
+              <div className="text-[#8f8f8f] text-size-[12vw] md:text-xs mb-[4vw] md:mb-1">{t('network_details.my_upline')}</div>
+              <div className="text-white text-size-[14vw] md:text-sm font-medium">
+                {uplineWallet
+                  ? formatWalletShort(uplineWallet)
+                  : (profile?.invited_by ? `用户 #${profile.invited_by}` : t('network_details.no_referrals'))}
+              </div>
+            </div>
+          </div>
+
+          {/* 推荐关系（与会员资格推广一致，复用列表） */}
+          <h2 className="text-white text-size-[18vw] md:text-xl font-semibold mb-[16vw] md:mb-4" style={{ fontWeight: 600 }}>
+            {t('network_details.referral_system')}
+          </h2>
+          <div className="space-y-[2vw] md:space-y-1">
+            {levelData.length > 0 ? levelData.map((level) => (
+              <div key={level.level}>
+                {/* 层级标题 */}
+                <div
+                  onClick={() => handleLevelToggle(level.level)}
+                  className="w-full h-[50vw] md:h-12 flex items-center justify-between px-[16vw] md:px-4 rounded-[8vw] md:rounded-lg hover:opacity-80 transition-opacity"
+                  style={{ backgroundColor: 'rgb(41, 41, 41)' }}
+                >
+                  <span className="text-white text-size-[16vw] md:text-lg">
+                    {t('network_details.level_title', { level: level.level, count: level.count })}
+                  </span>
+                  <ArrowDownIcon isExpanded={expandedLevel === level.level} />
                 </div>
-              ))
-            ) : (
+
+                {/* 展开的用户列表 */}
+                {expandedLevel === level.level && (
+                  <div className="mt-[2vw] md:mt-1 space-y-[1vw] md:space-y-1">
+                    {level.users.map((user, index) => (
+                      <div
+                        key={user.user_id || index}
+                        className="px-[16vw] md:px-4 py-[12vw] md:py-3 rounded-[8vw] md:rounded-lg"
+                        style={{ backgroundColor: 'rgb(31, 31, 31)' }}
+                      >
+                        {/* 用户信息 */}
+                        <div className="flex justify-between items-center mb-[8vw] md:mb-2">
+                          <div className="text-white text-size-[14vw] md:text-sm font-medium">
+                            {formatUserId(user)}
+                          </div>
+                          <div className="text-yellow-400 text-size-[12vw] md:text-xs">
+                            VIP{user.vip_level}
+                          </div>
+                        </div>
+
+                        {/* 用户数据（仅显示会员类型，隐藏质押金额） */}
+                        <div className="flex justify-center text-size-[12vw] md:text-xs">
+                          <div className="flex flex-col items-center">
+                            <span className="text-[#8f8f8f] mb-[4vw] md:mb-1">{t('network_details.membership_type')}</span>
+                            <span className="text-white text-size-[12vw] md:text-xs">
+                              {t(`network_details.membership_types.${user.membership_type || 'none'}`)}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )) : (
               <div className="text-center py-8">
-                <p className="text-[#8f8f8f] text-size-[16vw] md:text-lg">{t('network_details.no_data')}</p>
+                <p className="text-[#8f8f8f] text-size-[16vw] md:text-lg">
+                  {t('network_details.no_referrals')}
+                </p>
               </div>
             )}
           </div>
 
-          {/* 分页 */}
-          {miningRewardsData.pagination && (
-            <div className="mt-[12vw] md:mt-3 flex items-center gap-[8vw] md:gap-2">
-              <button
-                className="px-[12vw] md:px-3 py-[6vw] md:py-1.5 rounded-[6vw] md:rounded bg-[#2a2a2a] text-white text-size-[12vw] md:text-xs hover:opacity-80 disabled:opacity-50"
-                onClick={() => setMiningPage(Math.max((miningRewardsData.pagination.current_page || 1) - 1, 1))}
-                disabled={(miningRewardsData.pagination.current_page || 1) <= 1}
-              >上一页</button>
-              <div className="text-[#8f8f8f] text-size-[12vw] md:text-xs">
-                第 {miningRewardsData.pagination.current_page || 1} / {miningRewardsData.pagination.total_pages || 1} 页
-              </div>
-              <button
-                className="px-[12vw] md:px-3 py-[6vw] md:py-1.5 rounded-[6vw] md:rounded bg-[#2a2a2a] text-white text-size-[12vw] md:text-xs hover:opacity-80 disabled:opacity-50"
-                onClick={() => setMiningPage(Math.min((miningRewardsData.pagination.current_page || 1) + 1, miningRewardsData.pagination.total_pages || 1))}
-                disabled={(miningRewardsData.pagination.current_page || 1) >= (miningRewardsData.pagination.total_pages || 1)}
-              >下一页</button>
+          {/* ROCKET奖励详情（仅该部分在两个Tabs间切换） */}
+          <div className="mt-[24vw] md:mt-6">
+            <h2 className="text-white text-size-[18vw] md:text-xl font-semibold mb-[16vw] md:mb-4" style={{ fontWeight: 600 }}>
+              {t('network_details.rocket_rewards')}
+            </h2>
+
+            {/* 奖励摘要（交易挖矿） */}
+            {miningRewardsData.summary && (() => {
+              const s = miningRewardsData.summary || {};
+              const to2 = (v) => (v === null || v === undefined ? '—' : formatTwo(v));
+              const selfReward = to2(s.self_mining_reward ?? s.self_reward ?? s.selfMiningReward);
+              const layer1 = to2(s.layer_1_reward);
+              const layer2 = to2(s.layer_2_reward);
+              const layer3 = to2(s.layer_3_reward);
+              const layer4 = to2(s.layer_4_reward);
+              const layer5 = to2(s.layer_5_reward);
+              const totalLayerReward = to2(s.total_reward ?? s.totalLayerReward);
+              const recordCountRaw = s.reward_count ?? s.total ?? s.count;
+              const recordCount = (recordCountRaw === null || recordCountRaw === undefined) ? '—' : formatTwo(recordCountRaw);
+              return (
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-[12vw] md:gap-3 mb-[16vw] md:mb-4">
+                  <div className="p-[16vw] md:p-4 rounded-[8vw] md:rounded-lg" style={{ backgroundColor: 'rgb(41, 41, 41)' }}>
+                    <div className="text-[#8f8f8f] text-size-[12vw] md:text-xs mb-[4vw] md:mb-1">{t('network_details.mining_summary.self_reward_total')}</div>
+                    <div className="text-white text-size-[14vw] md:text-sm font-medium">{selfReward}</div>
+                  </div>
+                  <div className="p-[16vw] md:p-4 rounded-[8vw] md:rounded-lg" style={{ backgroundColor: 'rgb(41, 41, 41)' }}>
+                    <div className="text-[#8f8f8f] text-size-[12vw] md:text-xs mb-[4vw] md:mb-1">{t('network_details.mining_summary.layer_1_reward')}</div>
+                    <div className="text-white text-size-[14vw] md:text-sm font-medium">{layer1}</div>
+                  </div>
+                  <div className="p-[16vw] md:p-4 rounded-[8vw] md:rounded-lg" style={{ backgroundColor: 'rgb(41, 41, 41)' }}>
+                    <div className="text-[#8f8f8f] text-size-[12vw] md:text-xs mb-[4vw] md:mb-1">{t('network_details.mining_summary.layer_2_reward')}</div>
+                    <div className="text-white text-size-[14vw] md:text-sm font-medium">{layer2}</div>
+                  </div>
+                  <div className="p-[16vw] md:p-4 rounded-[8vw] md:rounded-lg" style={{ backgroundColor: 'rgb(41, 41, 41)' }}>
+                    <div className="text-[#8f8f8f] text-size-[12vw] md:text-xs mb-[4vw] md:mb-1">{t('network_details.mining_summary.layer_3_reward')}</div>
+                    <div className="text-white text-size-[14vw] md:text-sm font-medium">{layer3}</div>
+                  </div>
+                  <div className="p-[16vw] md:p-4 rounded-[8vw] md:rounded-lg" style={{ backgroundColor: 'rgb(41, 41, 41)' }}>
+                    <div className="text-[#8f8f8f] text-size-[12vw] md:text-xs mb-[4vw] md:mb-1">{t('network_details.mining_summary.layer_4_reward')}</div>
+                    <div className="text-white text-size-[14vw] md:text-sm font-medium">{layer4}</div>
+                  </div>
+                  <div className="p-[16vw] md:p-4 rounded-[8vw] md:rounded-lg" style={{ backgroundColor: 'rgb(41, 41, 41)' }}>
+                    <div className="text-[#8f8f8f] text-size-[12vw] md:text-xs mb-[4vw] md:mb-1">{t('network_details.mining_summary.layer_5_reward')}</div>
+                    <div className="text-white text-size-[14vw] md:text-sm font-medium">{layer5}</div>
+                  </div>
+                  <div className="p-[16vw] md:p-4 rounded-[8vw] md:rounded-lg" style={{ backgroundColor: 'rgb(41, 41, 41)' }}>
+                    <div className="text-[#8f8f8f] text-size-[12vw] md:text-xs mb-[4vw] md:mb-1">{t('network_details.mining_summary.total_layer_reward')}</div>
+                    <div className="text-white text-size-[14vw] md:text-sm font-medium">{totalLayerReward}</div>
+                  </div>
+                  <div className="p-[16vw] md:p-4 rounded-[8vw] md:rounded-lg" style={{ backgroundColor: 'rgb(41, 41, 41)' }}>
+                    <div className="text-[#8f8f8f] text-size-[12vw] md:text-xs mb-[4vw] md:mb-1">{t('network_details.mining_summary.record_count')}</div>
+                    <div className="text-white text-size-[14vw] md:text-sm font-medium">{recordCount}</div>
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* 列表（交易挖矿） */}
+            <div className="space-y-[8vw] md:space-y-2">
+              {loadingMining ? (
+                <div className="text-center py-8">
+                  <p className="text-[#8f8f8f] text-size-[16vw] md:text-lg">{t('common.loading')}</p>
+                </div>
+              ) : Array.isArray(miningRewardsData.records) && miningRewardsData.records.length > 0 ? (
+                miningRewardsData.records.map((item) => (
+                  <div key={item.id} className="px-[16vw] md:px-4 py-[12vw] md:py-3 rounded-[8vw] md:rounded-lg" style={{ backgroundColor: 'rgb(41, 41, 41)' }}>
+                    <div className="flex justify-between items-center mb-[8vw] md:mb-2">
+                      <div className="flex items-center">
+                        <span className="text-white text-size-[14vw] md:text-sm font-medium">{item.reward_type_name}</span>
+                        {item.layer_level ? (
+                          <span className="ml-[4vw] md:ml-2 px-[6vw] md:px-2 py-[2vw] md:py-0.5 rounded-[4vw] md:rounded bg-[#2a2a2a] text-[#8f8f8f] text-size-[12vw] md:text-xs">
+                            {t('network_details.record.layer_tag_format', { n: item.layer_level })}
+                          </span>
+                        ) : null}
+                      </div>
+                      <span className="text-green-400 text-size-[14vw] md:text-sm font-medium">{formatTwo(item.reward_amount)}</span>
+                    </div>
+                    <div className="flex flex-col text-size-[12vw] md:text-xs text-[#8f8f8f]">
+                      <span>{t('network_details.record.settlement')}：{item.settlement_date ? new Date(item.settlement_date).toLocaleString() : '—'}</span>
+                      <span className="mt-[2vw] md:mt-0.5">{t('network_details.record.distributed')}：{item.distributed_at ? new Date(item.distributed_at).toLocaleString() : '—'}</span>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="text-center py-8">
+                  <p className="text-[#8f8f8f] text-size-[16vw] md:text-lg">{t('network_details.no_data')}</p>
+                </div>
+              )}
             </div>
-          )}
+
+            {/* 分页（交易挖矿） */}
+            {miningRewardsData.pagination && (
+              <div className="mt-[12vw] md:mt-3 flex items-center gap-[8vw] md:gap-2">
+                <button
+                  className="px-[12vw] md:px-3 py-[6vw] md:py-1.5 rounded-[6vw] md:rounded bg-[#2a2a2a] text-white text-size-[12vw] md:text-xs hover:opacity-80 disabled:opacity-50"
+                  onClick={() => setMiningPage(Math.max((miningRewardsData.pagination.current_page || 1) - 1, 1))}
+                  disabled={(miningRewardsData.pagination.current_page || 1) <= 1}
+                >上一页</button>
+                <div className="text-[#8f8f8f] text-size-[12vw] md:text-xs">
+                  第 {miningRewardsData.pagination.current_page || 1} / {miningRewardsData.pagination.total_pages || 1} 页
+                </div>
+                <button
+                  className="px-[12vw] md:px-3 py-[6vw] md:py-1.5 rounded-[6vw] md:rounded bg-[#2a2a2a] text-white text-size-[12vw] md:text-xs hover:opacity-80 disabled:opacity-50"
+                  onClick={() => setMiningPage(Math.min((miningRewardsData.pagination.current_page || 1) + 1, miningRewardsData.pagination.total_pages || 1))}
+                  disabled={(miningRewardsData.pagination.current_page || 1) >= (miningRewardsData.pagination.total_pages || 1)}
+                >下一页</button>
+              </div>
+            )}
+          </div>
         </div>
       )}
 
