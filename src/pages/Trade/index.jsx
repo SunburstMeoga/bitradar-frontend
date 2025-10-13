@@ -8,6 +8,7 @@ import { safeParseFloat, formatNumber } from '../../utils/format';
 import { orderService, tokenService } from '../../services';
 import { connectWallet } from '../../utils/web3';
 import Modal from '../../components/Modal';
+import CaptchaModal from '../../components/Captcha/CaptchaModal.jsx';
 import PriceChart from '../../components/PriceChart';
 import pUSDIcon from '../../assets/icons/pUSD.png';
 import upDownIcon from '../../assets/icons/up-down.png';
@@ -47,6 +48,10 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
   const [tokenOptions, setTokenOptions] = useState([]); // 可选择的币种列表
   const [isLoadingTokens, setIsLoadingTokens] = useState(true); // 代币列表加载状态
   const [isConnecting, setIsConnecting] = useState(false); // 连接钱包状态
+  // 验证码相关状态
+  const [isCaptchaOpen, setIsCaptchaOpen] = useState(false);
+  const [isCaptchaRequired, setIsCaptchaRequired] = useState(false);
+  const [isCaptchaVerified, setIsCaptchaVerified] = useState(false);
 
   // 计算PriceChart的动态高度
   const calculateChartHeight = () => {
@@ -99,6 +104,7 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
   // 使用 ref 来跟踪前一个价格，避免循环依赖
   const previousPriceRef = useRef(67234.56);
   const balanceFetchedRef = useRef(false);
+  const pendingDirectionRef = useRef(null);
 
   // 使用防重复调用的API hook
   const safeFetchBalance = useApiCall(fetchBalance, []);
@@ -451,6 +457,26 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
     }
   };
 
+  // 验证码通过后继续下注
+  const handleCaptchaSuccess = () => {
+    setIsCaptchaVerified(true);
+    setIsCaptchaOpen(false);
+    const dir = pendingDirectionRef.current;
+    if (dir) {
+      // 关闭弹窗后继续当前下注流程
+      setTimeout(() => {
+        handlePlaceBet(dir);
+      }, 0);
+    }
+    setIsCaptchaRequired(false);
+    pendingDirectionRef.current = null;
+  };
+
+  const handleCaptchaFail = () => {
+    toast.error(t('captcha.fail'));
+    // 保持弹窗开启，直到验证成功
+  };
+
   // 处理用户下注
   const handlePlaceBet = async (direction) => {
     console.log('🎯 开始下注流程，参数检查:', {
@@ -498,6 +524,16 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
     const userBalance = getCurrentTokenBalance();
     if (userBalance < tradeAmount) {
       toast.error('余额不足');
+      return;
+    }
+
+    // 10% 概率触发验证码；一旦被要求，直到通过前都需验证
+    const shouldGateByCaptcha = isCaptchaRequired || (!isCaptchaVerified && Math.random() < 0.1);
+    if (shouldGateByCaptcha) {
+      setIsCaptchaRequired(true);
+      setIsCaptchaOpen(true);
+      pendingDirectionRef.current = direction;
+      toast('请完成安全验证后继续下注');
       return;
     }
 
@@ -608,6 +644,8 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
       toast.error(errorMessage);
     } finally {
       setIsPlacingBet(false);
+      // 单次下注结束后重置验证状态，以便下次继续按10%概率拦截
+      setIsCaptchaVerified(false);
     }
   };
 
@@ -1033,6 +1071,18 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
           </div>
         </div>
       </Modal>
+      {/* 验证码弹窗 */}
+      <CaptchaModal
+        isOpen={isCaptchaOpen}
+        onClose={() => setIsCaptchaOpen(false)}
+        title={t('captcha.title')}
+        description={t('captcha.description')}
+        captchaType="math"
+        placeholder={t('captcha.placeholder_math')}
+        reloadText={t('captcha.reload_text')}
+        onSuccess={handleCaptchaSuccess}
+        onFail={handleCaptchaFail}
+      />
     </div>
   );
 };
