@@ -247,6 +247,12 @@
       "self_reward_total": "Tổng đào của bản thân",
       "record_count": "Số lượng bản ghi"
     }
+    ,
+    "record": {
+      "settlement": "Quyết toán",
+      "distributed": "Phân phối",
+      "layer_tag_format": "L{{n}}"
+    }
   },
   "exchange": {
     "title": "Đổi",

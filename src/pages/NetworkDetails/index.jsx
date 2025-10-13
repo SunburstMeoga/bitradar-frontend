@@ -615,12 +615,19 @@ const NetworkDetails = () => {
               miningRewardsData.records.map((item) => (
                 <div key={item.id} className="px-[16vw] md:px-4 py-[12vw] md:py-3 rounded-[8vw] md:rounded-lg" style={{ backgroundColor: 'rgb(41, 41, 41)' }}>
                   <div className="flex justify-between items-center mb-[8vw] md:mb-2">
-                    <span className="text-white text-size-[14vw] md:text-sm font-medium">{item.reward_type_name}{item.layer_level ? `·L${item.layer_level}` : ''}</span>
+                    <div className="flex items-center">
+                      <span className="text-white text-size-[14vw] md:text-sm font-medium">{item.reward_type_name}</span>
+                      {item.layer_level ? (
+                        <span className="ml-[4vw] md:ml-2 px-[6vw] md:px-2 py-[2vw] md:py-0.5 rounded-[4vw] md:rounded bg-[#2a2a2a] text-[#8f8f8f] text-size-[12vw] md:text-xs">
+                          {t('network_details.record.layer_tag_format', { n: item.layer_level })}
+                        </span>
+                      ) : null}
+                    </div>
                     <span className="text-green-400 text-size-[14vw] md:text-sm font-medium">{item.reward_amount}</span>
                   </div>
                   <div className="flex justify-between text-size-[12vw] md:text-xs text-[#8f8f8f]">
-                    <span>结算：{item.settlement_date || '—'}</span>
-                    <span>发放：{item.distributed_at ? new Date(item.distributed_at).toLocaleString() : '—'}</span>
+                    <span>{t('network_details.record.settlement')}：{item.settlement_date || '—'}</span>
+                    <span>{t('network_details.record.distributed')}：{item.distributed_at ? new Date(item.distributed_at).toLocaleString() : '—'}</span>
                   </div>
                 </div>
               ))

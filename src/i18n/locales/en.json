@@ -246,6 +246,12 @@
       "total_layer_reward": "Total Level Rewards (L1-L5)",
       "record_count": "Record Count"
     }
+    ,
+    "record": {
+      "settlement": "Settlement",
+      "distributed": "Distributed",
+      "layer_tag_format": "L{{n}}"
+    }
   },
   "exchange": {
     "title": "Exchange",

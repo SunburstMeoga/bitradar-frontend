@@ -262,6 +262,12 @@
       "total_layer_reward": "推荐层级总额（L1-L5）",
       "record_count": "记录数"
     }
+    ,
+    "record": {
+      "settlement": "结算",
+      "distributed": "发放",
+      "layer_tag_format": "L{{n}}"
+    }
   },
   "exchange": {
     "title": "兑换",

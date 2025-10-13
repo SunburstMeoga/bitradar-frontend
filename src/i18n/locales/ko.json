@@ -248,6 +248,12 @@
       "total_layer_reward": "레벨 보상 총합 (L1-L5)",
       "record_count": "기록 수"
     }
+    ,
+    "record": {
+      "settlement": "정산",
+      "distributed": "지급",
+      "layer_tag_format": "L{{n}}"
+    }
   },
   "exchange": {
     "title": "교환",
