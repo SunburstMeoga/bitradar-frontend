@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import usePageTitle from '../../hooks/usePageTitle';
 import CountUp from 'react-countup';
 import networkService from '../../services/networkService';
+import { formatNumber as formatTwo } from '../../utils/format.js';
 import userService from '../../services/userService';
 import toast from 'react-hot-toast';
 
@@ -488,9 +489,10 @@ const NetworkDetails = () => {
             {/* 奖励摘要 */}
             {goldRewardsData.summary && (() => {
               const s = goldRewardsData.summary || {};
-              const networkReward = s.total_network_reward ?? s.network_reward ?? s.totalNetworkReward ?? s.networkReward ?? '—';
-              const peerLevelReward = s.total_peer_level_reward ?? s.peer_level_reward ?? s.totalPeerLevelReward ?? s.peerLevelReward ?? '—';
-              const totalReward = s.total_reward ?? s.totalReward ?? '—';
+              const to2 = (v) => (v === null || v === undefined ? '—' : formatTwo(v));
+              const networkReward = to2(s.total_network_reward ?? s.network_reward ?? s.totalNetworkReward ?? s.networkReward);
+              const peerLevelReward = to2(s.total_peer_level_reward ?? s.peer_level_reward ?? s.totalPeerLevelReward ?? s.peerLevelReward);
+              const totalReward = to2(s.total_reward ?? s.totalReward);
               const rewardCount = s.reward_count ?? s.total ?? s.count ?? s.total_reward ?? '—';
               return (
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-[12vw] md:gap-3 mb-[16vw] md:mb-4">
@@ -525,10 +527,10 @@ const NetworkDetails = () => {
                   <div key={item.id} className="px-[16vw] md:px-4 py-[12vw] md:py-3 rounded-[8vw] md:rounded-lg" style={{ backgroundColor: 'rgb(41, 41, 41)' }}>
                     <div className="flex justify-between items-center mb-[8vw] md:mb-2">
                       <span className="text-white text-size-[14vw] md:text-sm font-medium">{item.reward_type_name}（第{item.gold_member_position}位金牌）</span>
-                      <span className="text-green-400 text-size-[14vw] md:text-sm font-medium">{item.reward_amount}</span>
+                      <span className="text-green-400 text-size-[14vw] md:text-sm font-medium">{formatTwo(item.reward_amount)}</span>
                     </div>
                     <div className="flex justify-between text-size-[12vw] md:text-xs text-[#8f8f8f]">
-                      <span>结算：{item.settlement_date || '—'}</span>
+                      <span>结算：{item.settlement_date ? new Date(item.settlement_date).toLocaleString() : '—'}</span>
                       <span>发放：{item.distributed_at ? new Date(item.distributed_at).toLocaleString() : '—'}</span>
                     </div>
                   </div>
@@ -567,14 +569,14 @@ const NetworkDetails = () => {
           {/* 摘要 */}
           {miningRewardsData.summary && (() => {
             const s = miningRewardsData.summary || {};
-            const fmt = (v) => (v === null || v === undefined ? '—' : Number(v).toFixed(2));
-            const selfReward = fmt(s.self_mining_reward ?? s.self_reward ?? s.selfMiningReward);
-            const layer1 = fmt(s.layer_1_reward);
-            const layer2 = fmt(s.layer_2_reward);
-            const layer3 = fmt(s.layer_3_reward);
-            const layer4 = fmt(s.layer_4_reward);
-            const layer5 = fmt(s.layer_5_reward);
-            const totalLayerReward = fmt(s.total_reward ?? s.totalLayerReward);
+            const to2 = (v) => (v === null || v === undefined ? '—' : formatTwo(v));
+            const selfReward = to2(s.self_mining_reward ?? s.self_reward ?? s.selfMiningReward);
+            const layer1 = to2(s.layer_1_reward);
+            const layer2 = to2(s.layer_2_reward);
+            const layer3 = to2(s.layer_3_reward);
+            const layer4 = to2(s.layer_4_reward);
+            const layer5 = to2(s.layer_5_reward);
+            const totalLayerReward = to2(s.total_reward ?? s.totalLayerReward);
             const recordCount = s.reward_count ?? s.total ?? s.count ?? '—';
             return (
               <div className="grid grid-cols-1 md:grid-cols-4 gap-[12vw] md:gap-3 mb-[16vw] md:mb-4">
@@ -632,10 +634,10 @@ const NetworkDetails = () => {
                         </span>
                       ) : null}
                     </div>
-                    <span className="text-green-400 text-size-[14vw] md:text-sm font-medium">{item.reward_amount}</span>
+                    <span className="text-green-400 text-size-[14vw] md:text-sm font-medium">{formatTwo(item.reward_amount)}</span>
                   </div>
                   <div className="flex justify-between text-size-[12vw] md:text-xs text-[#8f8f8f]">
-                    <span>{t('network_details.record.settlement')}：{item.settlement_date || '—'}</span>
+                    <span>{t('network_details.record.settlement')}：{item.settlement_date ? new Date(item.settlement_date).toLocaleString() : '—'}</span>
                     <span>{t('network_details.record.distributed')}：{item.distributed_at ? new Date(item.distributed_at).toLocaleString() : '—'}</span>
                   </div>
                 </div>
