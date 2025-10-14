@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useWeb3Store, useAuthStore, useUserStore } from '../../store';
-import { connectWallet, formatAddress, autoReconnectWallet, onAccountsChanged, onChainChanged, removeListeners } from '../../utils/web3';
+import { connectWallet, formatAddress, autoReconnectWallet, onAccountsChanged, onChainChanged, removeListeners, getStoredAccount, setStoredAccount } from '../../utils/web3';
 import logoImg from '../../assets/images/logo.png';
 import binanceIcon from '../../assets/icons/binance.png';
 import downIcon from '../../assets/icons/down.png';
@@ -32,7 +32,7 @@ const Header = () => {
 
     const initWallet = async () => {
       cleanupStorage(); // 先清理可能损坏的数据
-
+      const prevStoredAccount = getStoredAccount();
       const walletData = await autoReconnectWallet();
       if (walletData) {
         setAccount(walletData.account);
@@ -40,6 +40,26 @@ const Header = () => {
         setWeb3(walletData.web3);
         setProvider(walletData.provider);
         setIsConnected(true);
+        if (prevStoredAccount && walletData.account && prevStoredAccount !== walletData.account) {
+          try {
+            await logout();
+          } catch (_) {}
+          try {
+            await login(walletData.account);
+            await Promise.all([
+              fetchUserInfo(),
+              fetchBalance(),
+              fetchMembershipInfo(),
+              fetchMembershipConfig()
+            ]);
+            setStoredAccount(walletData.account, 'evm');
+            window.location.reload();
+          } catch (error) {
+            console.error('页面刷新后检测到地址变化，重新登录失败:', error);
+          }
+        } else {
+          setStoredAccount(walletData.account, 'evm');
+        }
       }
     };
 
@@ -72,6 +92,7 @@ const Header = () => {
         // 用户切换了账户 -> 重新登录并刷新用户数据
         const switchedAccount = accounts[0];
         setAccount(switchedAccount);
+        setStoredAccount(switchedAccount, 'evm');
 
         const reloginAndRefresh = async () => {
           try {
@@ -99,7 +120,7 @@ const Header = () => {
 
     // 监听网络变化
     const handleChainChanged = (chainId) => {
-      setChainId(chainId.toString()); // 确保chainId是字符串
+      setChainId(chainId.toString());
       // 可以在这里添加网络切换的逻辑
     };
 

@@ -113,14 +113,17 @@ class AuthService extends ApiService {
    */
   async signMessage(message, account) {
     try {
-      if (!window.ethereum) {
-        throw new Error('请安装MetaMask钱包');
+      const provider = (typeof window !== 'undefined') && (
+        window.ethereum ||
+        (window.okxwallet && (window.okxwallet.ethereum || window.okxwallet)) ||
+        window.BinanceChain
+      );
+      if (!provider) {
+        throw new Error('未检测到支持EVM签名的钱包');
       }
 
       console.log('🖊️ 正在请求用户签名...');
-
-      // 使用 personal_sign 进行签名
-      const signature = await window.ethereum.request({
+      const signature = await provider.request({
         method: 'personal_sign',
         params: [message, account]
       });

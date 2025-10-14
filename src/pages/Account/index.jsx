@@ -17,6 +17,15 @@ const Account = () => {
   const { account, isConnected } = useWeb3Store();
   const { isAuthenticated } = useAuthStore();
   const { balance, fetchBalance, isLoading } = useUserStore();
+  // 通过本地token判断是否登录（与后端保持一致：localStorage中的authToken）
+  const hasAuthToken = (() => {
+    try {
+      const token = localStorage.getItem('jwttoken') || localStorage.getItem('authToken');
+      return !!token;
+    } catch (_) {
+      return false;
+    }
+  })();
 
   // 设置页面标题
   usePageTitle('account');
@@ -169,21 +178,9 @@ const Account = () => {
 
       if (result.success) {
         setLusdClaimStatus(result.data);
-        // 计算并设置倒计时
-        if (result.data.next_claim_time) {
-          try {
-            const nextClaimTime = new Date(result.data.next_claim_time);
-            const now = new Date();
-            const diffMs = nextClaimTime.getTime() - now.getTime();
-            const countdownSeconds = diffMs > 0 ? Math.floor(diffMs / 1000) : 0;
-            setLusdCountdown(countdownSeconds);
-          } catch (error) {
-            console.error('计算LuckyUSD倒计时失败:', error);
-            setLusdCountdown(0);
-          }
-        } else {
-          setLusdCountdown(0);
-        }
+        // 改为使用接口返回的 remaining_minutes 字段进行倒计时
+        const remainingMinutes = parseInt(result.data.remaining_minutes || 0, 10);
+        setLusdCountdown(Number.isFinite(remainingMinutes) && remainingMinutes > 0 ? remainingMinutes * 60 : 0);
       }
     } catch (error) {
       console.error('查询LuckyUSD领取状态失败:', error);
@@ -212,29 +209,24 @@ const Account = () => {
       return;
     }
 
-    // 检查是否可以领取
-    if (!lusdClaimStatus.can_claim) {
-      // 根据具体原因显示不同的提示
-      if (!lusdClaimStatus.balance_ok) {
-        toast.error(`您的 LuckyUSD 余额为 ${lusdClaimStatus.current_balance}，大于等于 1.00，暂时不需要领取`);
-        return;
-      }
+    // 按新的接口逻辑进行领取前检查
+    const hasPendingOrders = lusdClaimStatus.has_pending_orders === true;
+    const currentBalanceNum = parseFloat(lusdClaimStatus.current_balance || '0');
+    const remainingMinutes = lusdClaimStatus.remaining_minutes || 0;
 
-      if (!lusdClaimStatus.time_ok) {
-        const remainingMinutes = lusdClaimStatus.remaining_minutes || 0;
-        const remainingTime = lusdService.formatRemainingTime(remainingMinutes);
-        toast.error(`请在 ${remainingTime} 后再次领取`);
-        return;
-      }
+    if (hasPendingOrders) {
+      toast.error('当前不可领取（存在挂单）');
+      return;
+    }
 
-      // 如果next_claim_time为null的情况
-      if (!lusdClaimStatus.next_claim_time) {
-        toast.error('暂时不可领取，请稍后再试');
-        return;
-      }
+    if (Number.isFinite(currentBalanceNum) && currentBalanceNum >= 1) {
+      toast.error('不可领取：当前 LuckyUSD 余额 ≥ 1');
+      return;
+    }
 
-      // 其他未知原因
-      toast.error('当前不可领取，请稍后再试');
+    if (remainingMinutes > 0) {
+      const remainingTime = lusdService.formatRemainingTime(remainingMinutes);
+      toast.error(`请在 ${remainingTime} 后再次领取`);
       return;
     }
 
@@ -368,7 +360,7 @@ const Account = () => {
       {/* 删除原先的 Rocket 价格栏 */}
 
       {/* 第四部分：LuckyUSD领取状态/倒计时（只在选中LuckyUSD时显示） */}
-      {activeTab === 'LuckyUSD' && (
+      {activeTab === 'LuckyUSD' && hasAuthToken && (
         <div className="px-[16vw] md:px-4 pb-[24vw] md:pb-6">
           <div
             onClick={handleClaimLusd}
@@ -382,17 +374,19 @@ const Account = () => {
               </div>
             ) : lusdClaimStatus ? (
               <span className="text-white text-size-[18vw] md:text-lg font-medium">
-                {lusdClaimStatus.can_claim ? (
-                  isClaiming ? '领取中...' : '领取LuckyUSD'
-                ) : balances.LuckyUSD < 1 ? (
-                  lusdClaimStatus.next_claim_time ? (
-                    `下次领取: ${formatCountdown(lusdCountdown)}`
-                  ) : (
-                    '暂时不可领取'
-                  )
-                ) : (
-                  '不可领取'
-                )}
+                {(() => {
+                  const hasPending = lusdClaimStatus.has_pending_orders === true;
+                  const currentBalanceNum = parseFloat(lusdClaimStatus.current_balance || '0');
+                  const remainingMinutes = lusdClaimStatus.remaining_minutes || 0;
+
+                  if (hasPending || (Number.isFinite(currentBalanceNum) && currentBalanceNum >= 1)) {
+                    return '不可领取';
+                  }
+                  if (remainingMinutes > 0) {
+                    return `下次领取: ${formatCountdown(lusdCountdown)}`;
+                  }
+                  return isClaiming ? '领取中...' : '领取LuckyUSD';
+                })()}
               </span>
             ) : (
               <span className="text-white text-size-[18vw] md:text-lg font-medium">

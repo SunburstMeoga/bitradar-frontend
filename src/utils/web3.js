@@ -1,5 +1,8 @@
 import Web3 from 'web3';
 
+let accountPollTimer = null;
+let lastPolledAccount = null;
+
 // 获取环境变量
 const getChainConfig = () => {
   return {
@@ -18,10 +21,36 @@ export const isMetaMaskInstalled = () => {
   return typeof window !== 'undefined' && typeof window.ethereum !== 'undefined';
 };
 
+const getProviders = () => {
+  if (typeof window === 'undefined') return {};
+  const evm = window.ethereum || null;
+  const binance = window.BinanceChain || null;
+  const okx = (window.okxwallet && (window.okxwallet.ethereum || window.okxwallet)) || null;
+  const tron = window.tronWeb || null;
+  return { evm, binance, okx, tron };
+};
+
+export const getStoredAccount = () => {
+  try {
+    const s = localStorage.getItem('web3-storage');
+    if (!s) return null;
+    const obj = JSON.parse(s);
+    return obj && obj.account ? obj.account : null;
+  } catch (_) {
+    return null;
+  }
+};
+
+export const setStoredAccount = (account, providerType = 'evm') => {
+  try {
+    localStorage.setItem('web3-storage', JSON.stringify({ account, providerType }));
+  } catch (_) {}
+};
+
 // 连接钱包（完整流程：检查网络 -> 切换/添加网络 -> 连接账户）
 export const connectWallet = async () => {
   if (!isMetaMaskInstalled()) {
-    throw new Error('请安装MetaMask钱包');
+    throw new Error('请安装或使用支持 EVM 的钱包');
   }
 
   try {
@@ -51,12 +80,14 @@ export const connectWallet = async () => {
 
     // 4. 返回连接结果
     const finalChainId = await web3.eth.getChainId(); // 重新获取最新的chainId
-    return {
+    const result = {
       account: accounts[0],
       chainId: finalChainId.toString(), // 确保返回字符串，避免BigInt序列化问题
       web3,
       provider: window.ethereum,
     };
+    setStoredAccount(result.account, 'evm');
+    return result;
   } catch (error) {
     if (error.code === 4001) {
       throw new Error('用户拒绝连接钱包');
@@ -130,23 +161,70 @@ export const formatAddress = (address, start = 4, end = 4) => {
 
 // 监听账户变化
 export const onAccountsChanged = (callback) => {
-  if (isMetaMaskInstalled()) {
-    window.ethereum.on('accountsChanged', callback);
+  const { evm, binance, okx, tron } = getProviders();
+  if (evm && typeof evm.on === 'function') evm.on('accountsChanged', callback);
+  if (binance && typeof binance.on === 'function') binance.on('accountsChanged', callback);
+  if (okx && typeof okx.on === 'function') okx.on('accountsChanged', callback);
+  if (okx && okx.ethereum && typeof okx.ethereum.on === 'function') okx.ethereum.on('accountsChanged', callback);
+  if (tron && typeof tron.on === 'function') {
+    try {
+      tron.on('addressChanged', (data) => {
+        const addr = data && (data.base58 || data.hex) ? (data.base58 || data.hex) : null;
+        if (addr) callback([addr]);
+      });
+    } catch (_) {}
+  }
+  if (!evm && !binance && !okx && tron) {
+    if (!accountPollTimer) {
+      lastPolledAccount = getStoredAccount();
+      accountPollTimer = setInterval(() => {
+        try {
+          const current = (window.tronWeb && window.tronWeb.defaultAddress && window.tronWeb.defaultAddress.base58) || null;
+          if (current && current !== lastPolledAccount) {
+            lastPolledAccount = current;
+            callback([current]);
+          }
+        } catch (_) {}
+      }, 1500);
+    }
   }
 };
 
 // 监听网络变化
 export const onChainChanged = (callback) => {
-  if (isMetaMaskInstalled()) {
-    window.ethereum.on('chainChanged', callback);
-  }
+  const { evm, binance, okx } = getProviders();
+  if (evm && typeof evm.on === 'function') evm.on('chainChanged', callback);
+  if (binance && typeof binance.on === 'function') binance.on('chainChanged', callback);
+  if (okx && typeof okx.on === 'function') okx.on('chainChanged', callback);
+  if (okx && okx.ethereum && typeof okx.ethereum.on === 'function') okx.ethereum.on('chainChanged', callback);
 };
 
 // 移除监听器
 export const removeListeners = () => {
-  if (isMetaMaskInstalled()) {
-    window.ethereum.removeAllListeners('accountsChanged');
-    window.ethereum.removeAllListeners('chainChanged');
+  const { evm, binance, okx, tron } = getProviders();
+  if (evm && typeof evm.removeAllListeners === 'function') {
+    evm.removeAllListeners('accountsChanged');
+    evm.removeAllListeners('chainChanged');
+  }
+  if (binance && typeof binance.removeAllListeners === 'function') {
+    binance.removeAllListeners('accountsChanged');
+    binance.removeAllListeners('chainChanged');
+  }
+  if (okx && typeof okx.removeAllListeners === 'function') {
+    okx.removeAllListeners('accountsChanged');
+    okx.removeAllListeners('chainChanged');
+  }
+  if (okx && okx.ethereum && typeof okx.ethereum.removeAllListeners === 'function') {
+    okx.ethereum.removeAllListeners('accountsChanged');
+    okx.ethereum.removeAllListeners('chainChanged');
+  }
+  if (tron && typeof tron.removeAllListeners === 'function') {
+    try { tron.removeAllListeners('addressChanged'); } catch (_) {}
+  }
+  if (accountPollTimer) {
+    clearInterval(accountPollTimer);
+    accountPollTimer = null;
+    lastPolledAccount = null;
   }
 };
 
@@ -167,29 +245,21 @@ export const getBNBBalance = async (address) => {
 
 // 自动重连钱包（页面刷新时调用）
 export const autoReconnectWallet = async () => {
-  if (!isMetaMaskInstalled()) {
-    return null;
-  }
+  const { evm } = getProviders();
+  if (!evm) return null;
 
   try {
-    // 检查是否已经连接
-    const accounts = await window.ethereum.request({
-      method: 'eth_accounts',
-    });
-
+    const accounts = await evm.request({ method: 'eth_accounts' });
     if (accounts && accounts.length > 0) {
-      // 获取当前网络
-      const web3 = new Web3(window.ethereum);
+      const web3 = new Web3(evm);
       const currentChainId = await web3.eth.getChainId();
-
       return {
         account: accounts[0],
-        chainId: currentChainId.toString(), // 确保返回字符串，避免BigInt序列化问题
+        chainId: currentChainId.toString(),
         web3,
-        provider: window.ethereum,
+        provider: evm,
       };
     }
-
     return null;
   } catch (error) {
     console.error('自动重连失败:', error);
