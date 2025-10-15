@@ -75,7 +75,7 @@ const NetworkDetails = () => {
   const [expandedLevel, setExpandedLevel] = useState(null);
   const [selectedTab, setSelectedTab] = useState('membership'); // membership | mining
   const [includeInactive, setIncludeInactive] = useState(false);
-  const [queryDepth, setQueryDepth] = useState(10);
+  const [queryDepth, setQueryDepth] = useState(5);
 
   // 状态管理
   const [loading, setLoading] = useState(true);
@@ -123,9 +123,42 @@ const NetworkDetails = () => {
     return total;
   };
 
+  // 计算唯一后代总数（按 id/user_id/wallet_address 去重）
+  const getUniqueDescendantCount = (treeStructure, maxDepth = Infinity) => {
+    if (!treeStructure || !Array.isArray(treeStructure.children)) return 0;
+    const seen = new Set();
+    const queue = treeStructure.children.map(child => ({ node: child, level: 1 }));
+    let count = 0;
+
+    const keyOf = (n) => {
+      if (!n) return null;
+      return (
+        (n.id !== undefined ? `id:${n.id}` : null) ||
+        (n.user_id !== undefined ? `uid:${n.user_id}` : null) ||
+        (n.wallet_address ? `wa:${n.wallet_address}` : null)
+      );
+    };
+
+    while (queue.length > 0) {
+      const { node, level } = queue.shift();
+      if (level <= maxDepth) {
+        const key = keyOf(node);
+        if (key && !seen.has(key)) {
+          seen.add(key);
+          count += 1;
+        }
+        const kids = Array.isArray(node.children) ? node.children : [];
+        if (level < maxDepth) {
+          for (const k of kids) queue.push({ node: k, level: level + 1 });
+        }
+      }
+    }
+    return count;
+  };
+
   // 从API数据中提取的统计信息
   const overviewData = networkData ? {
-    teamMembers: countDescendants(networkData?.tree_structure),
+    teamMembers: getUniqueDescendantCount(networkData?.tree_structure, queryDepth),
     totalDeposit: parseFloat(networkData.statistics?.total_network_volume || '0'),
     totalWithdrawal: 0 // API中没有提现数据，暂时设为0
   } : {
@@ -134,51 +167,61 @@ const NetworkDetails = () => {
     totalWithdrawal: 0
   };
 
-  // 从网体结构中构建层级数据
-  const buildLevelData = (treeStructure) => {
-    if (!treeStructure) return [];
+  // 从网体结构中构建层级数据（按层级聚合，避免覆盖与漏计）
+  const buildLevelData = (treeStructure, maxDepth = Infinity) => {
+    if (!treeStructure || !Array.isArray(treeStructure.children)) return [];
 
-    const levels = [];
-    const processLevel = (users, level) => {
-      if (users && users.length > 0) {
-        levels[level - 1] = {
-          level,
-          count: users.length,
-          users: users.map(user => ({
-            user_id: user.user_id,
-            wallet_address: user.wallet_address,
-            invite_code: user.invite_code,
-            membership_type: user.membership_type, // 保留会员类型（gold/silver）用于统计
-            vip_level: user.vip_level || 1, // 默认VIP等级为1
-            stake_amount: parseFloat(user.stake_amount || '0'),
-            relationship: user.relationship || 'direct',
-            level_difference: user.level_difference || 1,
-            network_reward_eligible: user.network_reward_eligible || false,
-            flat_reward_eligible: user.flat_reward_eligible || false,
-            direct_invites: user.direct_invites || 0,
-            total_invites: user.total_invites || 0,
-            total_rewards: user.total_rewards || '0'
-          }))
-        };
-
-        // 递归处理子级
-        users.forEach(user => {
-          if (user.children && user.children.length > 0) {
-            processLevel(user.children, level + 1);
-          }
-        });
-      }
-    };
-
-    // 显示当前用户的直接下级用户（children数组）
-    if (treeStructure.children && treeStructure.children.length > 0) {
-      processLevel(treeStructure.children, 1);
+    // 使用BFS按层级聚合
+    const levelMap = new Map(); // level -> nodes[]
+    const queue = [];
+    for (const child of treeStructure.children) {
+      queue.push({ node: child, level: 1 });
     }
 
-    return levels.filter(level => level); // 过滤掉空的层级
+    while (queue.length > 0) {
+      const { node, level } = queue.shift();
+      if (level <= maxDepth) {
+        if (!levelMap.has(level)) levelMap.set(level, []);
+        levelMap.get(level).push(node);
+
+        const kids = Array.isArray(node.children) ? node.children : [];
+        if (level < maxDepth) {
+          for (const k of kids) {
+            queue.push({ node: k, level: level + 1 });
+          }
+        }
+      }
+    }
+
+    const levels = [...levelMap.entries()]
+      .sort((a, b) => a[0] - b[0])
+      .map(([level, nodes]) => ({
+        level,
+        count: nodes.length,
+        users: nodes.map(user => ({
+          id: user.id,
+          user_id: user.user_id,
+          wallet_address: user.wallet_address,
+          invite_code: user.invite_code,
+          membership_type: user.membership_type,
+          vip_level: user.vip_level || 1,
+          stake_amount: parseFloat(user.stake_amount || '0'),
+          relationship: user.relationship || 'direct',
+          level_difference: user.level_difference || 1,
+          network_reward_eligible: user.network_reward_eligible || false,
+          flat_reward_eligible: user.flat_reward_eligible || false,
+          direct_invites: user.direct_invites || 0,
+          total_invites: user.total_invites || 0,
+          total_rewards: user.total_rewards || '0',
+          children: user.children || []
+        }))
+      }));
+
+    return levels;
   };
 
-  const levelData = buildLevelData(networkData?.tree_structure);
+  const levelData = buildLevelData(networkData?.tree_structure, queryDepth);
+  const teamTotalFromLevels = levelData.reduce((sum, l) => sum + (l?.count || 0), 0);
 
   // 加载网体数据
   const loadNetworkData = async () => {
@@ -412,7 +455,7 @@ const NetworkDetails = () => {
           style={{ backgroundColor: 'rgba(64, 64, 64, 0.3)' }}
         >
           <span className="text-white text-size-[16vw] md:text-lg">{t('network_details.team_members')}</span>
-          <div className="ml-auto">{formatNumber(overviewData.teamMembers, '16vw', 'text-lg')}</div>
+          <div className="ml-auto">{formatNumber(teamTotalFromLevels, '16vw', 'text-lg')}</div>
         </div>
           {/* 概览统计：金牌、银牌、我的上级 */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-[12vw] md:gap-3 mb-[16vw] md:mb-4">
@@ -613,7 +656,7 @@ const NetworkDetails = () => {
             style={{ backgroundColor: 'rgba(64, 64, 64, 0.3)' }}
           >
             <span className="text-white text-size-[16vw] md:text-lg">{t('network_details.team_members')}</span>
-            <div className="ml-auto">{formatNumber(overviewData.teamMembers, '16vw', 'text-lg')}</div>
+            <div className="ml-auto">{formatNumber(teamTotalFromLevels, '16vw', 'text-lg')}</div>
           </div>
 
           {/* 概览统计：金牌、银牌、我的上级（与会员资格推广一致） */}
