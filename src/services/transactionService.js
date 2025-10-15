@@ -159,6 +159,7 @@ class TransactionService extends ApiService {
       'STAKE_REWARD': '质押收益',
       'MEMBERSHIP_UPGRADE': '会员升级',
       'LUSD_CLAIM': 'LuckyUSD 领取',
+      'REFERRAL_ACTIVITY_REWARD': '拉新活动奖励',
       'REFERRAL_ACTIVITY_LAYER_REWARD': '拉新活动层级奖励'
     };
     
@@ -198,6 +199,7 @@ class TransactionService extends ApiService {
       'STAKE_REWARD': 'reward',
       'MEMBERSHIP_UPGRADE': 'trade',
       'LUSD_CLAIM': 'reward',
+      'REFERRAL_ACTIVITY_REWARD': 'reward',
       'REFERRAL_ACTIVITY_LAYER_REWARD': 'reward'
     };
     
@@ -223,6 +225,7 @@ class TransactionService extends ApiService {
       { code: 'STAKE_REWARD', name: '质押收益', category: 'reward' },
       { code: 'MEMBERSHIP_UPGRADE', name: '会员升级', category: 'trade' },
       { code: 'LUSD_CLAIM', name: 'LuckyUSD 领取', category: 'reward' }
+      ,{ code: 'REFERRAL_ACTIVITY_REWARD', name: '拉新活动奖励', category: 'reward' }
       ,{ code: 'REFERRAL_ACTIVITY_LAYER_REWARD', name: '拉新活动层级奖励', category: 'reward' }
     ];
   }

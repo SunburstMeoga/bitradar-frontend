@@ -813,15 +813,11 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
     }
   }, [balance, selectedToken]); // 只依赖余额数据和选中的币种
 
-  // 接收图表可见下注点的回传，保持与图表同步并持久化
-  const handleVisibleUserBetsChange = useCallback((visibleBets) => {
-    setUserBets(prev => {
-      const prevIds = prev.map(b => b.id);
-      const nextIds = visibleBets.map(b => b.id);
-      const sameLength = prevIds.length === nextIds.length;
-      const sameContent = sameLength && prevIds.every((id, i) => id === nextIds[i]);
-      return sameContent ? prev : visibleBets;
-    });
+  // 接收图表可见下注点集合，但不再用它覆盖完整 userBets
+  // 仅用于后续可能的分析/调试，保持完整历史以避免开盘点消失
+  const handleVisibleUserBetsChange = useCallback((_visibleBets) => {
+    // 不进行任何状态替换，保持完整的 userBets 历史
+    // 如需使用可见集合，可在此记录或上报而非覆盖
   }, []);
 
 

@@ -354,6 +354,7 @@
       "STAKE_REWARD": "Staking Reward",
       "MEMBERSHIP_UPGRADE": "Membership Upgrade",
       "LUSD_CLAIM": "LUSD Claim",
+      "REFERRAL_ACTIVITY_REWARD": "Referral Activity Reward",
       "REFERRAL_ACTIVITY_LAYER_REWARD": "Referral Activity Layer Reward"
     }
   },

@@ -66,6 +66,8 @@ const customDrawPlugin = {
 
     ctx.save();
 
+    // 注意：此插件仅绘制当前价格线与点，不依赖时间戳映射
+
     // 绘制水平虚线（从图表最左边到最右边）
     ctx.setLineDash([5, 5]);
     ctx.strokeStyle = '#C5FF33';
@@ -159,60 +161,93 @@ const userBetsPlugin = {
     const xScale = scales.x;
     const dataset = data.datasets[0];
     const dataArray = dataset.data;
-    const currentTime = Date.now();
+    const indexTimestampsLeft = chart.options.indexTimestampsLeft || [];
+    const lastTimestamp = chart.options.lastTimestamp;
 
     ctx.save();
 
+    // 在左侧真实数据位置中，依据时间戳找到稳定匹配索引（容忍度2秒）
+    const findNearestLeftIndex = (ts) => {
+      if (!indexTimestampsLeft || indexTimestampsLeft.length === 0 || typeof ts !== 'number') return -1;
+      let nearestIndex = -1;
+      let minDiff = Infinity;
+      for (let i = 0; i < indexTimestampsLeft.length; i++) {
+        const diff = Math.abs(indexTimestampsLeft[i] - ts);
+        if (diff < minDiff) {
+          minDiff = diff;
+          nearestIndex = i;
+        }
+      }
+      return minDiff <= 2000 ? nearestIndex : -1;
+    };
+
     userBets.forEach(bet => {
       const betTime = bet.timestamp;
-      const settlementTime = betTime + 60000; // 60秒后结算
+      const settlementTime = (typeof bet.settlementTime === 'number') ? bet.settlementTime : (betTime + 60000); // 60秒后结算
 
-      if (bet.status === 'settled') {
-        // 已结算的交易：显示结算信息
-        const settlementTimeOffset = (currentTime - settlementTime) / 1000; // 秒
-        const settlementIndex = 119 - Math.floor(settlementTimeOffset);
+      // 基于时间判断是否已经结算，避免跨页面返回时出现状态延迟
+      const hasSettled = (typeof lastTimestamp === 'number') && (settlementTime <= lastTimestamp);
 
-        // 如果结算点在可见范围内，绘制结算信息
+      // 依据时间戳在左侧数据区域定位稳定索引；未稳定匹配则不绘制以避免闪烁
+      const betIndex = findNearestLeftIndex(betTime);
+      let settlementIndex;
+      if (hasSettled) {
+        settlementIndex = findNearestLeftIndex(settlementTime);
+      } else if (typeof lastTimestamp === 'number') {
+        const futureOffsetSec = Math.floor((settlementTime - lastTimestamp) / 1000);
+        settlementIndex = 119 + futureOffsetSec; // 预测区域
+      } else {
+        settlementIndex = null;
+      }
+
+      // 计算用于绘制的价格（优先使用图表数据以确保点位在折线上）
+      const betPriceValue = (betIndex >= 0 && betIndex < dataArray.length && dataArray[betIndex] != null)
+        ? dataArray[betIndex]
+        : bet.price;
+
+      const settlementPriceValue = (settlementIndex >= 0 && settlementIndex < dataArray.length && dataArray[settlementIndex] != null)
+        ? dataArray[settlementIndex]
+        : (typeof bet.settlementPrice === 'number' ? bet.settlementPrice : bet.price);
+
+      if (hasSettled) {
+        // 已结算的交易：显示结算信息（位置与胜负基于图表数据计算）
         if (settlementIndex >= 0 && settlementIndex < 180) {
           const settlementX = xScale.getPixelForValue(settlementIndex);
-          const settlementY = yScale.getPixelForValue(bet.settlementPrice);
+          const settlementY = yScale.getPixelForValue(settlementPriceValue);
 
           // 绘制结算点（黑色三角形）
           drawSettlementPoint(ctx, settlementX, settlementY, bet.direction);
 
-          // 如果猜中了，绘制盈利金额
-          if (bet.isWin && bet.profit > 0) {
-            drawProfitAmount(ctx, settlementX, settlementY, bet.profit, bet.direction);
+          // 依据图表数据计算胜负与盈利金额，避免因取价时机误差导致样式错误
+          const isWin = (bet.direction === 'up')
+            ? (settlementPriceValue > betPriceValue)
+            : (settlementPriceValue < betPriceValue);
+          const profit = isWin ? (bet.amount * (1 - 0.03)) : 0;
+
+          if (isWin && profit > 0) {
+            drawProfitAmount(ctx, settlementX, settlementY, profit, bet.direction);
           }
         }
       } else {
         // 活跃的下注：显示下注点和预测线
-        // 简化时间计算：直接计算相对于当前时间的偏移
-        const betTimeOffset = (currentTime - betTime) / 1000; // 秒
-        const settlementTimeOffset = (currentTime - settlementTime) / 1000; // 秒
-
-        // 计算数据点索引（第120个数据点是当前时间，索引119）
-        const betIndex = Math.max(0, Math.min(119, 119 - Math.floor(betTimeOffset)));
-        const settlementIndex = 119 - Math.floor(settlementTimeOffset);
-
         // 如果下注点已经超出显示范围，跳过
         if (betIndex < 0 || betIndex >= dataArray.length) return;
 
-        // 获取下注点位置
-        const betPriceY = yScale.getPixelForValue(bet.price);
+        // 获取下注点位置（对齐到折线）
+        const betPriceY = yScale.getPixelForValue(betPriceValue);
         const betPriceX = xScale.getPixelForValue(betIndex);
 
         // 绘制下注点（新尺寸20px）
         drawBetPoint(ctx, betPriceX, betPriceY, bet.direction);
 
-        // 如果结算时间点在可见范围内，绘制虚线和连接线
+        // 如果结算时间点在可见范围内，绘制虚线和连接点
         if (settlementIndex >= 0 && settlementIndex < 180) {
           const settlementX = xScale.getPixelForValue(settlementIndex);
 
           // 绘制结算虚线
           drawSettlementLine(ctx, settlementX, chart.chartArea, bet.direction);
 
-          // 绘制连接线和连接点
+          // 绘制连接线和连接点（水平连接到结算时间）
           drawConnectionLine(ctx, betPriceX, betPriceY, settlementX, betPriceY, bet.direction);
           drawConnectionPoint(ctx, settlementX, betPriceY, bet.direction);
         }
@@ -496,6 +531,20 @@ const PriceChart = ({ onPriceUpdate, userBets = [], onVisibleUserBetsChange }) =
     return () => {
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current);
+      }
+    };
+  }, []);
+
+  // 在组件卸载或严格模式下的效果重连前，主动销毁 Chart 实例，避免“Canvas is already in use”错误
+  useEffect(() => {
+    return () => {
+      try {
+        if (chartRef.current && typeof chartRef.current.destroy === 'function') {
+          chartRef.current.destroy();
+          chartRef.current = null;
+        }
+      } catch (e) {
+        // 安全忽略销毁异常
       }
     };
   }, []);
@@ -877,6 +926,8 @@ const PriceChart = ({ onPriceUpdate, userBets = [], onVisibleUserBetsChange }) =
     priceChanged: priceChanged, // 传递价格变化状态给插件
     blinkStartTime: blinkStartTimeRef.current, // 传递闪烁开始时间给插件
     userBets: userBets, // 传递用户下注数据给插件
+    indexTimestampsLeft: combinedData.slice(-120).map(d => d.timestamp),
+    lastTimestamp: combinedData.length ? combinedData[combinedData.length - 1].timestamp : null,
     // 禁用初始与更新动画，避免进入页面时的上升/淡入效果
     animation: false,
     transitions: {},

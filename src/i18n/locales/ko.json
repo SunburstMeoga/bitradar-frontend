@@ -355,6 +355,7 @@
       "STAKE_REWARD": "스테이킹 수익",
       "MEMBERSHIP_UPGRADE": "회원 업그레이드",
       "LUSD_CLAIM": "LUSD 수령",
+      "REFERRAL_ACTIVITY_REWARD": "추천 활동 보상",
       "REFERRAL_ACTIVITY_LAYER_REWARD": "추천 활동 레벨 보상"
     }
   },
