@@ -174,7 +174,8 @@ class ReferralService extends ApiService {
         null
       );
 
-      if ((response?.success || inviterWallet) && inviterWallet) {
+      // 成功情况：拿到钱包地址
+      if (inviterWallet) {
         console.log('✅ 获取上级钱包地址成功:', inviterWallet);
         return {
           success: true,
@@ -184,7 +185,18 @@ class ReferralService extends ApiService {
         };
       }
 
-      throw new Error(response?.message || '获取推荐树详情失败');
+      // 兼容200响应但没有success标记或仅返回message的情况：不抛错，返回空数据
+      const msg = typeof response?.message === 'string' ? response.message : undefined;
+      if (msg) {
+        console.log('ℹ️ 推荐树详情响应(无钱包地址):', msg);
+      }
+      return {
+        success: true,
+        data: {
+          inviter_wallet_address: null
+        },
+        message: msg
+      };
     } catch (error) {
       console.error('获取推荐树详情失败:', error);
       throw error;

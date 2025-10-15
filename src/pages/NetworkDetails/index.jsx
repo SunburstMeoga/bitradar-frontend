@@ -88,11 +88,11 @@ const NetworkDetails = () => {
   // 金牌奖励与交易挖矿奖励数据
   const [goldRewardsData, setGoldRewardsData] = useState({ records: [], summary: null, pagination: null });
   const [goldPage, setGoldPage] = useState(1);
-  const [goldLimit, setGoldLimit] = useState(20);
+  const [goldLimit, setGoldLimit] = useState(10);
   const [loadingGold, setLoadingGold] = useState(false);
   const [miningRewardsData, setMiningRewardsData] = useState({ records: [], summary: null, pagination: null });
   const [miningPage, setMiningPage] = useState(1);
-  const [miningLimit, setMiningLimit] = useState(20);
+  const [miningLimit, setMiningLimit] = useState(10);
   const [loadingMining, setLoadingMining] = useState(false);
 
   // Rocket奖励详情区块引用（会员推广 / 交易挖矿）
@@ -631,16 +631,16 @@ const NetworkDetails = () => {
               <div className="mt-[12vw] md:mt-3 flex items-center gap-[8vw] md:gap-2">
                 <button
                   className="px-[12vw] md:px-3 py-[6vw] md:py-1.5 rounded-[6vw] md:rounded bg-[#2a2a2a] text-white text-size-[12vw] md:text-xs hover:opacity-80 disabled:opacity-50"
-                  onClick={() => setGoldPage(Math.max((goldRewardsData.pagination.current_page || 1) - 1, 1))}
-                  disabled={(goldRewardsData.pagination.current_page || 1) <= 1}
+                  onClick={() => setGoldPage(Math.max((goldRewardsData.pagination.page || 1) - 1, 1))}
+                  disabled={(goldRewardsData.pagination.page || 1) <= 1}
                 >上一页</button>
                 <div className="text-[#8f8f8f] text-size-[12vw] md:text-xs">
-                  第 {goldRewardsData.pagination.current_page || 1} / {goldRewardsData.pagination.total_pages || 1} 页
+                  第 {goldRewardsData.pagination.page || 1} / {goldRewardsData.pagination.total_pages || 1} 页
                 </div>
                 <button
                   className="px-[12vw] md:px-3 py-[6vw] md:py-1.5 rounded-[6vw] md:rounded bg-[#2a2a2a] text-white text-size-[12vw] md:text-xs hover:opacity-80 disabled:opacity-50"
-                  onClick={() => setGoldPage(Math.min((goldRewardsData.pagination.current_page || 1) + 1, goldRewardsData.pagination.total_pages || 1))}
-                  disabled={(goldRewardsData.pagination.current_page || 1) >= (goldRewardsData.pagination.total_pages || 1)}
+                  onClick={() => setGoldPage(Math.min((goldRewardsData.pagination.page || 1) + 1, goldRewardsData.pagination.total_pages || 1))}
+                  disabled={(goldRewardsData.pagination.page || 1) >= (goldRewardsData.pagination.total_pages || 1)}
                 >下一页</button>
               </div>
             )}
@@ -830,16 +830,16 @@ const NetworkDetails = () => {
               <div className="mt-[12vw] md:mt-3 flex items-center gap-[8vw] md:gap-2">
                 <button
                   className="px-[12vw] md:px-3 py-[6vw] md:py-1.5 rounded-[6vw] md:rounded bg-[#2a2a2a] text-white text-size-[12vw] md:text-xs hover:opacity-80 disabled:opacity-50"
-                  onClick={() => setMiningPage(Math.max((miningRewardsData.pagination.current_page || 1) - 1, 1))}
-                  disabled={(miningRewardsData.pagination.current_page || 1) <= 1}
+                  onClick={() => setMiningPage(Math.max((miningRewardsData.pagination.page || 1) - 1, 1))}
+                  disabled={(miningRewardsData.pagination.page || 1) <= 1}
                 >上一页</button>
                 <div className="text-[#8f8f8f] text-size-[12vw] md:text-xs">
-                  第 {miningRewardsData.pagination.current_page || 1} / {miningRewardsData.pagination.total_pages || 1} 页
+                  第 {miningRewardsData.pagination.page || 1} / {miningRewardsData.pagination.total_pages || 1} 页
                 </div>
                 <button
                   className="px-[12vw] md:px-3 py-[6vw] md:py-1.5 rounded-[6vw] md:rounded bg-[#2a2a2a] text-white text-size-[12vw] md:text-xs hover:opacity-80 disabled:opacity-50"
-                  onClick={() => setMiningPage(Math.min((miningRewardsData.pagination.current_page || 1) + 1, miningRewardsData.pagination.total_pages || 1))}
-                  disabled={(miningRewardsData.pagination.current_page || 1) >= (miningRewardsData.pagination.total_pages || 1)}
+                  onClick={() => setMiningPage(Math.min((miningRewardsData.pagination.page || 1) + 1, miningRewardsData.pagination.total_pages || 1))}
+                  disabled={(miningRewardsData.pagination.page || 1) >= (miningRewardsData.pagination.total_pages || 1)}
                 >下一页</button>
               </div>
             )}
