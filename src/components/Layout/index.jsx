@@ -4,6 +4,7 @@ import Header from './Header';
 import Footer from './Footer';
 import ResponsiveContainer from './ResponsiveContainer';
 import ScrollToTop from '../ScrollToTop';
+import AuthExpiredHandler from '../AuthExpiredHandler';
 
 const Layout = () => {
   return (
@@ -42,6 +43,8 @@ const Layout = () => {
           },
         }}
       />
+      {/* 全局登录过期弹窗监听器 */}
+      <AuthExpiredHandler />
     </div>
   );
 };

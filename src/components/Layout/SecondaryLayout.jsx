@@ -2,6 +2,7 @@ import { Toaster } from 'react-hot-toast';
 import SecondaryHeader from './SecondaryHeader';
 import ResponsiveContainer from './ResponsiveContainer';
 import ScrollToTop from '../ScrollToTop';
+import AuthExpiredHandler from '../AuthExpiredHandler';
 
 const SecondaryLayout = ({ title, onBack, children }) => {
   return (
@@ -39,6 +40,8 @@ const SecondaryLayout = ({ title, onBack, children }) => {
           },
         }}
       />
+      {/* 全局登录过期弹窗监听器 */}
+      <AuthExpiredHandler />
     </div>
   );
 };

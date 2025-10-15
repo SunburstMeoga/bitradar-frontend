@@ -87,31 +87,19 @@ apiClient.interceptors.response.use(
     return response;
   },
   async (error) => {
-    const originalRequest = error.config;
-
-    // 处理401错误（token过期）
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
-
+    const status = error.response?.status;
+    // 统一处理401/403：触发全局登录过期弹窗
+    if (status === 401 || status === 403) {
       try {
-        const refreshToken = TokenManager.getRefreshToken();
-        if (refreshToken) {
-          const response = await axios.post(`${API_BASE_URL}${API_VERSION}/auth/refresh`, {
-            refreshToken
-          });
-
-          const { token: newToken } = response.data.data;
-          TokenManager.setToken(newToken);
-
-          // 重新发送原始请求
-          originalRequest.headers.Authorization = `Bearer ${newToken}`;
-          return apiClient(originalRequest);
-        }
-      } catch (refreshError) {
-        console.error('Token刷新失败:', refreshError);
-        TokenManager.clearTokens();
-        // 可以在这里触发登出逻辑
-        window.location.href = '/';
+        window.dispatchEvent(new CustomEvent('auth:expired', {
+          detail: {
+            status,
+            url: error.config?.url,
+            method: error.config?.method,
+          }
+        }));
+      } catch (e) {
+        console.warn('触发登录过期事件失败:', e);
       }
     }
 

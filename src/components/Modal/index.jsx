@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 
-const Modal = ({ isOpen, onClose, children, className = '' }) => {
+const Modal = ({ isOpen, onClose, children, className = '', closeOnOverlayClick = true }) => {
   // 监听ESC键关闭弹窗
   useEffect(() => {
     const handleEsc = (event) => {
@@ -29,7 +29,7 @@ const Modal = ({ isOpen, onClose, children, className = '' }) => {
       <div
         className="absolute inset-0"
         style={{ backgroundColor: 'rgba(20, 20, 20, 0.8)' }}
-        onClick={onClose}
+        onClick={closeOnOverlayClick ? onClose : undefined}
       />
 
       {/* 弹窗卡片内容 */}
