@@ -565,19 +565,30 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
         });
         console.log('✅ 下注成功:', newBet);
 
-        // 刷新用户余额
-        if (fetchBalance) {
-          console.log('🔄 下注成功，刷新余额...');
-          fetchBalance().then(() => {
-            console.log('✅ 余额刷新完成');
-          }).catch(error => {
-            console.error('❌ 余额刷新失败:', error);
-          });
-        }
-
-        // 重置交易金额
+        // 重置交易金额（先重置为0，随后刷新余额，触发默认1的设置）
         setTradeAmount(0);
         setSliderValue(0);
+        setInputValue('0');
+
+        // 刷新用户余额（await，确保后续逻辑完成后再触发验证码）
+        if (fetchBalance) {
+          console.log('🔄 下注成功，刷新余额...');
+          try {
+            await fetchBalance();
+            console.log('✅ 余额刷新完成');
+          } catch (error) {
+            console.error('❌ 余额刷新失败:', error);
+          }
+        }
+
+        // 在所有成功后的逻辑完成后，按10%概率弹出验证码（不影响本次下注）
+        const shouldShowCaptchaAfterSuccess = Math.random() < 0.1;
+        if (shouldShowCaptchaAfterSuccess) {
+          // 标记后续下注需通过安全验证
+          setIsCaptchaRequired(true);
+          setIsCaptchaOpen(true);
+          toast('请完成安全验证');
+        }
       }
     } catch (error) {
       console.error('❌ 下注失败:', error);
@@ -642,10 +653,9 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
       return;
     }
 
-    // 10% 概率触发验证码；一旦被要求，直到通过前都需验证
-    const shouldGateByCaptcha = isCaptchaRequired || (!isCaptchaVerified && Math.random() < 0.1);
+    // 验证码拦截：仅在存在待验证要求且未通过时拦截（改为下注成功后触发）
+    const shouldGateByCaptcha = isCaptchaRequired && !isCaptchaVerified;
     if (shouldGateByCaptcha) {
-      setIsCaptchaRequired(true);
       setIsCaptchaOpen(true);
       pendingDirectionRef.current = direction;
       toast('请完成安全验证后继续下注');

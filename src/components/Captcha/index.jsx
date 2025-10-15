@@ -235,6 +235,7 @@ export default function Captcha({
             background: '#c5ff33',
             color: '#0f0f0f',
             cursor: 'pointer',
+            fontSize: 12,
           }}
         >
           {t('captcha.verify_button')}
