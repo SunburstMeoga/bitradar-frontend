@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import usePageTitle from '../../hooks/usePageTitle';
 import { useApiCall } from '../../hooks/useApiCall';
@@ -142,16 +142,12 @@ const Account = () => {
     navigate('/network-details');
   };
 
-  // 处理兑换按钮点击
+  // 处理兑换/提现按钮点击（保留备用）
   const handleExchangeClick = () => {
-    // 功能未开通，提示而不跳转
-    toast(t('common.not_available'));
+    navigate('/exchange');
   };
-
-  // 处理提现按钮点击
   const handleWithdrawClick = () => {
-    // 功能未开通，提示而不跳转
-    toast(t('common.not_available'));
+    navigate('/exchange');
   };
 
   // 处理代币记录点击
@@ -329,28 +325,28 @@ const Account = () => {
 
           {/* 在选中USDT时显示兑换按钮 */}
           {activeTab === 'USDT' && (
-            <div
-              onClick={handleExchangeClick}
+            <Link
+              to="/exchange"
               className="px-[24vw] md:px-6 py-[12vw] md:py-3 rounded-[34vw] md:rounded-full cursor-pointer hover:opacity-80 transition-opacity border border-white"
               style={{ backgroundColor: 'transparent' }}
             >
               <span className="text-white text-size-[16vw] md:text-base font-medium">
                 {t('account.exchange')}
               </span>
-            </div>
+            </Link>
           )}
 
           {/* 在选中Rocket或USDR时显示提现按钮 */}
           {(activeTab === 'Rocket' || activeTab === 'USDR') && (
-            <div
-              onClick={handleWithdrawClick}
+            <Link
+              to="/exchange"
               className="px-[24vw] md:px-6 py-[12vw] md:py-3 rounded-[34vw] md:rounded-full cursor-pointer hover:opacity-80 transition-opacity border border-white"
               style={{ backgroundColor: 'transparent' }}
             >
               <span className="text-white text-size-[16vw] md:text-base font-medium">
                 提现
               </span>
-            </div>
+            </Link>
           )}
 
 

@@ -2,6 +2,9 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import usePageTitle from '../../hooks/usePageTitle';
 import toast from 'react-hot-toast';
+import { useAuthStore, useUserStore } from '../../store';
+import { useNavigate } from 'react-router-dom';
+import { depositUSDT, withdrawToUser, getWalletUSDTBalance, isDeveloper } from '../../services/vaultService';
 
 // 自定义动画金额组件（借鉴网体详情页面）
 const AnimatedAmount = ({ amount, fontSize = '20vw', mdFontSize = 'text-xl', className = 'text-white' }) => {
@@ -44,140 +47,57 @@ const AnimatedAmount = ({ amount, fontSize = '20vw', mdFontSize = 'text-xl', cla
 // 兑换卡片组件
 const ExchangeCard = ({
   title,
-  activeTab,
-  onTabChange,
-  tabs,
-  fromToken,
-  toToken,
-  fromAmount,
-  onFromAmountChange,
-  toAmount,
-  onToAmountChange,
-  onConfirm,
-  isConfirmDisabled,
-  balances,
-  t
+  rows,
+  onOpenRecords
 }) => {
   return (
     <div
       className="w-[360vw] md:w-96 p-[20vw] md:p-5 rounded-[34vw] md:rounded-[34px] mb-[24vw] md:mb-6"
-      style={{
-        backgroundColor: '#121313',
-        border: '1px solid #1F1F1F'
-      }}
+      style={{ backgroundColor: '#121313', border: '1px solid #1F1F1F' }}
     >
-      {/* 卡片标题 */}
       <div className="text-[#9D9D9D] text-size-[16vw] md:text-base lg:text-lg font-medium mb-[16vw] md:mb-4 lg:mb-5 text-center">
         {title}
       </div>
 
-      {/* Tab切换 */}
-      <div className="relative mb-[20vw] md:mb-5 lg:mb-6">
-        <div className="flex gap-[2vw] md:gap-1 lg:gap-2">
-          {tabs.map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => onTabChange(tab.key)}
-              className={`flex-1 py-[12vw] md:py-3 lg:py-4 text-size-[14vw] md:text-sm lg:text-base font-medium transition-colors ${
-                activeTab === tab.key
-                  ? 'text-[#5773FF]'
-                  : 'text-[#8f8f8f]'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-        {/* 滑动横线 */}
-        <div
-          className="absolute bottom-0 h-[2vw] md:h-0.5 lg:h-1 bg-[#5773FF] transition-all duration-300 ease-in-out"
-          style={{
-            width: 'calc(50% - 1vw)',
-            left: activeTab === tabs[0].key
-              ? '0'
-              : 'calc(50% + 2vw)'
-          }}
-        />
+      {/* 两行布局 */}
+      <div className="space-y-[10vw] md:space-y-3">
+        {rows.map((row, idx) => (
+          <div key={idx} className="border border-[#1B1C1C] rounded-[12vw] md:rounded-lg lg:rounded-xl p-[12vw] md:p-3 lg:p-4" style={{ backgroundColor: '#171818' }}>
+            {/* 行标题：币种与箭头 */}
+            <div className="flex items-center justify-start gap-[8vw] md:gap-2 lg:gap-3 mb-[10vw] md:mb-2">
+              <span className="text-white text-size-[16vw] md:text-base lg:text-lg">{row.leftLabel}</span>
+              <span className="text-[#8f8f8f]">→</span>
+              <span className="text-white text-size-[16vw] md:text-base lg:text-lg">{row.rightLabel}</span>
+            </div>
+
+            {/* 输入与按钮 */}
+            <div className="flex items-center gap-[10vw] md:gap-3">
+              <input
+                type="number"
+                value={row.value}
+                onChange={(e) => row.onChange(e.target.value)}
+                placeholder={row.placeholder}
+                className="flex-1 min-w-0 bg-transparent text-white text-size-[16vw] md:text-base lg:text-lg outline-none border border-[#1B1C1C] rounded-[10vw] md:rounded-md lg:rounded-lg p-[10vw] md:p-2 lg:p-3"
+              />
+              <button
+                onClick={row.onAction}
+                disabled={!row.value || row.disabled}
+                className={`px-[12vw] md:px-4 lg:px-5 h-[40vw] md:h-10 lg:h-11 rounded-[10vw] md:rounded-md lg:rounded-lg text-size-[14vw] md:text-sm lg:text-base font-medium ${(!row.value || row.disabled) ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-80 cursor-pointer'}`}
+                style={{ backgroundColor: '#1D202F', color: '#5671FB', border: '1px solid #282B39' }}
+              >
+                {row.actionLabel}
+              </button>
+            </div>
+          </div>
+        ))}
       </div>
 
-      {/* 输入区域 */}
-      <div className="relative rounded-[12vw] md:rounded-xl lg:rounded-2xl p-[16vw] md:p-4 lg:p-5" >
-        {/* From输入框 */}
-        <div
-          className="flex items-center justify-between p-[16vw] md:p-4 lg:p-5 rounded-[12vw] md:rounded-lg lg:rounded-xl mb-[8vw] md:mb-2 lg:mb-3"
-          style={{ backgroundColor: '#171818', border: '1px solid #1B1C1C' }}
-        >
-          <div className="flex items-center gap-[12vw] md:gap-3 lg:gap-4">
-            <span className="text-white text-size-[16vw] md:text-base lg:text-lg">{fromToken}</span>
-            {/* 显示余额 */}
-            <span className="text-[#8f8f8f] text-size-[12vw] md:text-xs">
-              {t('exchange.balance')}: {balances[fromToken]?.toLocaleString() || '0.00'}
-            </span>
-          </div>
-          <input
-            type="number"
-            value={fromAmount}
-            onChange={(e) => onFromAmountChange(e.target.value)}
-            placeholder="0.00"
-            className="bg-transparent text-white text-size-[16vw] md:text-base lg:text-lg text-right outline-none w-[80vw] md:w-32 lg:w-40"
-          />
-        </div>
-
-        {/* 中间箭头 */}
-        <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10">
-          <div
-            className="w-[34vw] md:w-9 lg:w-10 h-[34vw] md:h-9 lg:h-10 rounded-[10vw] md:rounded-lg lg:rounded-xl flex items-center justify-center border-[1vw] md:border lg:border-2"
-            style={{
-              backgroundColor: '#222525',
-              borderColor: '#171818'
-            }}
-          >
-            <svg className="w-[16vw] md:w-4 lg:w-5 h-[16vw] md:h-4 lg:h-5 text-[#8f8f8f]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-            </svg>
-          </div>
-        </div>
-
-        {/* To输入框 */}
-        <div
-          className="flex items-center justify-between p-[16vw] md:p-4 lg:p-5 rounded-[12vw] md:rounded-lg lg:rounded-xl"
-          style={{ backgroundColor: '#171818', border: '1px solid #1B1C1C' }}
-        >
-          <div className="flex items-center gap-[12vw] md:gap-3 lg:gap-4">
-            <span className="text-white text-size-[16vw] md:text-base lg:text-lg">{toToken}</span>
-            {/* 显示余额 */}
-            <span className="text-[#8f8f8f] text-size-[12vw] md:text-xs">
-              {t('exchange.balance')}: {balances[toToken]?.toLocaleString() || '0.00'}
-            </span>
-          </div>
-          <input
-            type="number"
-            value={toAmount}
-            onChange={(e) => onToAmountChange(e.target.value)}
-            placeholder="0.00"
-            className="bg-transparent text-white text-size-[16vw] md:text-base lg:text-lg text-right outline-none w-[80vw] md:w-32 lg:w-40"
-          />
-        </div>
+      {/* 兑换记录入口（保留下划线样式） */}
+      <div className="flex justify-center mt-[12vw] md:mt-3 lg:mt-4">
+        <button onClick={onOpenRecords} className="text-[#5671FB] text-size-[14vw] md:text-sm lg:text-sm font-medium hover:opacity-80 transition-opacity underline">
+          兑换记录
+        </button>
       </div>
-
-      {/* 确认按钮 */}
-      <button
-        onClick={onConfirm}
-        disabled={isConfirmDisabled}
-        className={`w-full h-[50vw] md:h-12 lg:h-14 mt-[20vw] md:mt-5 lg:mt-6 rounded-[12vw] md:rounded-lg lg:rounded-xl text-size-[16vw] md:text-base lg:text-lg font-medium transition-all ${
-          isConfirmDisabled
-            ? 'opacity-50 cursor-not-allowed'
-            : 'hover:opacity-80 cursor-pointer'
-        }`}
-        style={{
-          backgroundColor: isConfirmDisabled ? '#3d3d3d' : '#1D202F',
-          borderColor: isConfirmDisabled ? 'transparent' : '#282B39',
-          borderWidth: '1px',
-          color: isConfirmDisabled ? '#8f8f8f' : '#5671FB'
-        }}
-      >
-        {t('exchange.confirm_swap')}
-      </button>
     </div>
   );
 };
@@ -186,9 +106,33 @@ const ExchangeCard = ({
 
 const Exchange = () => {
   const { t } = useTranslation();
+  const { isAuthenticated } = useAuthStore();
+  const { balance, fetchBalance } = useUserStore();
+  const navigate = useNavigate();
 
   // 设置页面标题
   usePageTitle('exchange');
+
+  // 顶部 USDT 余额：从已集成的余额接口中获取
+  const getUSDTBalance = () => {
+    if (!balance) return 0;
+    if (balance.balanceMap && balance.balanceMap['USDT']) {
+      const b = balance.balanceMap['USDT'];
+      return parseFloat(b.total || b.available || 0);
+    }
+    if (balance.usdt_balance !== undefined) {
+      return parseFloat(balance.usdt_balance || 0);
+    }
+    return 0;
+  };
+
+  const usdtTopBalance = getUSDTBalance();
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchBalance().catch(err => console.error('获取余额失败:', err));
+    }
+  }, [isAuthenticated, fetchBalance]);
 
   // 验证余额是否足够的辅助函数
   const validateBalance = (fromToken, requiredAmount, balances, showToast = true) => {
@@ -202,153 +146,164 @@ const Exchange = () => {
     return isValid;
   };
 
-  // USDR兑换状态
-  const [usdrActiveTab, setUsdrActiveTab] = useState('usdt_to_usdr');
-  const [usdrFromAmount, setUsdrFromAmount] = useState('');
-  const [usdrToAmount, setUsdrToAmount] = useState('');
+  // 卡片1：链上USDT ↔ 平台USDT（两行输入）
+  const [card1DepositAmount, setCard1DepositAmount] = useState(''); // 链上USDT -> 平台USDT
+  const [card1WithdrawAmount, setCard1WithdrawAmount] = useState(''); // 平台USDT -> 链上USDT
+  const [card1Submitting, setCard1Submitting] = useState(false);
+  const [walletUsdtBalance, setWalletUsdtBalance] = useState(0);
 
-  // USDT兑换状态
-  const [usdtActiveTab, setUsdtActiveTab] = useState('usdr_to_usdt');
-  const [usdtFromAmount, setUsdtFromAmount] = useState('');
-  const [usdtToAmount, setUsdtToAmount] = useState('');
+  // 钱包USDT余额读取与监听
+  useEffect(() => {
+    let mounted = true;
+    const loadBalance = async () => {
+      try {
+        if (!window.ethereum) return;
+        const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+        const addr = accounts && accounts[0];
+        if (!addr) {
+          if (mounted) setWalletUsdtBalance(0);
+          return;
+        }
+        const bal = await getWalletUSDTBalance(addr);
+        if (mounted) setWalletUsdtBalance(Number(bal || 0));
+      } catch (err) {
+        console.warn('读取链上USDT余额失败:', err);
+      }
+    };
+    loadBalance();
 
-  // 模拟余额数据
+    const handleAccountsChanged = async (accounts) => {
+      if (!mounted) return;
+      if (accounts && accounts[0]) {
+        try {
+          const bal = await getWalletUSDTBalance(accounts[0]);
+          setWalletUsdtBalance(Number(bal || 0));
+        } catch (err) {
+          console.warn('账户变化后读取余额失败:', err);
+        }
+      } else {
+        setWalletUsdtBalance(0);
+      }
+    };
+    const handleChainChanged = async () => {
+      // 等待网络切换稳定
+      setTimeout(loadBalance, 500);
+    };
+    window.ethereum?.on('accountsChanged', handleAccountsChanged);
+    window.ethereum?.on('chainChanged', handleChainChanged);
+    return () => {
+      mounted = false;
+      window.ethereum?.removeListener('accountsChanged', handleAccountsChanged);
+      window.ethereum?.removeListener('chainChanged', handleChainChanged);
+    };
+  }, []);
+
+  // 卡片2：法币 ↔ 平台USDT
+  const [card2Top, setCard2Top] = useState('FIAT'); // FIAT | PLATFORM_USDT
+  const [card2FromAmount, setCard2FromAmount] = useState('');
+  const [card2ToAmount, setCard2ToAmount] = useState('');
+
+  // 模拟余额数据（卡片内部使用的展示值，顶部 USDT 使用真实接口值）
   const balances = {
-    USDR: 1235.00,
-    USDT: 235.00,
-    Fiat: 10000.00 // 法币余额
+    USDR: 0,
+    USDT: usdtTopBalance,
+    Fiat: 10000.00 // 法币余额（示例）
   };
 
-  // 模拟兑换比例（实际应该从API获取）
+  // 兑换比例（示例）
   const exchangeRates = {
-    'USDT_to_USDR': 1.0,
-    'USDR_to_USDT': 1.0,
-    'Fiat_to_USDR': 0.1,
-    'USDR_to_Fiat': 10.0,
-    'Fiat_to_USDT': 0.1,
-    'USDT_to_Fiat': 10.0
+    'FIAT_to_PLATFORM_USDT': 0.1,
+    'PLATFORM_USDT_to_FIAT': 10.0
   };
 
-  // USDR兑换相关函数
-  const handleUsdrTabChange = (tab) => {
-    setUsdrActiveTab(tab);
-    setUsdrFromAmount('');
-    setUsdrToAmount('');
-  };
-
-  const handleUsdrFromAmountChange = (value) => {
+  // 卡片1交互：分别处理两行
+  const handleCard1DepositChange = (value) => {
     const numValue = parseFloat(value) || 0;
-    const fromToken = usdrActiveTab === 'usdt_to_usdr' ? 'USDT' : 'Fiat';
-
-    // 验证From货币余额是否足够
-    if (value && !validateBalance(fromToken, numValue, balances)) {
-      return; // 余额不足，不更新状态
-    }
-
-    setUsdrFromAmount(value);
-    if (value) {
-      const rateKey = `${fromToken}_to_USDR`;
-      const rate = exchangeRates[rateKey] || 1;
-      setUsdrToAmount((numValue * rate).toFixed(2));
-    } else {
-      setUsdrToAmount('');
-    }
-  };
-
-  const handleUsdrToAmountChange = (value) => {
-    const numValue = parseFloat(value) || 0;
-    const fromToken = usdrActiveTab === 'usdt_to_usdr' ? 'USDT' : 'Fiat';
-    const rateKey = `${fromToken}_to_USDR`;
-    const rate = exchangeRates[rateKey] || 1;
-    const requiredFromAmount = numValue / rate;
-
-    // 验证实际需要的From货币余额是否足够
-    if (value && !validateBalance(fromToken, requiredFromAmount, balances)) {
-      return; // 余额不足，不更新状态
-    }
-
-    setUsdrToAmount(value);
-    if (value) {
-      setUsdrFromAmount(requiredFromAmount.toFixed(2));
-    } else {
-      setUsdrFromAmount('');
-    }
-  };
-
-  const handleUsdrSwapConfirm = () => {
-    if (!usdrFromAmount) {
+    if (value && !validateBalance('链上USDT', numValue, { '链上USDT': walletUsdtBalance })) {
       return;
     }
-
-    const fromToken = usdrActiveTab === 'usdt_to_usdr' ? 'USDT' : 'Fiat';
-    console.log('USDR Exchange:', {
-      from: fromToken,
-      to: 'USDR',
-      amount: usdrFromAmount
-    });
-
-    alert(t('exchange.success_message'));
+    setCard1DepositAmount(value);
   };
 
-  // USDT兑换相关函数
-  const handleUsdtTabChange = (tab) => {
-    setUsdtActiveTab(tab);
-    setUsdtFromAmount('');
-    setUsdtToAmount('');
-  };
-
-  const handleUsdtFromAmountChange = (value) => {
+  const handleCard1WithdrawChange = (value) => {
     const numValue = parseFloat(value) || 0;
-    const fromToken = usdtActiveTab === 'usdr_to_usdt' ? 'USDR' : 'Fiat';
-
-    // 验证From货币余额是否足够
-    if (value && !validateBalance(fromToken, numValue, balances)) {
-      return; // 余额不足，不更新状态
-    }
-
-    setUsdtFromAmount(value);
-    if (value) {
-      const rateKey = `${fromToken}_to_USDT`;
-      const rate = exchangeRates[rateKey] || 1;
-      setUsdtToAmount((numValue * rate).toFixed(2));
-    } else {
-      setUsdtToAmount('');
-    }
-  };
-
-  const handleUsdtToAmountChange = (value) => {
-    const numValue = parseFloat(value) || 0;
-    const fromToken = usdtActiveTab === 'usdr_to_usdt' ? 'USDR' : 'Fiat';
-    const rateKey = `${fromToken}_to_USDT`;
-    const rate = exchangeRates[rateKey] || 1;
-    const requiredFromAmount = numValue / rate;
-
-    // 验证实际需要的From货币余额是否足够
-    if (value && !validateBalance(fromToken, requiredFromAmount, balances)) {
-      return; // 余额不足，不更新状态
-    }
-
-    setUsdtToAmount(value);
-    if (value) {
-      setUsdtFromAmount(requiredFromAmount.toFixed(2));
-    } else {
-      setUsdtFromAmount('');
-    }
-  };
-
-  const handleUsdtSwapConfirm = () => {
-    if (!usdtFromAmount) {
+    if (value && !validateBalance('平台USDT', numValue, { '平台USDT': balances.USDT })) {
       return;
     }
+    setCard1WithdrawAmount(value);
+  };
 
-    const fromToken = usdtActiveTab === 'usdr_to_usdt' ? 'USDR' : 'Fiat';
-    console.log('USDT Exchange:', {
-      from: fromToken,
-      to: 'USDT',
-      amount: usdtFromAmount
-    });
+  // 移除双向绑定计算，改为独立输入
 
-    alert(t('exchange.success_message'));
+  const handleCard1Deposit = async () => {
+    if (!card1DepositAmount) return;
+    try {
+      setCard1Submitting(true);
+      await depositUSDT(parseFloat(card1DepositAmount));
+      toast.success('存入成功');
+      setCard1DepositAmount('');
+    } catch (err) {
+      console.error(err);
+      toast.error(err?.message || '交易失败');
+    } finally {
+      setCard1Submitting(false);
+    }
+  };
+
+  const handleCard1Withdraw = async () => {
+    if (!card1WithdrawAmount) return;
+    try {
+      setCard1Submitting(true);
+      const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+      const isDev = await isDeveloper(accounts[0]);
+      if (!isDev) {
+        toast.error('当前账户无提取权限，请通过平台申请');
+      } else {
+        await withdrawToUser(parseFloat(card1WithdrawAmount));
+        toast.success('提取交易已提交');
+        setCard1WithdrawAmount('');
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error(err?.message || '交易失败');
+    } finally {
+      setCard1Submitting(false);
+    }
+  };
+
+  // 卡片2交互：两行输入
+
+  const [card2DepositAmount, setCard2DepositAmount] = useState(''); // 法币 -> 平台USDT
+  const [card2WithdrawAmount, setCard2WithdrawAmount] = useState(''); // 平台USDT -> 法币
+
+  const handleCard2DepositChange = (value) => {
+    const numValue = parseFloat(value) || 0;
+    if (value && !validateBalance('法币', numValue, { '法币': balances.Fiat })) {
+      return;
+    }
+    setCard2DepositAmount(value);
+  };
+
+  const handleCard2WithdrawChange = (value) => {
+    const numValue = parseFloat(value) || 0;
+    if (value && !validateBalance('平台USDT', numValue, { '平台USDT': balances.USDT })) {
+      return;
+    }
+    setCard2WithdrawAmount(value);
+  };
+
+  const handleCard2Deposit = () => {
+    if (!card2DepositAmount) return;
+    // TODO: 接入法币兑换API
+    toast.success('法币兑换请求已提交');
+    setCard2DepositAmount('');
+  };
+
+  const handleCard2Withdraw = () => {
+    if (!card2WithdrawAmount) return;
+    // TODO: 接入法币提现API
+    toast.success('法币提现请求已提交');
+    setCard2WithdrawAmount('');
   };
 
   // 处理提现USDR
@@ -357,106 +312,81 @@ const Exchange = () => {
     // 这里可以添加提现逻辑或导航到提现页面
   };
 
-  // 定义USDR兑换的tabs
-  const usdrTabs = [
-    { key: 'usdt_to_usdr', label: t('exchange.usdt_to_usdr') },
-    { key: 'fiat_to_usdr', label: t('exchange.fiat_to_usdr') }
+  // 行标签
+  const card1Rows = [
+    {
+      leftLabel: '链上USDT',
+      rightLabel: '平台USDT',
+      value: card1DepositAmount,
+      onChange: handleCard1DepositChange,
+      placeholder: '请输入您的兑换数量',
+      actionLabel: '兑换',
+      onAction: handleCard1Deposit,
+      disabled: card1Submitting
+    },
+    {
+      leftLabel: '平台USDT',
+      rightLabel: '链上USDT',
+      value: card1WithdrawAmount,
+      onChange: handleCard1WithdrawChange,
+      placeholder: '请输入您的提取数量',
+      actionLabel: '提取',
+      onAction: handleCard1Withdraw,
+      disabled: card1Submitting
+    }
   ];
 
-  // 定义USDT兑换的tabs
-  const usdtTabs = [
-    { key: 'usdr_to_usdt', label: t('exchange.usdr_to_usdt') },
-    { key: 'fiat_to_usdt', label: t('exchange.fiat_to_usdt') }
+  const card2Rows = [
+    {
+      leftLabel: '法币',
+      rightLabel: '平台USDT',
+      value: card2DepositAmount,
+      onChange: handleCard2DepositChange,
+      placeholder: '请输入您的兑换数量',
+      actionLabel: '兑换',
+      onAction: handleCard2Deposit
+    },
+    {
+      leftLabel: '平台USDT',
+      rightLabel: '法币',
+      value: card2WithdrawAmount,
+      onChange: handleCard2WithdrawChange,
+      placeholder: '请输入您的提取数量',
+      actionLabel: '提取',
+      onAction: handleCard2Withdraw
+    }
   ];
-
-  // 获取当前选中的token
-  const getUsdrTokens = () => {
-    if (usdrActiveTab === 'usdt_to_usdr') {
-      return { from: 'USDT', to: 'USDR' };
-    }
-    return { from: 'Fiat', to: 'USDR' };
-  };
-
-  const getUsdtTokens = () => {
-    if (usdtActiveTab === 'usdr_to_usdt') {
-      return { from: 'USDR', to: 'USDT' };
-    }
-    return { from: 'Fiat', to: 'USDT' };
-  };
-
-  const usdrTokens = getUsdrTokens();
-  const usdtTokens = getUsdtTokens();
 
   return (
     <div className="px-[16vw] md:px-6 lg:px-8 pt-[20vw] md:pt-6 lg:pt-8 pb-[24vw] md:pb-8 lg:pb-10 flex flex-col items-center max-w-4xl mx-auto">
-      {/* 顶部余额显示 - 更紧凑的设计，添加跳动动画 */}
-      <div className="flex items-center gap-[20vw] md:gap-8 lg:gap-10 pb-[32vw] md:pb-8 lg:pb-10 w-[280vw] md:w-80 lg:w-96">
-        <div className="flex flex-col items-center flex-1">
-          <span className="text-[#8f8f8f] text-size-[14vw] md:text-sm lg:text-base">USDR</span>
+      {/* 顶部余额显示 - 仅保留 USDT，加大字体并使用接口余额 */}
+      <div className="flex items-center justify-center pb-[32vw] md:pb-8 lg:pb-10 w-[280vw] md:w-80 lg:w-96">
+        <div className="flex flex-col items-center">
+          <span className="text-[#8f8f8f] text-size-[16vw] md:text-lg lg:text-xl">USDT</span>
           <AnimatedAmount
-            amount={balances.USDR}
-            fontSize="20vw"
-            mdFontSize="md:text-xl lg:text-2xl"
-            className="text-white"
-          />
-        </div>
-        <div className="text-[#8f8f8f] text-size-[16vw] md:text-lg lg:text-xl">|</div>
-        <div className="flex flex-col items-center flex-1">
-          <span className="text-[#8f8f8f] text-size-[14vw] md:text-sm lg:text-base">USDT</span>
-          <AnimatedAmount
-            amount={balances.USDT}
-            fontSize="20vw"
-            mdFontSize="md:text-xl lg:text-2xl"
+            amount={usdtTopBalance}
+            fontSize="28vw"
+            mdFontSize="md:text-3xl lg:text-4xl"
             className="text-white"
           />
         </div>
       </div>
 
-      {/* USDR兑换卡片 */}
+      {/* 卡片1：链上USDT ↔ 平台USDT */}
       <ExchangeCard
-        title={t('exchange.exchange_usdr_title')}
-        activeTab={usdrActiveTab}
-        onTabChange={handleUsdrTabChange}
-        tabs={usdrTabs}
-        fromToken={usdrTokens.from}
-        toToken={usdrTokens.to}
-        fromAmount={usdrFromAmount}
-        onFromAmountChange={handleUsdrFromAmountChange}
-        toAmount={usdrToAmount}
-        onToAmountChange={handleUsdrToAmountChange}
-        onConfirm={handleUsdrSwapConfirm}
-        isConfirmDisabled={!usdrFromAmount}
-        balances={balances}
-        t={t}
+        title="链上USDT ↔ 平台USDT"
+        rows={card1Rows}
+        onOpenRecords={() => navigate('/token-history')}
       />
 
-      {/* USDT兑换卡片 */}
+      {/* 卡片2：法币 ↔ 平台USDT */}
       <ExchangeCard
-        title={t('exchange.exchange_usdt_title')}
-        activeTab={usdtActiveTab}
-        onTabChange={handleUsdtTabChange}
-        tabs={usdtTabs}
-        fromToken={usdtTokens.from}
-        toToken={usdtTokens.to}
-        fromAmount={usdtFromAmount}
-        onFromAmountChange={handleUsdtFromAmountChange}
-        toAmount={usdtToAmount}
-        onToAmountChange={handleUsdtToAmountChange}
-        onConfirm={handleUsdtSwapConfirm}
-        isConfirmDisabled={!usdtFromAmount}
-        balances={balances}
-        t={t}
+        title="法币 ↔ 平台USDT"
+        rows={card2Rows}
+        onOpenRecords={() => navigate('/token-history')}
       />
 
-      {/* 提现USDR链接 */}
-      <div className="flex justify-center mt-[20vw] md:mt-6 lg:mt-8">
-        <button
-          onClick={handleWithdrawUSDR}
-          className="text-[#5671FB] text-size-[16vw] md:text-base lg:text-lg font-medium hover:opacity-80 transition-opacity"
-        >
-          {t('exchange.withdraw_usdr')}
-        </button>
-      </div>
+      {/* 提现USDR入口已不需要，改为每个卡片下的“兑换记录”入口 */}
     </div>
   );
 };
