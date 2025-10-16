@@ -5,6 +5,7 @@ import { useAuthStore } from '../../store';
 import { transactionService } from '../../services';
 import toast from 'react-hot-toast';
 import transactionIcon from '../../assets/images/account-transation.png';
+import { formatPreciseTime } from '../../utils/time';
 
 const TransactionHistory = () => {
   const { t } = useTranslation();
@@ -183,22 +184,8 @@ const TransactionHistory = () => {
     };
   }, [handleLoadMore, hasMore, loading]);
 
-  // 格式化时间显示
-  const formatTime = (timestamp) => {
-    const date = new Date(timestamp);
-    const now = new Date();
-    const diffInSeconds = Math.floor((now - date) / 1000);
-
-    if (diffInSeconds < 60) {
-      return `${diffInSeconds} ${t('account.time_ago.seconds')}`;
-    } else if (diffInSeconds < 3600) {
-      return `${Math.floor(diffInSeconds / 60)} ${t('account.time_ago.minutes')}`;
-    } else if (diffInSeconds < 86400) {
-      return `${Math.floor(diffInSeconds / 3600)} ${t('account.time_ago.hours')}`;
-    } else {
-      return `${Math.floor(diffInSeconds / 86400)} ${t('account.time_ago.days')}`;
-    }
-  };
+  // 精确到秒的时间显示（统一工具）
+  const formatTime = (isoString) => formatPreciseTime(isoString);
 
   // 获取交易类型的翻译（适配API返回的transaction_type）
   const getTransactionTypeText = (transactionType) => {

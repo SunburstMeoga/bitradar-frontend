@@ -429,7 +429,10 @@ const WalletCard = ({ onClose, onSendClick, onActivityClick, onAddReferrerClick,
     { code: 'zh', label: '简体中文' },
     { code: 'en', label: 'English' },
     { code: 'ko', label: '한국인' },
-    { code: 'vi', label: 'Tiếng Việt' }
+    { code: 'vi', label: 'Tiếng Việt' },
+    { code: 'ja', label: '日本語' },
+    { code: 'pt', label: 'Português' },
+    { code: 'es', label: 'Español' }
   ];
 
   // 菜单项配置
@@ -636,7 +639,7 @@ const WalletCard = ({ onClose, onSendClick, onActivityClick, onAddReferrerClick,
                       <span
                         className="text-[14px] md:text-sm font-medium"
                         style={{
-                          color: selectedLanguage === lang.label ? '#FFFFFF' : '#9D9D9D'
+                          color: i18n.language?.startsWith(lang.code) ? '#FFFFFF' : '#9D9D9D'
                         }}
                       >
                         {lang.label}

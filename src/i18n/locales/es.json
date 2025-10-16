@@ -1,0 +1,58 @@
+{
+  "common": {
+    "app_name": "BitRocket",
+    "copy": "Copiar"
+  },
+  "page_titles": {
+    "trade": "Operar",
+    "home": "Inicio",
+    "history": "Historial",
+    "account": "Cuenta",
+    "exchange": "Intercambio",
+    "token_history": "Historial de Tokens",
+    "active_orders": "Órdenes Activas",
+    "order_detail": "Detalle de Orden",
+    "not_found": "Página no encontrada"
+  },
+  "exchange": {
+    "title": "Intercambio",
+    "insufficient_balance": "Saldo insuficiente",
+    "records": "Registro de Intercambios",
+    "platform": "Plataforma",
+    "onchain": "On-chain",
+    "onchain_usdt": "USDT On-chain",
+    "platform_usdt": "USDT de la Plataforma",
+    "fiat": "Fiat",
+    "chain_platform_title": "USDT On-chain ↔ USDT de la Plataforma",
+    "fiat_platform_title": "Fiat ↔ USDT de la Plataforma",
+    "enter_exchange_amount": "Ingresa cantidad de intercambio",
+    "enter_withdraw_amount": "Ingresa cantidad para retiro",
+    "exchange": "Intercambiar",
+    "withdraw": "Retirar",
+    "deposit_success": "Depósito exitoso",
+    "withdraw_tx_submitted": "Transacción de retiro enviada",
+    "withdraw_not_permitted": "Sin permiso de retiro para esta cuenta. Solicita vía plataforma.",
+    "tx_failed": "Transacción fallida",
+    "fiat_exchange_request_submitted": "Solicitud de intercambio en fiat enviada",
+    "fiat_withdraw_request_submitted": "Solicitud de retiro en fiat enviada"
+  }
+  ,
+  "wallet": {
+    "language": "Idioma",
+    "disconnect": "Desconectar",
+    "referrer": "Referente",
+    "add_referrer": "Agregar código de referencia",
+    "generate_referral_link": "Generar código de referencia",
+    "generating_referral_code": "Generando...",
+    "referrer_address": "Código de referencia",
+    "address_copied": "Dirección copiada",
+    "referrer_address_copied": "Código de referencia copiado",
+    "copy_failed": "Error al copiar",
+    "copy_failed_manual": "Error al copiar. Copie manualmente",
+    "invite_code_copied": "Código de invitación copiado",
+    "membership_level_gold": "Oro",
+    "membership_level_silver": "Plata",
+    "membership_level_none": "Ninguno",
+    "membership_buy": "Comprar membresía"
+  }
+}

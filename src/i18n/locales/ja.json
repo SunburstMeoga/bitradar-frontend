@@ -1,0 +1,58 @@
+{
+  "common": {
+    "app_name": "BitRocket",
+    "copy": "コピー"
+  },
+  "page_titles": {
+    "trade": "取引",
+    "home": "ホーム",
+    "history": "履歴",
+    "account": "アカウント",
+    "exchange": "交換",
+    "token_history": "トークン履歴",
+    "active_orders": "注文一覧",
+    "order_detail": "注文詳細",
+    "not_found": "ページが見つかりません"
+  },
+  "exchange": {
+    "title": "交換",
+    "insufficient_balance": "残高不足",
+    "records": "交換履歴",
+    "platform": "プラットフォーム",
+    "onchain": "オンチェーン",
+    "onchain_usdt": "オンチェーン USDT",
+    "platform_usdt": "プラットフォーム USDT",
+    "fiat": "法定通貨",
+    "chain_platform_title": "オンチェーン USDT ↔ プラットフォーム USDT",
+    "fiat_platform_title": "法定通貨 ↔ プラットフォーム USDT",
+    "enter_exchange_amount": "交換数量を入力",
+    "enter_withdraw_amount": "出金数量を入力",
+    "exchange": "交換",
+    "withdraw": "出金",
+    "deposit_success": "入金に成功しました",
+    "withdraw_tx_submitted": "出金トランザクションを送信しました",
+    "withdraw_not_permitted": "現在のアカウントには出金権限がありません。プラットフォームから申請してください。",
+    "tx_failed": "トランザクション失敗",
+    "fiat_exchange_request_submitted": "法定通貨の交換リクエストを送信しました",
+    "fiat_withdraw_request_submitted": "法定通貨の出金リクエストを送信しました"
+  }
+  ,
+  "wallet": {
+    "language": "言語",
+    "disconnect": "切断",
+    "referrer": "推薦者",
+    "add_referrer": "推薦コードを追加",
+    "generate_referral_link": "推薦コードを生成",
+    "generating_referral_code": "生成中...",
+    "referrer_address": "推薦コード",
+    "address_copied": "アドレスをコピーしました",
+    "referrer_address_copied": "推薦コードをコピーしました",
+    "copy_failed": "コピーに失敗しました",
+    "copy_failed_manual": "コピーに失敗しました。手動でコピーしてください",
+    "invite_code_copied": "招待コードをコピーしました",
+    "membership_level_gold": "ゴールド",
+    "membership_level_silver": "シルバー",
+    "membership_level_none": "なし",
+    "membership_buy": "メンバーシップ購入"
+  }
+}

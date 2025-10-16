@@ -7,6 +7,9 @@ import en from './locales/en.json';
 import zh from './locales/zh.json';
 import ko from './locales/ko.json';
 import vi from './locales/vi.json';
+import ja from './locales/ja.json';
+import pt from './locales/pt.json';
+import es from './locales/es.json';
 
 const resources = {
   en: {
@@ -21,6 +24,15 @@ const resources = {
   ,
   vi: {
     translation: vi
+  },
+  ja: {
+    translation: ja
+  },
+  pt: {
+    translation: pt
+  },
+  es: {
+    translation: es
   }
 };
 
@@ -31,6 +43,9 @@ i18n
     resources,
     fallbackLng: 'en',
     debug: import.meta.env.VITE_APP_ENV === 'development',
+    supportedLngs: ['en', 'zh', 'ko', 'vi', 'ja', 'pt', 'es'],
+    nonExplicitSupportedLngs: true,
+    load: 'currentOnly',
     
     interpolation: {
       escapeValue: false, // React已经默认转义了

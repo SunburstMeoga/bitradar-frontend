@@ -1,0 +1,58 @@
+{
+  "common": {
+    "app_name": "BitRocket",
+    "copy": "Copiar"
+  },
+  "page_titles": {
+    "trade": "Negociar",
+    "home": "Início",
+    "history": "Histórico",
+    "account": "Conta",
+    "exchange": "Exchange",
+    "token_history": "Histórico de Tokens",
+    "active_orders": "Ordens Ativas",
+    "order_detail": "Detalhe da Ordem",
+    "not_found": "Página não encontrada"
+  },
+  "exchange": {
+    "title": "Exchange",
+    "insufficient_balance": "Saldo insuficiente",
+    "records": "Registros de Exchange",
+    "platform": "Plataforma",
+    "onchain": "On-chain",
+    "onchain_usdt": "USDT On-chain",
+    "platform_usdt": "USDT da Plataforma",
+    "fiat": "Fiat",
+    "chain_platform_title": "USDT On-chain ↔ USDT da Plataforma",
+    "fiat_platform_title": "Fiat ↔ USDT da Plataforma",
+    "enter_exchange_amount": "Insira a quantidade de exchange",
+    "enter_withdraw_amount": "Insira a quantidade para saque",
+    "exchange": "Exchange",
+    "withdraw": "Sacar",
+    "deposit_success": "Depósito realizado com sucesso",
+    "withdraw_tx_submitted": "Transação de saque enviada",
+    "withdraw_not_permitted": "Sem permissão de saque para esta conta. Solicite pela plataforma.",
+    "tx_failed": "Falha na transação",
+    "fiat_exchange_request_submitted": "Solicitação de exchange em fiat enviada",
+    "fiat_withdraw_request_submitted": "Solicitação de saque em fiat enviada"
+  }
+  ,
+  "wallet": {
+    "language": "Idioma",
+    "disconnect": "Desconectar",
+    "referrer": "Indicador",
+    "add_referrer": "Adicionar código de indicação",
+    "generate_referral_link": "Gerar código de indicação",
+    "generating_referral_code": "Gerando...",
+    "referrer_address": "Código de indicação",
+    "address_copied": "Endereço copiado",
+    "referrer_address_copied": "Código de indicação copiado",
+    "copy_failed": "Falha ao copiar",
+    "copy_failed_manual": "Falha ao copiar. Por favor, copie manualmente",
+    "invite_code_copied": "Código de convite copiado",
+    "membership_level_gold": "Ouro",
+    "membership_level_silver": "Prata",
+    "membership_level_none": "Nenhum",
+    "membership_buy": "Comprar assinatura"
+  }
+}

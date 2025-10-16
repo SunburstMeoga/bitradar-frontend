@@ -6,13 +6,16 @@ const languages = [
   { code: 'zh', name: '中文', flag: '🇨🇳' },
   { code: 'ko', name: '한국어', flag: '🇰🇷' },
   { code: 'vi', name: 'Tiếng Việt', flag: '🇻🇳' },
+  { code: 'ja', name: '日本語', flag: '🇯🇵' },
+  { code: 'pt', name: 'Português', flag: '🇵🇹' },
+  { code: 'es', name: 'Español', flag: '🇪🇸' },
 ];
 
 const LanguageSelector = () => {
   const { i18n } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
 
-  const currentLanguage = languages.find(lang => lang.code === i18n.language) || languages[0];
+  const currentLanguage = languages.find(lang => i18n.language?.startsWith(lang.code)) || languages[0];
 
   const handleLanguageChange = (langCode) => {
     i18n.changeLanguage(langCode);
@@ -44,7 +47,7 @@ const LanguageSelector = () => {
               key={lang.code}
               onClick={() => handleLanguageChange(lang.code)}
               className={`w-full flex items-center space-x-2 px-4 py-2 text-left hover:bg-gray-50 first:rounded-t-lg last:rounded-b-lg transition-colors ${
-                lang.code === i18n.language ? 'bg-primary/10 text-primary' : ''
+                i18n.language?.startsWith(lang.code) ? 'bg-primary/10 text-primary' : ''
               }`}
             >
               <span>{lang.flag}</span>
