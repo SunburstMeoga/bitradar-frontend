@@ -8,7 +8,7 @@ import { depositUSDT, getWalletUSDTBalance } from '../../services/vaultService';
 import { withdrawalService } from '../../services';
 
 // 自定义动画金额组件（借鉴网体详情页面）
-const AnimatedAmount = ({ amount, fontSize = '20vw', mdFontSize = 'text-xl', className = 'text-white', isRefreshing = false }) => {
+const AnimatedAmount = ({ amount, fontSize = '20vw', mdFontSize = 'text-xl', mdDecimalFontSize = 'md:text-base lg:text-lg', className = 'text-white', isRefreshing = false }) => {
   const [currentValue, setCurrentValue] = useState(0);
   const smallerFontSize = `${parseInt(fontSize) / 2}vw`;
 
@@ -38,7 +38,7 @@ const AnimatedAmount = ({ amount, fontSize = '20vw', mdFontSize = 'text-xl', cla
   return (
     <span className={`${className} text-size-[${fontSize}] ${mdFontSize} font-semibold transition-all duration-300 ${isRefreshing ? 'opacity-50 scale-95' : 'opacity-100 scale-100'}`}>
       {integerPart}
-      <span className={`text-size-[${smallerFontSize}] text-xs align-baseline`}>
+      <span className={`text-size-[${smallerFontSize}] ${mdDecimalFontSize} align-baseline`}>
         .{decimalPart}
       </span>
       {isRefreshing && (
@@ -102,11 +102,11 @@ const ExchangeCard = ({ title, rows, onOpenRecords }) => {
         ))}
       </div>
 
-      <div className="flex justify-center mt-[12vw] md:mt-3 lg:mt-4">
+      {/* <div className="flex justify-center mt-[12vw] md:mt-3 lg:mt-4">
         <button onClick={onOpenRecords} className="text-[#5671FB] text-size-[14vw] md:text-sm lg:text-sm font-medium hover:opacity-80 transition-opacity underline">
           {t('exchange.records')}
         </button>
-      </div>
+      </div> */}
     </div>
   );
 };
@@ -578,14 +578,14 @@ const Withdraw = () => {
           <div className="flex items-center justify-center gap-[12vw] md:gap-6">
             <div className="flex items-baseline gap-[6vw] md:gap-2">
               <span className="text-[#9D9D9D] text-size-[14vw] md:text-sm">{t('exchange.platform')}</span>
-              <AnimatedAmount amount={usdtTopBalance} fontSize="28vw" mdFontSize="md:text-3xl lg:text-4xl" className="text-white" />
+              <AnimatedAmount amount={usdtTopBalance} fontSize="28vw" mdFontSize="md:text-3xl lg:text-4xl" mdDecimalFontSize="md:text-xl lg:text-2xl" className="text-white" />
             </div>
             <div className="w-[1vw] md:w-px lg:w-px" style={{ backgroundColor: '#1F1F1F' }}>
               <span className="sr-only">divider</span>
             </div>
             <div className="flex items-baseline gap-[6vw] md:gap-2">
               <span className="text-[#9D9D9D] text-size-[14vw] md:text-sm">{t('exchange.onchain')}</span>
-              <AnimatedAmount amount={walletUsdtBalance} fontSize="24vw" mdFontSize="md:text-2xl lg:text-3xl" className="text-white" />
+              <AnimatedAmount amount={walletUsdtBalance} fontSize="24vw" mdFontSize="md:text-2xl lg:text-3xl" mdDecimalFontSize="md:text-lg lg:text-xl" className="text-white" />
             </div>
           </div>
         </div>
