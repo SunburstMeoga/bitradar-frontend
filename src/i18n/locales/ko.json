@@ -25,6 +25,7 @@
     "network_details": "네트워크 세부정보",
     "network_earnings": "수익 세부정보",
     "exchange": "교환",
+    "withdraw": "출금",
     "token_history": "토큰 기록",
     "active_orders": "활성 주문",
     "order_detail": "주문 상세",
@@ -274,6 +275,9 @@
       "layer_tag_format": "L{{n}}"
     }
   },
+  "withdraw": {
+    "title": "출금"
+  },
   "exchange": {
     "title": "교환",
     "wallet_address": "지갑 주소",
@@ -314,6 +318,10 @@
     "fiat": "법정화폐",
     "chain_platform_title": "온체인 USDT ↔ 플랫폼 USDT",
     "fiat_platform_title": "법정화폐 ↔ 플랫폼 USDT",
+    "usdt_deposit": "USDT 입금",
+    "usdt_withdraw": "USDT 출금",
+    "fiat_deposit": "입금",
+    "fiat_withdraw": "출금",
     "enter_exchange_amount": "교환 수량 입력",
     "enter_withdraw_amount": "출금 수량 입력",
     "exchange": "교환",

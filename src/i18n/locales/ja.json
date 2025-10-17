@@ -9,10 +9,14 @@
     "history": "履歴",
     "account": "アカウント",
     "exchange": "交換",
+    "withdraw": "出金",
     "token_history": "トークン履歴",
     "active_orders": "注文一覧",
     "order_detail": "注文詳細",
     "not_found": "ページが見つかりません"
+  },
+  "withdraw": {
+    "title": "出金"
   },
   "exchange": {
     "title": "交換",
@@ -25,6 +29,10 @@
     "fiat": "法定通貨",
     "chain_platform_title": "オンチェーン USDT ↔ プラットフォーム USDT",
     "fiat_platform_title": "法定通貨 ↔ プラットフォーム USDT",
+    "usdt_deposit": "USDT入金",
+    "usdt_withdraw": "USDT出金",
+    "fiat_deposit": "入金",
+    "fiat_withdraw": "出金",
     "enter_exchange_amount": "交換数量を入力",
     "enter_withdraw_amount": "出金数量を入力",
     "exchange": "交換",

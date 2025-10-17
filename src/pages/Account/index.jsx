@@ -144,10 +144,10 @@ const Account = () => {
 
   // 处理兑换/提现按钮点击（保留备用）
   const handleExchangeClick = () => {
-    navigate('/exchange');
+    navigate('/withdraw');
   };
   const handleWithdrawClick = () => {
-    navigate('/exchange');
+    navigate('/withdraw');
   };
 
   // 处理代币记录点击
@@ -326,7 +326,7 @@ const Account = () => {
           {/* 在选中USDT时显示兑换按钮 */}
           {activeTab === 'USDT' && (
             <Link
-              to="/exchange"
+              to="/withdraw"
               className="px-[24vw] md:px-6 py-[12vw] md:py-3 rounded-[34vw] md:rounded-full cursor-pointer hover:opacity-80 transition-opacity border border-white"
               style={{ backgroundColor: 'transparent' }}
             >
@@ -339,7 +339,7 @@ const Account = () => {
           {/* 在选中Rocket或USDR时显示提现按钮 */}
           {(activeTab === 'Rocket' || activeTab === 'USDR') && (
             <Link
-              to="/exchange"
+              to="/withdraw"
               className="px-[24vw] md:px-6 py-[12vw] md:py-3 rounded-[34vw] md:rounded-full cursor-pointer hover:opacity-80 transition-opacity border border-white"
               style={{ backgroundColor: 'transparent' }}
             >

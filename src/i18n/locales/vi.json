@@ -25,6 +25,7 @@
     "network_details": "Chi tiết mạng",
     "network_earnings": "Chi tiết thu nhập",
     "exchange": "Đổi",
+    "withdraw": "Rút",
     "token_history": "Lịch sử token",
     "active_orders": "Đơn hàng đang hoạt động",
     "order_detail": "Chi tiết đơn hàng",
@@ -273,6 +274,9 @@
       "layer_tag_format": "L{{n}}"
     }
   },
+  "withdraw": {
+    "title": "Rút"
+  },
   "exchange": {
     "title": "Đổi",
     "wallet_address": "Địa chỉ ví",
@@ -313,6 +317,10 @@
     "fiat": "Tiền pháp định",
     "chain_platform_title": "USDT trên chuỗi ↔ USDT nền tảng",
     "fiat_platform_title": "Tiền pháp định ↔ USDT nền tảng",
+    "usdt_deposit": "Nạp USDT",
+    "usdt_withdraw": "Rút USDT",
+    "fiat_deposit": "Nạp",
+    "fiat_withdraw": "Rút",
     "enter_exchange_amount": "Nhập số lượng đổi",
     "enter_withdraw_amount": "Nhập số lượng rút",
     "exchange": "Đổi",

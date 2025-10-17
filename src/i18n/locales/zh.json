@@ -31,7 +31,7 @@
     "network_details": "网体详情",
     "network_earnings": "收益明细",
     "exchange": "充值",
-    "withdraw": "提现",
+    "withdraw": "充值",
     "token_history": "代币记录",
     "active_orders": "活跃订单",
     "order_detail": "订单详情",
@@ -294,6 +294,9 @@
       "distributed": "发放",
       "layer_tag_format": "L{{n}}"
     }
+  },
+  "withdraw": {
+    "title": "充值"
   },
   "exchange": {
     "title": "充值",

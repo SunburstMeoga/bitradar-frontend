@@ -8,7 +8,6 @@ import History from '../pages/History';
 import Account from '../pages/Account';
 import NetworkDetails from '../pages/NetworkDetails';
 import NetworkEarnings from '../pages/NetworkEarnings';
-import Exchange from '../pages/Exchange';
 import Withdraw from '../pages/Withdraw';
 import TokenHistory from '../pages/TransactionHistory';
 import ActiveOrders from '../pages/ActiveOrders';
@@ -30,15 +29,6 @@ const NetworkDetailsWrapper = () => {
   );
 };
 
-// 兑换页面包装组件
-const ExchangeWrapper = () => {
-  const { t } = useTranslation();
-  return (
-    <SecondaryLayout title={t('exchange.title')}>
-      <Exchange />
-    </SecondaryLayout>
-  );
-};
 
 // 提现页面包装组件
 const WithdrawWrapper = () => {
@@ -124,10 +114,6 @@ export const router = createBrowserRouter([
   {
     path: '/network-earnings',
     element: <NetworkEarningsWrapper />,
-  },
-  {
-    path: '/exchange',
-    element: <ExchangeWrapper />,
   },
   {
     path: '/withdraw',
