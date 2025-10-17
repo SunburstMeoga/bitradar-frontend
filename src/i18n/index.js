@@ -41,14 +41,15 @@ i18n
   .use(initReactI18next)
   .init({
     resources,
-    fallbackLng: 'en',
+    lng: 'zh',
+    fallbackLng: 'zh',
     debug: import.meta.env.VITE_APP_ENV === 'development',
     supportedLngs: ['en', 'zh', 'ko', 'vi', 'ja', 'pt', 'es'],
     nonExplicitSupportedLngs: true,
     load: 'currentOnly',
     
     interpolation: {
-      escapeValue: false, // React已经默认转义了
+      escapeValue: false,
     },
     
     detection: {
