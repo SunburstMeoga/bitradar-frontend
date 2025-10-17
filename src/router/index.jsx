@@ -42,8 +42,9 @@ const ExchangeWrapper = () => {
 
 // 提现页面包装组件
 const WithdrawWrapper = () => {
+  const { t } = useTranslation();
   return (
-    <SecondaryLayout title="提现">
+    <SecondaryLayout title={t('withdraw.title', { defaultValue: '提现' })}>
       <Withdraw />
     </SecondaryLayout>
   );

@@ -2,9 +2,10 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import usePageTitle from '../../hooks/usePageTitle';
 import toast from 'react-hot-toast';
-import { useAuthStore, useUserStore } from '../../store';
+import { useAuthStore, useUserStore, useWeb3Store } from '../../store';
 import { useNavigate } from 'react-router-dom';
-import { depositUSDT, withdrawToUser, getWalletUSDTBalance, isDeveloper } from '../../services/vaultService';
+import { depositUSDT, getWalletUSDTBalance } from '../../services/vaultService';
+import { withdrawalService } from '../../services';
 
 // 自定义动画金额组件（借鉴网体详情页面）
 const AnimatedAmount = ({ amount, fontSize = '20vw', mdFontSize = 'text-xl', className = 'text-white' }) => {
@@ -64,12 +65,18 @@ const ExchangeCard = ({
       <div className="space-y-[10vw] md:space-y-3">
         {rows.map((row, idx) => (
           <div key={idx} className="border border-[#1B1C1C] rounded-[12vw] md:rounded-lg lg:rounded-xl p-[12vw] md:p-3 lg:p-4" style={{ backgroundColor: '#171818' }}>
-            {/* 行标题：币种与箭头 */}
-            <div className="flex items-center justify-start gap-[8vw] md:gap-2 lg:gap-3 mb-[10vw] md:mb-2">
-              <span className="text-white text-size-[16vw] md:text-base lg:text-lg">{row.leftLabel}</span>
-              <span className="text-[#8f8f8f]">→</span>
-              <span className="text-white text-size-[16vw] md:text-base lg:text-lg">{row.rightLabel}</span>
-            </div>
+            {/* 行标题：优先显示自定义标题，否则显示左右箭头 */}
+            {row.title ? (
+              <div className="flex items-center justify-start mb-[10vw] md:mb-2">
+                <span className="text-white text-size-[16vw] md:text-base lg:text-lg">{row.title}</span>
+              </div>
+            ) : (
+              <div className="flex items-center justify-start gap-[8vw] md:gap-2 lg:gap-3 mb-[10vw] md:mb-2">
+                <span className="text-white text-size-[16vw] md:text-base lg:text-lg">{row.leftLabel}</span>
+                <span className="text-[#8f8f8f]">→</span>
+                <span className="text-white text-size-[16vw] md:text-base lg:text-lg">{row.rightLabel}</span>
+              </div>
+            )}
 
             {/* 输入与按钮 */}
             <div className="flex items-center gap-[10vw] md:gap-3">
@@ -111,6 +118,7 @@ const Exchange = () => {
   const { t } = useTranslation();
   const { isAuthenticated } = useAuthStore();
   const { balance, fetchBalance } = useUserStore();
+  const { account, isConnected } = useWeb3Store();
   const navigate = useNavigate();
 
   // 设置页面标题
@@ -154,6 +162,7 @@ const Exchange = () => {
   const [card1WithdrawAmount, setCard1WithdrawAmount] = useState(''); // 平台USDT -> 链上USDT
   const [card1Submitting, setCard1Submitting] = useState(false);
   const [walletUsdtBalance, setWalletUsdtBalance] = useState(0);
+  const [withdrawalSettings, setWithdrawalSettings] = useState(null);
 
   // 钱包USDT余额读取与监听
   useEffect(() => {
@@ -200,6 +209,19 @@ const Exchange = () => {
       window.ethereum?.removeListener('chainChanged', handleChainChanged);
     };
   }, []);
+
+  // 获取提现设置（登录后）
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    let mounted = true;
+    withdrawalService.getSettings()
+      .then(res => {
+        if (!mounted) return;
+        if (res?.success) setWithdrawalSettings(res.data || []);
+      })
+      .catch(err => console.error('获取提现设置失败:', err));
+    return () => { mounted = false; };
+  }, [isAuthenticated]);
 
   // 卡片2：法币 ↔ 平台USDT
   const [card2Top, setCard2Top] = useState('FIAT'); // FIAT | PLATFORM_USDT
@@ -255,20 +277,43 @@ const Exchange = () => {
 
   const handleCard1Withdraw = async () => {
     if (!card1WithdrawAmount) return;
+    if (!isAuthenticated) {
+      toast.error('请先登录');
+      return;
+    }
+    if (!account) {
+      toast.error('请先连接钱包');
+      return;
+    }
+
+    // 校验最小金额（如果配置存在）
+    const usdtSetting = (withdrawalSettings || []).find(s => s.token_symbol === 'USDT');
+    const minAmt = usdtSetting ? parseFloat(usdtSetting.min_withdrawal_amount || '0') : 0;
+    const numAmt = parseFloat(card1WithdrawAmount);
+    if (usdtSetting && Number.isFinite(numAmt) && numAmt < minAmt) {
+      toast.error(`提现金额必须大于等于 ${minAmt} USDT`);
+      return;
+    }
+
     try {
       setCard1Submitting(true);
-      const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-      const isDev = await isDeveloper(accounts[0]);
-      if (!isDev) {
-        toast.error(t('exchange.withdraw_not_permitted'));
-      } else {
-        await withdrawToUser(parseFloat(card1WithdrawAmount));
+      const res = await withdrawalService.createWithdrawal({
+        token_symbol: 'USDT',
+        amount: String(card1WithdrawAmount),
+        to_address: account,
+      });
+      if (res?.success) {
         toast.success(t('exchange.withdraw_tx_submitted'));
         setCard1WithdrawAmount('');
+        // 刷新余额
+        fetchBalance().catch(() => {});
+      } else {
+        const msg = res?.message || t('exchange.tx_failed');
+        toast.error(msg);
       }
     } catch (err) {
-      console.error(err);
-      toast.error(err?.message || t('exchange.tx_failed'));
+      const msg = err?.response?.data?.message || err?.message || t('exchange.tx_failed');
+      toast.error(msg);
     } finally {
       setCard1Submitting(false);
     }
@@ -318,8 +363,7 @@ const Exchange = () => {
   // 行标签
   const card1Rows = [
     {
-      leftLabel: t('exchange.onchain_usdt'),
-      rightLabel: t('exchange.platform_usdt'),
+      title: t('exchange.usdt_deposit', { defaultValue: 'USDT充值' }),
       value: card1DepositAmount,
       onChange: handleCard1DepositChange,
       placeholder: t('exchange.enter_exchange_amount'),
@@ -328,8 +372,7 @@ const Exchange = () => {
       disabled: card1Submitting
     },
     {
-      leftLabel: t('exchange.platform_usdt'),
-      rightLabel: t('exchange.onchain_usdt'),
+      title: t('exchange.usdt_withdraw', { defaultValue: 'USDT提现' }),
       value: card1WithdrawAmount,
       onChange: handleCard1WithdrawChange,
       placeholder: t('exchange.enter_withdraw_amount'),
@@ -341,8 +384,7 @@ const Exchange = () => {
 
   const card2Rows = [
     {
-      leftLabel: t('exchange.fiat'),
-      rightLabel: t('exchange.platform_usdt'),
+      title: t('exchange.fiat_deposit', { defaultValue: '充值' }),
       value: card2DepositAmount,
       onChange: handleCard2DepositChange,
       placeholder: t('exchange.enter_exchange_amount'),
@@ -350,8 +392,7 @@ const Exchange = () => {
       onAction: handleCard2Deposit
     },
     {
-      leftLabel: t('exchange.platform_usdt'),
-      rightLabel: t('exchange.fiat'),
+      title: t('exchange.fiat_withdraw', { defaultValue: '提现' }),
       value: card2WithdrawAmount,
       onChange: handleCard2WithdrawChange,
       placeholder: t('exchange.enter_withdraw_amount'),

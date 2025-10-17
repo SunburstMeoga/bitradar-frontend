@@ -139,7 +139,7 @@ const Withdraw = () => {
   const { t } = useTranslation();
 
   // 设置页面标题
-  usePageTitle('exchange');
+  usePageTitle('withdraw');
 
   // 验证余额是否足够的辅助函数
   const validateBalance = (fromToken, requiredAmount, balances, showToast = true) => {
