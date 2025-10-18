@@ -102,11 +102,11 @@ const ExchangeCard = ({ title, rows, onOpenRecords }) => {
         ))}
       </div>
 
-      {/* <div className="flex justify-center mt-[12vw] md:mt-3 lg:mt-4">
+      <div className="flex justify-center mt-[12vw] md:mt-3 lg:mt-4">
         <button onClick={onOpenRecords} className="text-[#5671FB] text-size-[14vw] md:text-sm lg:text-sm font-medium hover:opacity-80 transition-opacity underline">
           {t('exchange.records')}
         </button>
-      </div> */}
+      </div>
     </div>
   );
 };
@@ -592,7 +592,7 @@ const Withdraw = () => {
       </div>
 
       {/* 卡片1：链上USDT ↔ 平台USDT */}
-      <ExchangeCard title={t('exchange.chain_platform_title')} rows={card1Rows} onOpenRecords={() => navigate('/token-history')} />
+      <ExchangeCard title={t('exchange.chain_platform_title')} rows={card1Rows} onOpenRecords={() => navigate('/token-history?token_symbol=USDT&transaction_type=all')} />
 
       {/* 卡片2：法币 ↔ 平台USDT */}
       <ExchangeCard title={t('exchange.fiat_platform_title')} rows={card2Rows} onOpenRecords={() => navigate('/token-history')} />

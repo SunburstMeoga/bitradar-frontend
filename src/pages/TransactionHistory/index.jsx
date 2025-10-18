@@ -6,10 +6,12 @@ import { transactionService } from '../../services';
 import toast from 'react-hot-toast';
 import transactionIcon from '../../assets/images/account-transation.png';
 import { formatPreciseTime } from '../../utils/time';
+import { useLocation } from 'react-router-dom';
 
 const TransactionHistory = () => {
   const { t } = useTranslation();
   const { isAuthenticated } = useAuthStore();
+  const location = useLocation();
 
   // 设置页面标题
   usePageTitle('token_history');
@@ -32,6 +34,14 @@ const TransactionHistory = () => {
     'Rocket': 'ROCKET'
   };
 
+  // 反向映射（将 API token_symbol 映射回 UI 标签名）
+  const symbolToTabMap = {
+    'USDT': 'USDT',
+    'USDR': 'USDR',
+    'LUSD': 'LuckyUSD',
+    'ROCKET': 'Rocket'
+  };
+
   // 筛选选项配置（基于交易类型分类）
   const filterOptions = {
     USDT: ['all', 'deposit', 'withdraw', 'trade'],
@@ -46,9 +56,14 @@ const TransactionHistory = () => {
       'deposit': ['DEPOSIT', 'TEST_ADD', 'LUSD_CLAIM'],
       'withdraw': ['WITHDRAW'],
       'trade': ['BET', 'WIN', 'LOSE', 'REFUND', 'FEE', 'MEMBERSHIP_UPGRADE'],
-      'reward': ['REFERRAL_REWARD', 'TRADING_MINING_REWARD', 'STAKE_REWARD']
+      'reward': ['REFERRAL_REWARD', 'TRADING_MINING_REWARD', 'STAKE_REWARD', 'MEMBERSHIP_UPGRADE_REWARD', 'REFERRAL_ACTIVITY_REWARD', 'REFERRAL_ACTIVITY_LAYER_REWARD']
     };
     return typeMap[filter] || [];
+  };
+
+  // 根据单个 transaction_type 反向映射到筛选类别
+  const mapTypeToFilter = (type) => {
+    return transactionService.getTransactionCategory(type) || 'all';
   };
 
   // 加载交易记录数据
@@ -121,6 +136,35 @@ const TransactionHistory = () => {
     if (loading || !hasMore) return;
     loadTransactions(page + 1, true);
   }, [loading, hasMore, page, loadTransactions]);
+
+  // 解析路由查询参数并设置默认 Tab/Filter
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const token = searchParams.get('token_symbol') || searchParams.get('token');
+    const type = searchParams.get('transaction_type');
+
+    let nextTab = null;
+    let nextFilter = null;
+
+    if (token && symbolToTabMap[token]) {
+      nextTab = symbolToTabMap[token];
+    }
+
+    if (type && type !== 'all') {
+      nextFilter = mapTypeToFilter(type);
+    } else if (searchParams.has('transaction_type') && type === 'all') {
+      nextFilter = 'all';
+    }
+
+    // 批量更新状态并触发初始加载
+    if (nextTab) setActiveTab(nextTab);
+    if (nextFilter) setActiveFilter(nextFilter);
+
+    // 若仅 token 存在，且未显式指定 type，则默认 all
+    if (token && !searchParams.has('transaction_type')) {
+      setActiveFilter('all');
+    }
+  }, [location.search]);
 
   // 初始加载和认证状态变化时加载数据
   useEffect(() => {

@@ -11,28 +11,45 @@ import ja from './locales/ja.json';
 import pt from './locales/pt.json';
 import es from './locales/es.json';
 
+// 基于 zh 填充其他语言缺失键
+function fillMissingKeys(base, target) {
+  if (!base) return target || {};
+  const result = { ...(target || {}) };
+  for (const key of Object.keys(base)) {
+    const baseVal = base[key];
+    const targetVal = result[key];
+    if (baseVal && typeof baseVal === 'object' && !Array.isArray(baseVal)) {
+      result[key] = fillMissingKeys(baseVal, targetVal);
+    } else {
+      if (targetVal === undefined) {
+        result[key] = baseVal;
+      }
+    }
+  }
+  return result;
+}
+
 const resources = {
   en: {
-    translation: en
+    translation: fillMissingKeys(zh, en)
   },
   zh: {
     translation: zh
   },
   ko: {
-    translation: ko
-  }
-  ,
+    translation: fillMissingKeys(zh, ko)
+  },
   vi: {
-    translation: vi
+    translation: fillMissingKeys(zh, vi)
   },
   ja: {
-    translation: ja
+    translation: fillMissingKeys(zh, ja)
   },
   pt: {
-    translation: pt
+    translation: fillMissingKeys(zh, pt)
   },
   es: {
-    translation: es
+    translation: fillMissingKeys(zh, es)
   }
 };
 
@@ -41,7 +58,7 @@ i18n
   .use(initReactI18next)
   .init({
     resources,
-    lng: 'zh',
+    // 不设置初始 lng，避免在 localStorage 中预写入默认值
     fallbackLng: 'zh',
     debug: import.meta.env.VITE_APP_ENV === 'development',
     supportedLngs: ['en', 'zh', 'ko', 'vi', 'ja', 'pt', 'es'],

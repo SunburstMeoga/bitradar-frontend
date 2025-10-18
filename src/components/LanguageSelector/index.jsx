@@ -18,8 +18,14 @@ const LanguageSelector = () => {
   const currentLanguage = languages.find(lang => i18n.language?.startsWith(lang.code)) || languages[0];
 
   const handleLanguageChange = (langCode) => {
-    i18n.changeLanguage(langCode);
-    setIsOpen(false);
+    try {
+      i18n.changeLanguage(langCode);
+      // 显式标记为用户手动选择，提升 localStorage 优先级
+      localStorage.setItem('i18nextLng', langCode);
+      localStorage.setItem('i18nextLng_manual', 'true');
+    } finally {
+      setIsOpen(false);
+    }
   };
 
   return (

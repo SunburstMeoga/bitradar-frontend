@@ -8,6 +8,7 @@ class TransactionService extends ApiService {
    * @param {number} params.offset - 偏移量（跳过前 N 筆記錄），默认 0
    * @param {number} params.token_id - 按代幣 ID 篩選：例如 1, 2, 3
    * @param {string} params.token_symbol - 按代幣符號篩選：例如 "LUSD", "USDT", "USDR"
+   * @param {string} params.token - 代幣符號（向後兼容，同 token_symbol）
    * @param {string} params.transaction_type - 按交易類型篩選
    * @returns {Promise<Object>} 交易记录数据
    */
@@ -29,9 +30,12 @@ class TransactionService extends ApiService {
       if (params.token_id !== undefined && params.token_id !== null) {
         queryParams.append('token_id', params.token_id);
       }
-      
-      if (params.token_symbol && params.token_symbol !== 'all') {
-        queryParams.append('token_symbol', params.token_symbol);
+
+      // 支持 token_symbol 与兼容参数 token（二选一传递）
+      if ((params.token_symbol || params.token) && (params.token_symbol || params.token) !== 'all') {
+        const symbol = params.token_symbol || params.token;
+        const key = params.token_symbol ? 'token_symbol' : 'token';
+        queryParams.append(key, symbol);
       }
       
       if (params.transaction_type && params.transaction_type !== 'all') {

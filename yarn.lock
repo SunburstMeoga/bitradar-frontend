@@ -1314,6 +1314,7 @@ __metadata:
     i18next: "npm:^25.3.2"
     i18next-browser-languagedetector: "npm:^8.2.0"
     i18next-http-backend: "npm:^3.0.2"
+    ip2region: "npm:^2.3.0"
     postcss: "npm:^8.5.6"
     postcss-px-to-viewport: "npm:^1.1.1"
     react: "npm:^19.1.0"
@@ -2557,6 +2558,15 @@ __metadata:
   version: 10.0.1
   resolution: "ip-address@npm:10.0.1"
   checksum: 10c0/1634d79dae18394004775cb6d699dc46b7c23df6d2083164025a2b15240c1164fccde53d0e08bd5ee4fc53913d033ab6b5e395a809ad4b956a940c446e948843
+  languageName: node
+  linkType: hard
+
+"ip2region@npm:^2.3.0":
+  version: 2.3.0
+  resolution: "ip2region@npm:2.3.0"
+  peerDependencies:
+    "@types/node": "*"
+  checksum: 10c0/cc4b7a089f0556d291bee258f7f7a82a227e31c32afa06c8a2cbb24dc3d3710ed83a7ee9589023ee439a8ad2b256f524c0153989901e136b79db8ef8b6a6f07a
   languageName: node
   linkType: hard
 
