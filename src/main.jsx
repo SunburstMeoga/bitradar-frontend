@@ -2,21 +2,15 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { RouterProvider } from 'react-router-dom'
 import './styles/main.scss'
-import i18n from './i18n'
-import { detectLanguageByIP } from './utils/ipLanguage'
 import { router } from './router'
+import { applyStartupLanguage } from './utils/languagePref'
 
 async function bootstrap() {
   try {
-    const locale = await detectLanguageByIP();
-    if (locale) {
-      // Persist and apply detected locale before first render
-      localStorage.setItem('i18nextLng', locale);
-      await i18n.changeLanguage(locale);
-    }
+    const source = await applyStartupLanguage()
+    console.log(`[startup] language applied via: ${source}`)
   } catch (e) {
-    // Non-blocking: keep rendering even if detection fails
-    console.warn('[bootstrap] language detection failed:', e);
+    console.warn('[bootstrap] language detection failed:', e)
   }
 
   createRoot(document.getElementById('root')).render(

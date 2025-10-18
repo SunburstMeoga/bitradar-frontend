@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import usePageTitle from '../hooks/usePageTitle';
+import { setLanguagePreference } from '../utils/languagePref'
 
 const PageTitleTest = () => {
   const { t, i18n } = useTranslation();
@@ -69,8 +70,10 @@ const PageTitleTest = () => {
     setSelectedPage(pageKey);
   };
 
-  const handleLanguageChange = (langCode) => {
-    i18n.changeLanguage(langCode);
+  const handleLanguageChange = async (langCode) => {
+    try {
+      await setLanguagePreference(langCode, true);
+    } catch (_) {}
   };
 
   const getExpectedTitle = (pageKey, langCode) => {

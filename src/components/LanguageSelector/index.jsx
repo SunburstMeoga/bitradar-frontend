@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { useState } from 'react';
+import { setLanguagePreference } from '../../utils/languagePref'
 
 const languages = [
   { code: 'en', name: 'English', flag: '🇺🇸' },
@@ -17,14 +18,12 @@ const LanguageSelector = () => {
 
   const currentLanguage = languages.find(lang => i18n.language?.startsWith(lang.code)) || languages[0];
 
-  const handleLanguageChange = (langCode) => {
+  const handleLanguageChange = async (langCode) => {
+    setChangeLoading(true);
     try {
-      i18n.changeLanguage(langCode);
-      // 显式标记为用户手动选择，提升 localStorage 优先级
-      localStorage.setItem('i18nextLng', langCode);
-      localStorage.setItem('i18nextLng_manual', 'true');
+      await setLanguagePreference(langCode, true);
     } finally {
-      setIsOpen(false);
+      setChangeLoading(false);
     }
   };
 

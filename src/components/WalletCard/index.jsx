@@ -6,6 +6,7 @@ import { MEMBERSHIP_LEVELS, MEMBERSHIP_COLORS } from '../MembershipCard';
 import { referralService } from '../../services';
 import toast from 'react-hot-toast';
 import { copyToClipboard } from '../../utils/clipboard';
+import { setLanguagePreference } from '../../utils/languagePref'
 
 
 // 导入图片
@@ -375,10 +376,12 @@ const WalletCard = ({ onClose, onSendClick, onActivityClick, onAddReferrerClick,
   };
 
   // 选择语言
-  const handleLanguageSelect = (language, langCode) => {
+  const handleLanguageSelect = async (language, langCode) => {
     setSelectedLanguage(language);
     setIsLanguageExpanded(false);
-    i18n.changeLanguage(langCode);
+    try {
+      await setLanguagePreference(langCode, true);
+    } catch (_) {}
   };
 
   // 处理添加推荐人点击（先关闭语言选项）
