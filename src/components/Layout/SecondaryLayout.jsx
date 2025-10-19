@@ -3,15 +3,24 @@ import SecondaryHeader from './SecondaryHeader';
 import ResponsiveContainer from './ResponsiveContainer';
 import ScrollToTop from '../ScrollToTop';
 import AuthExpiredHandler from '../AuthExpiredHandler';
+import ErrorBoundary from '../ErrorBoundary';
+import { useTranslation } from 'react-i18next';
 
 const SecondaryLayout = ({ title, onBack, children }) => {
+  const { t } = useTranslation();
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#121212' }}>
       <ScrollToTop />
       <ResponsiveContainer>
         <SecondaryHeader title={title} onBack={onBack} />
         <main className="flex-1">
-          {children}
+          <ErrorBoundary
+            title={t('error_boundary.title', { defaultValue: '出现错误' })}
+            description={t('error_boundary.description', { defaultValue: '发生了意外错误，请刷新页面重试。' })}
+            refreshText={t('error_boundary.refresh', { defaultValue: '刷新' })}
+          >
+            {children}
+          </ErrorBoundary>
         </main>
       </ResponsiveContainer>
       <Toaster

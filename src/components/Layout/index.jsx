@@ -5,15 +5,24 @@ import Footer from './Footer';
 import ResponsiveContainer from './ResponsiveContainer';
 import ScrollToTop from '../ScrollToTop';
 import AuthExpiredHandler from '../AuthExpiredHandler';
+import ErrorBoundary from '../ErrorBoundary';
+import { useTranslation } from 'react-i18next';
 
 const Layout = () => {
+  const { t } = useTranslation();
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#121212' }}>
       <ScrollToTop />
       <ResponsiveContainer>
         <Header />
         <main className="flex-1">
-          <Outlet />
+          <ErrorBoundary
+            title={t('error_boundary.title', { defaultValue: '出现错误' })}
+            description={t('error_boundary.description', { defaultValue: '发生了意外错误，请刷新页面重试。' })}
+            refreshText={t('error_boundary.refresh', { defaultValue: '刷新' })}
+          >
+            <Outlet />
+          </ErrorBoundary>
         </main>
         <Footer />
       </ResponsiveContainer>

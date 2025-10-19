@@ -5,7 +5,8 @@ import toast from 'react-hot-toast';
 import { useAuthStore, useUserStore, useWeb3Store } from '../../store';
 import { useNavigate } from 'react-router-dom';
 import { depositUSDT, getWalletUSDTBalance } from '../../services/vaultService';
-import { withdrawalService } from '../../services';
+import { withdrawalService, userService } from '../../services';
+import GlobalConfirmDialog from '../../components/GlobalConfirmDialog';
 
 // 自定义动画金额组件（借鉴网体详情页面）
 const AnimatedAmount = ({ amount, fontSize = '20vw', mdFontSize = 'text-xl', mdDecimalFontSize = 'md:text-base lg:text-lg', className = 'text-white', isRefreshing = false }) => {
@@ -210,6 +211,38 @@ const Withdraw = () => {
   const { account } = useWeb3Store();
   const navigate = useNavigate();
 
+  // 封禁弹窗控制
+  const [banDialogOpen, setBanDialogOpen] = useState(false);
+  const [banInfo, setBanInfo] = useState(null);
+
+  const checkBanStatusBeforeAction = async () => {
+    try {
+      const res = await userService.getBanStatus();
+      const data = res?.data ?? res;
+      const isBanned = data?.is_banned === true || data?.status === 'banned';
+      if (isBanned) {
+        setBanInfo(data);
+        setBanDialogOpen(true);
+        return false;
+      }
+      return true;
+    } catch (e) {
+      console.warn('检查封禁状态失败:', e);
+      // 出错时不阻断操作，但建议后续观察日志
+      return true;
+    }
+  };
+
+  const handleContactSupport = async () => {
+    const supportUrl = banInfo?.support_url || process.env.REACT_APP_SUPPORT_URL || '/';
+    try {
+      window.open(supportUrl, '_blank', 'noopener');
+    } catch (e) {
+      console.warn('打开客服页面失败:', e);
+      toast.error(t('common.error'));
+    }
+  };
+
   // 顶部 USDT 余额：从已集成的余额接口中获取
   const getUSDTBalance = () => {
     if (!balance) return 0;
@@ -349,6 +382,8 @@ const Withdraw = () => {
 
   const handleCard1Withdraw = async () => {
     if (!card1WithdrawAmount) return;
+    const canProceed = await checkBanStatusBeforeAction();
+    if (!canProceed) return;
     if (!isAuthenticated) {
       toast.error('请先登录');
       return;
@@ -417,8 +452,10 @@ const Withdraw = () => {
     }
   };
 
-  const handleCard2Withdraw = () => {
+  const handleCard2Withdraw = async () => {
     if (!card2WithdrawAmount) return;
+    const canProceed = await checkBanStatusBeforeAction();
+    if (!canProceed) return;
     setCard2Submitting(true);
     try {
       toast.success(t('exchange.fiat_withdraw_request_submitted'));
@@ -596,6 +633,17 @@ const Withdraw = () => {
 
       {/* 卡片2：法币 ↔ 平台USDT */}
       <ExchangeCard title={t('exchange.fiat_platform_title')} rows={card2Rows} onOpenRecords={() => navigate('/token-history')} />
+
+      <GlobalConfirmDialog
+        isOpen={banDialogOpen}
+        onClose={() => setBanDialogOpen(false)}
+        title={t('ban_modal.title', { defaultValue: '账户已限制' })}
+        content={t('ban_modal.description', { defaultValue: '您的账户已被限制，请联系客服获取帮助。' })}
+        confirmText={t('ban_modal.contact_support', { defaultValue: '联系客服' })}
+        cancelText={t('ban_modal.dismiss', { defaultValue: '关闭' })}
+        handleConfirm={handleContactSupport}
+        handleCancel={() => {}}
+      />
     </div>
   );
 };

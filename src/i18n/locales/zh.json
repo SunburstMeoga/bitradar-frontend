@@ -30,8 +30,8 @@
     "account": "账户",
     "network_details": "网体详情",
     "network_earnings": "收益明细",
-    "exchange": "充值",
-    "withdraw": "充值",
+    "exchange": "充提",
+    "withdraw": "充提",
     "token_history": "代币记录",
     "active_orders": "活跃订单",
     "order_detail": "订单详情",
@@ -173,7 +173,7 @@
   "account": {
     "wallet_not_connected": "未连接钱包",
     "network_details": "网体详情",
-    "exchange": "充值",
+    "exchange": "充提",
     "next_distribution": "下次发放",
     "token_history": "代币记录",
     "loading": "加载中...",
@@ -369,7 +369,7 @@
     "no_more_data": "没有更多数据了",
     "filters": {
       "all": "全部",
-      "deposit": "充值",
+      "deposit": "充提",
       "withdraw": "提现",
       "trade": "交易",
       "reward": "领取"
@@ -381,14 +381,14 @@
       "mining": "挖矿",
       "bonus": "红利",
       "exchange": "兑换",
-      "deposit": "充值",
+      "deposit": "充提",
       "distribution": "发放",
       "withdraw": "提现",
       "rocket_reward": "Rocket奖励",
       "rocket_withdraw": "Rocket提现",
       "rocket_bonus": "Rocket红利",
       "trade": "交易",
-      "DEPOSIT": "充值",
+      "DEPOSIT": "充提",
       "WITHDRAW": "提现",
       "BET": "下注",
       "WIN": "获胜",
@@ -441,5 +441,17 @@
     "verify_button": "验证",
     "success": "验证通过",
     "fail": "验证失败"
+  }
+  ,
+  "ban_modal": {
+    "title": "账户已限制",
+    "description": "由于风险控制，您的账户暂时无法进行充提。您可以联系支持获取更多帮助。",
+    "contact_support": "联系客服",
+    "dismiss": "我知道了"
+  },
+  "error_boundary": {
+    "title": "出现错误",
+    "description": "发生了意外错误，请刷新页面重试。",
+    "refresh": "刷新"
   }
 }

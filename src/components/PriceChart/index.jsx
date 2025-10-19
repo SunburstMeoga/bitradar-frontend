@@ -136,7 +136,11 @@ const customDrawPlugin = {
     ctx.globalAlpha = 1;
     ctx.fillStyle = '#C5FF33';
     ctx.beginPath();
-    ctx.roundRect(rightX, currentPriceY - labelHeight/2, labelWidth, labelHeight, cornerRadius);
+    if (typeof ctx.roundRect === 'function') {
+      ctx.roundRect(rightX, currentPriceY - labelHeight/2, labelWidth, labelHeight, cornerRadius);
+    } else {
+      drawRoundedRect(ctx, rightX, currentPriceY - labelHeight/2, labelWidth, labelHeight, cornerRadius);
+    }
     ctx.fill();
 
     // 绘制价格文字
@@ -482,7 +486,11 @@ const referenceLinePlugin = {
     ctx.fillStyle = color;
     ctx.globalAlpha = 1;
     ctx.beginPath();
-    ctx.roundRect(rightX, y - labelHeight / 2, labelWidth, labelHeight, 4);
+    if (typeof ctx.roundRect === 'function') {
+      ctx.roundRect(rightX, y - labelHeight / 2, labelWidth, labelHeight, 4);
+    } else {
+      drawRoundedRect(ctx, rightX, y - labelHeight / 2, labelWidth, labelHeight, 4);
+    }
     ctx.fill();
 
     // 文本
@@ -495,7 +503,7 @@ const referenceLinePlugin = {
   }
 };
 
-ChartJS.register(customDrawPlugin, userBetsPlugin);
+ChartJS.register(customDrawPlugin, userBetsPlugin, referenceLinePlugin);
 
 const PriceChart = ({ onPriceUpdate, userBets = [], onVisibleUserBetsChange }) => {
   const chartRef = useRef(null);

@@ -421,4 +421,16 @@
     "success": "검증 성공",
     "fail": "검증 실패"
   }
+  ,
+  "ban_modal": {
+    "title": "계정 제한됨",
+    "description": "리스크 관리로 인해 현재 계정의 입출금이 제한되었습니다. 지원팀에 문의해 주세요.",
+    "contact_support": "지원팀 문의",
+    "dismiss": "알겠습니다"
+  },
+  "error_boundary": {
+    "title": "오류가 발생했습니다",
+    "description": "예기치 않은 오류가 발생했습니다. 새로고침 후 다시 시도해 주세요.",
+    "refresh": "새로고침"
+  }
 }

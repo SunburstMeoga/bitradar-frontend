@@ -425,4 +425,16 @@
     "success": "Verification passed",
     "fail": "Verification failed"
   }
+  ,
+  "ban_modal": {
+    "title": "Account Restricted",
+    "description": "Due to risk control, your account cannot deposit/withdraw for now. Please contact support for assistance.",
+    "contact_support": "Contact Support",
+    "dismiss": "Got it"
+  },
+  "error_boundary": {
+    "title": "Something went wrong",
+    "description": "An unexpected error occurred. Please refresh and try again.",
+    "refresh": "Refresh"
+  }
 }

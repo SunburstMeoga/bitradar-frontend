@@ -17,26 +17,26 @@ class ErrorBoundary extends React.Component {
 
   render() {
     if (this.state.hasError) {
+      const { title, description, refreshText, onRefresh } = this.props;
       return (
         <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#121212' }}>
           <div className="text-center p-8">
             <h2 className="text-white text-xl font-semibold mb-4">
-              Something went wrong
+              {title || 'Something went wrong'}
             </h2>
             <p className="text-[#8f8f8f] mb-6">
-              An unexpected error occurred. Please refresh the page and try again.
+              {description || 'An unexpected error occurred. Please refresh the page and try again.'}
             </p>
             <button
-              onClick={() => window.location.reload()}
+              onClick={() => (typeof onRefresh === 'function' ? onRefresh() : window.location.reload())}
               className="px-6 py-3 bg-[#c5ff33] text-black rounded-lg font-medium hover:opacity-80 transition-opacity"
             >
-              Refresh Page
+              {refreshText || 'Refresh Page'}
             </button>
           </div>
         </div>
       );
     }
-
     return this.props.children;
   }
 }

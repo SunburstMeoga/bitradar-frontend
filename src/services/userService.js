@@ -248,6 +248,16 @@ class UserService extends ApiService {
       throw error;
     }
   }
+  async getBanStatus() {
+    try {
+      const response = await this.get('/users/ban-status');
+      // 直接返回服务端结构：{ success, is_banned, ban_reason, banned_at }
+      return response;
+    } catch (error) {
+      console.error('获取封禁状态失败:', error);
+      throw error;
+    }
+  }
 }
 
 export default new UserService();
