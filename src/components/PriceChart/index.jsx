@@ -222,10 +222,14 @@ const userBetsPlugin = {
           // 绘制结算点（黑色三角形）
           drawSettlementPoint(ctx, settlementX, settlementY, bet.direction);
 
-          // 依据图表数据计算胜负与盈利金额，避免因取价时机误差导致样式错误
+          // 使用订单实际价格判断胜负，避免图表采样误差导致显示错误
+          const openPriceRaw = (typeof bet.price === 'number') ? bet.price : parseFloat(bet.price);
+          const closePriceRaw = (typeof bet.settlementPrice === 'number') ? bet.settlementPrice : parseFloat(bet.settlementPrice);
+          const normalizedOpen = Number.isFinite(openPriceRaw) ? openPriceRaw : betPriceValue;
+          const normalizedClose = Number.isFinite(closePriceRaw) ? closePriceRaw : settlementPriceValue;
           const isWin = (bet.direction === 'up')
-            ? (settlementPriceValue > betPriceValue)
-            : (settlementPriceValue < betPriceValue);
+            ? (normalizedClose > normalizedOpen)
+            : (normalizedClose < normalizedOpen);
           const profit = isWin ? (bet.amount * (1 - 0.03)) : 0;
 
           if (isWin && profit > 0) {

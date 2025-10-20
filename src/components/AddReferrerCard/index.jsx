@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { referralService } from '../../services';
 import { useWeb3Store } from '../../store';
 import toast from 'react-hot-toast';
+import { readFromClipboard } from '../../utils/clipboard';
 
 // 返回按钮SVG组件
 const BackIcon = () => (
@@ -97,21 +98,17 @@ const AddReferrerCard = ({ onBack, onClose, onSuccess }) => {
   // 处理粘贴功能
   const handlePaste = async () => {
     try {
-      // 检查是否支持clipboard API
-      if (!navigator.clipboard || !navigator.clipboard.readText) {
-        throw new Error('Clipboard API not supported');
-      }
-      const text = await navigator.clipboard.readText();
-      setInviteCode(text);
+      const text = await readFromClipboard();
+      setInviteCode(text || '');
       setIsCodeFocused(true);
       if (textareaRef.current) {
         textareaRef.current.focus();
       }
-      // 自动验证粘贴的邀请码
-      await validateInviteCode(text);
+      if (text && text.trim()) {
+        await validateInviteCode(text);
+      }
     } catch (err) {
-      console.error('粘贴失败:', err);
-      // 提供备用方案或用户提示
+      console.error('粘贴失败原因:', err);
       toast.error('粘贴功能不可用，请手动输入推荐码');
     }
   };
