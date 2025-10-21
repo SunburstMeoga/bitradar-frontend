@@ -105,6 +105,34 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
   const previousPriceRef = useRef(67234.56);
   const balanceFetchedRef = useRef(false);
   const pendingDirectionRef = useRef(null);
+  const recentPricesRef = useRef([]);
+  const amountInputRef = useRef(null);
+  const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
+
+  // 监听移动端键盘打开/关闭（基于 visualViewport）
+  useEffect(() => {
+    const vv = window.visualViewport;
+    if (!vv) return;
+
+    const handleResize = () => {
+      // 当可视视口高度显著缩小时，视为键盘打开
+      const keyboardOpen = vv.height < window.innerHeight - 120;
+      setIsKeyboardOpen(keyboardOpen);
+      if (keyboardOpen) {
+        try {
+          amountInputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } catch (_) {}
+      }
+    };
+
+    vv.addEventListener('resize', handleResize);
+    // 初始化检测一次
+    handleResize();
+
+    return () => {
+      vv.removeEventListener('resize', handleResize);
+    };
+  }, []);
 
   // 使用防重复调用的API hook
   const safeFetchBalance = useApiCall(fetchBalance, []);
@@ -672,6 +700,16 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
     const prevPrice = previousPriceRef.current;
     const currentTime = Date.now();
 
+    // 记录最近价格序列用于按结算时间回溯定位价格点
+    try {
+      const ts = priceData.timestamp;
+      if (typeof ts === 'number' && Number.isFinite(ts)) {
+        const buf = recentPricesRef.current;
+        buf.push({ timestamp: ts, price: newPrice });
+        if (buf.length > 600) buf.splice(0, buf.length - 600); // 保留最近约10分钟
+      }
+    } catch (_) {}
+
     // 更新当前价格
     setCurrentPrice(newPrice);
 
@@ -690,8 +728,29 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
 
         // 检查是否到达结算时间
         if (currentTime >= bet.settlementTime) {
-          // 计算是否猜中
-          const priceChange = newPrice - bet.price;
+          // 优先使用按时间定位的结算价格（第一个时间 >= 结算时间的价格）
+          let settlementEntry = null;
+          const buf = recentPricesRef.current;
+          for (let i = 0; i < buf.length; i++) {
+            if (buf[i].timestamp >= bet.settlementTime) {
+              settlementEntry = buf[i];
+              break;
+            }
+          }
+          // 若未找到精确时间点，选择距离结算时间最近的点作为回退
+          if (!settlementEntry && buf.length > 0) {
+            let nearest = buf[0];
+            let minDiff = Math.abs(buf[0].timestamp - bet.settlementTime);
+            for (let i = 1; i < buf.length; i++) {
+              const d = Math.abs(buf[i].timestamp - bet.settlementTime);
+              if (d < minDiff) { minDiff = d; nearest = buf[i]; }
+            }
+            settlementEntry = nearest;
+          }
+          const settlementPrice = settlementEntry ? settlementEntry.price : newPrice;
+
+          // 计算是否猜中（以结算点价格与入场价比较）
+          const priceChange = settlementPrice - bet.price;
           const isWin = (bet.direction === 'up' && priceChange > 0) ||
                        (bet.direction === 'down' && priceChange < 0);
 
@@ -702,7 +761,7 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
             id: bet.id,
             direction: bet.direction,
             betPrice: bet.price,
-            settlementPrice: newPrice,
+            settlementPrice,
             priceChange,
             isWin,
             profit
@@ -710,7 +769,7 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
 
           return {
             ...bet,
-            settlementPrice: newPrice,
+            settlementPrice,
             isWin,
             profit,
             status: 'settled'
@@ -723,7 +782,7 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
 
     // 更新前一个价格的引用
     previousPriceRef.current = newPrice;
-  }, []); // 移除依赖，使用 ref 避免循环依赖
+  }, []);
 
   // 获取代币列表
   useEffect(() => {
@@ -882,7 +941,7 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
       </div>
 
       {/* 交易卡片 */}
-      <div className="w-[375vw] md:w-full flex-shrink-0 flex flex-col items-center justify-center px-[16vw] md:px-4">
+      <div className="w-[375vw] md:w-full flex-shrink-0 flex flex-col items-center justify-center px-[16vw] md:px-4" style={{ marginBottom: isKeyboardOpen ? '20vh' : 0 }}>
         {/* 第一部分：Trade Amount */}
         <div
           className="w-[343vw] md:w-full h-[116vw] md:h-auto pt-[16vw] md:pt-4 pr-[16vw] md:pr-4 pb-[14vw] md:pb-4 pl-[16vw] md:pl-4 rounded-[12vw] md:rounded-lg"
@@ -906,6 +965,13 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
                 inputMode="numeric"
                 className="w-full h-[40vw] md:h-10 bg-transparent border-none outline-none text-[#c5ff33] text-size-[34vw] md:text-2xl font-semibold"
                 style={{ appearance: 'none' }}
+                ref={amountInputRef}
+                onFocus={() => {
+                  // 输入框聚焦时，滚动到中间位置以避免被底部tabs遮挡
+                  try {
+                    amountInputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                  } catch (_) {}
+                }}
               />
             </div>
             <div className="w-[8vw] md:w-2 flex-shrink-0"></div>
