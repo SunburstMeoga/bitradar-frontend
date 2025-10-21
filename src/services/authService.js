@@ -142,7 +142,7 @@ class AuthService extends ApiService {
    */
   getSignMessage() {
     // 从localStorage获取当前语言，默认为英文
-    const currentLanguage = localStorage.getItem('i18nextLng') || 'en';
+    const currentLanguage = localStorage.getItem('i18nextLng') || 'zh';
 
     // 根据语言返回对应的签名消息
     const messages = {

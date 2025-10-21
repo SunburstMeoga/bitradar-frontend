@@ -59,7 +59,7 @@ i18n
   .init({
     resources,
     // 不设置初始 lng，避免在 localStorage 中预写入默认值
-    fallbackLng: 'zh',
+    fallbackLng: 'en',
     debug: import.meta.env.VITE_APP_ENV === 'development',
     supportedLngs: ['en', 'zh', 'ko', 'vi', 'ja', 'pt', 'es'],
     nonExplicitSupportedLngs: true,
