@@ -337,7 +337,18 @@ const Account = () => {
           )}
 
           {/* 在选中Rocket或USDR时显示提现按钮 */}
-          {(activeTab === 'Rocket' || activeTab === 'USDR') && (
+          {activeTab === 'Rocket' && (
+            <Link
+              to="/rocket-withdraw"
+              className="px-[24vw] md:px-6 py-[12vw] md:py-3 rounded-[34vw] md:rounded-full cursor-pointer hover:opacity-80 transition-opacity border border-white"
+              style={{ backgroundColor: 'transparent' }}
+            >
+              <span className="text-white text-size-[16vw] md:text-base font-medium">
+                提现
+              </span>
+            </Link>
+          )}
+          {activeTab === 'USDR' && (
             <Link
               to="/withdraw"
               className="px-[24vw] md:px-6 py-[12vw] md:py-3 rounded-[34vw] md:rounded-full cursor-pointer hover:opacity-80 transition-opacity border border-white"

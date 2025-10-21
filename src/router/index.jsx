@@ -17,6 +17,7 @@ import TestCaptcha from '../pages/TestCaptcha';
 import TestLayout from '../pages/TestLayout';
 import NotFound from '../pages/NotFound';
 import PageTitleTest from '../components/PageTitleTest';
+import RocketWithdraw from '../pages/RocketWithdraw';
 
 
 // 创建一个包装组件来提供标题
@@ -36,6 +37,16 @@ const WithdrawWrapper = () => {
   return (
     <SecondaryLayout title={t('withdraw.title', { defaultValue: '提现' })}>
       <Withdraw />
+    </SecondaryLayout>
+  );
+};
+
+// Rocket 提现页面包装组件
+const RocketWithdrawWrapper = () => {
+  const { t } = useTranslation();
+  return (
+    <SecondaryLayout title={t('rocket_withdraw.title', { defaultValue: 'Rocket提现' })}>
+      <RocketWithdraw />
     </SecondaryLayout>
   );
 };
@@ -118,6 +129,10 @@ export const router = createBrowserRouter([
   {
     path: '/withdraw',
     element: <WithdrawWrapper />,
+  },
+  {
+    path: '/rocket-withdraw',
+    element: <RocketWithdrawWrapper />,
   },
   {
     path: '/token-history',
