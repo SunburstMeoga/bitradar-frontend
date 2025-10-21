@@ -89,15 +89,6 @@ const RocketWithdrawCard = ({ title, withdrawAmount, onWithdrawAmountChange, onC
         {title}
       </div>
 
-      {/* 余额信息：平台Rocket余额（独立一行） */}
-      <div className="mb-[16vw] md:mb-4 lg:mb-5">
-        <div className="flex items-center justify-between p-[16vw] md:p-4 lg:p-5 rounded-[12vw] md:rounded-lg lg:rounded-xl" style={{ backgroundColor: '#171818', border: '1px solid #1B1C1C' }}>
-          <div className="flex items-center gap-[12vw] md:gap-3">
-            <span className="text-[#8f8f8f] text-size-[14vw] md:text-sm">{t('exchange.platform_balance')}:</span>
-            <span className="text-white text-size-[16vw] md:text-base font-medium">{(balances.Rocket || 0).toLocaleString()}</span>
-          </div>
-        </div>
-      </div>
 
       {/* 提现上下限（与余额行分开单独显示，同一行展示最小/最大） */}
       <div className="mb-[12vw] md:mb-3">
