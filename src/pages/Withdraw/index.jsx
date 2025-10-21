@@ -112,59 +112,54 @@ const ExchangeCard = ({ title, rows, onOpenRecords }) => {
   );
 };
 
-// 提现卡片组件
-const WithdrawCard = ({
-  title,
-  withdrawAmount,
-  onWithdrawAmountChange,
-  onConfirm,
-  isConfirmDisabled,
-  balances,
-  minAmount,
-  t
-}) => {
+// USDT提现卡片，补充显示最小/最大与手续费
+const WithdrawCard = ({ title, withdrawAmount, onWithdrawAmountChange, onConfirm, isConfirmDisabled, balances, minAmount, maxAmount, feeRatePercent, isLoading, t }) => {
   return (
     <div
       className="w-[360vw] md:w-96 p-[20vw] md:p-5 rounded-[34vw] md:rounded-[34px] mb-[24vw] md:mb-6"
-      style={{
-        backgroundColor: '#121313',
-        border: '1px solid #1F1F1F'
-      }}
+      style={{ backgroundColor: '#121313', border: '1px solid #1F1F1F' }}
     >
-      {/* 卡片标题 */}
       <div className="text-[#9D9D9D] text-size-[16vw] md:text-base lg:text-lg font-medium mb-[16vw] md:mb-4 lg:mb-5 text-center">
         {title}
       </div>
 
-      {/* 余额信息显示 */}
+      {/* 余额 */}
       <div className="mb-[16vw] md:mb-4 lg:mb-5">
         <div className="flex items-center justify-between p-[16vw] md:p-4 lg:p-5 rounded-[12vw] md:rounded-lg lg:rounded-xl" style={{ backgroundColor: '#171818', border: '1px solid #1B1C1C' }}>
           <div className="flex items-center gap-[12vw] md:gap-3">
-            <span className="text-[#8f8f8f] text-size-[14vw] md:text-sm">
-              {t('exchange.platform_balance')}:
-            </span>
-            <span className="text-white text-size-[16vw] md:text-base font-medium">
-              {balances.Rocket?.toLocaleString() || '0.00'}
-            </span>
-          </div>
-          <div className="flex items-center gap-[12vw] md:gap-3">
-            <span className="text-[#8f8f8f] text-size-[14vw] md:text-sm">
-              {t('exchange.min_withdraw_amount')}:
-            </span>
-            <span className="text-white text-size-[16vw] md:text-base font-medium">
-              {minAmount}
-            </span>
+            <span className="text-[#8f8f8f] text-size-[14vw] md:text-sm">{t('exchange.platform_balance')}:</span>
+            <span className="text-white text-size-[16vw] md:text-base font-medium">{(balances.USDT || 0).toLocaleString()}</span>
           </div>
         </div>
       </div>
 
-      {/* 输入区域 */}
+      {/* 提现上下限（同一行最小/最大，与余额分开显示） */}
+      <div className="mb-[12vw] md:mb-3">
+        <div className="flex items-center justify-between p-[16vw] md:p-4 lg:p-5 rounded-[12vw] md:rounded-lg lg:rounded-xl" style={{ backgroundColor: '#171818', border: '1px solid #1B1C1C' }}>
+          <div className="flex items-center gap-[12vw] md:gap-3">
+            <span className="text-[#8f8f8f] text-size-[14vw] md:text-sm">{t('exchange.min_withdraw_amount')}:</span>
+            <span className="text-white text-size-[16vw] md:text-base font-medium">{minAmount}</span>
+          </div>
+          <div className="flex items-center gap-[12vw] md:gap-3">
+            <span className="text-[#8f8f8f] text-size-[14vw] md:text-sm">最大提现金额:</span>
+            <span className="text-white text-size-[16vw] md:text-base font-medium">{maxAmount > 0 ? maxAmount : '无限制'}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* 手续费显示 */}
+      <div className="mb-[12vw] md:mb-3">
+        <div className="flex items-center justify-between p-[16vw] md:p-4 lg:p-5 rounded-[12vw] md:rounded-lg lg:rounded-xl" style={{ backgroundColor: '#171818', border: '1px solid #1B1C1C' }}>
+          <div className="flex items-center gap-[12vw] md:gap-3">
+            <span className="text-[#8f8f8f] text-size-[14vw] md:text-sm">提现手续费:</span>
+            <span className="text-white text-size-[16vw] md:text-base font-medium">{feeRatePercent}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* 提现金额输入 */}
       <div className="mb-[16vw] md:mb-4 lg:mb-5">
-        {/* 提现金额输入框 */}
-        <div
-          className="flex items-center justify-between p-[16vw] md:p-4 lg:p-5 rounded-[12vw] md:rounded-lg lg:rounded-xl"
-          style={{ backgroundColor: '#171818', border: '1px solid #1B1C1C' }}
-        >
+        <div className="flex items-center justify-between p-[16vw] md:p-4 lg:p-5 rounded-[12vw] md:rounded-lg lg:rounded-xl" style={{ backgroundColor: '#171818', border: '1px solid #1B1C1C' }}>
           <span className="text-white text-size-[16vw] md:text-base lg:text-lg">{t('exchange.withdraw_amount')}</span>
           <input
             type="number"
@@ -177,23 +172,22 @@ const WithdrawCard = ({
         </div>
       </div>
 
-      {/* 确认按钮 */}
       <button
         onClick={onConfirm}
         disabled={isConfirmDisabled}
-        className={`w-full h-[50vw] md:h-12 lg:h-14 mt-[20vw] md:mt-5 lg:mt-6 rounded-[12vw] md:rounded-lg lg:rounded-xl text-size-[16vw] md:text-base lg:text-lg font-medium transition-all ${
-          isConfirmDisabled
-            ? 'opacity-50 cursor-not-allowed'
-            : 'hover:opacity-80 cursor-pointer'
-        }`}
-        style={{
-          backgroundColor: isConfirmDisabled ? '#3d3d3d' : '#1D202F',
-          borderColor: isConfirmDisabled ? 'transparent' : '#282B39',
-          borderWidth: '1px',
-          color: isConfirmDisabled ? '#8f8f8f' : '#5671FB'
-        }}
+        className={`w-full h-[50vw] md:h-12 lg:h-14 mt-[20vw] md:mt-5 lg:mt-6 rounded-[12vw] md:rounded-lg lg:rounded-xl text-size-[16vw] md:text-base lg:text-lg font-medium transition-all ${isConfirmDisabled ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-80 cursor-pointer'}`}
+        style={{ backgroundColor: isConfirmDisabled ? '#3d3d3d' : '#1D202F', borderColor: isConfirmDisabled ? 'transparent' : '#282B39', borderWidth: '1px', color: isConfirmDisabled ? '#8f8f8f' : '#5671FB' }}
       >
-        {t('exchange.confirm_withdraw')}
+        {isLoading ? (
+          <span className="flex items-center justify-center gap-2">
+            <svg className="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            提交中...
+          </span>
+        ) : (
+          t('exchange.confirm_withdraw')
+        )}
       </button>
     </div>
   );

@@ -78,7 +78,7 @@ const getWalletRocketBalance = async (address) => {
 };
 
 // Rocket提现卡片
-const RocketWithdrawCard = ({ title, withdrawAmount, onWithdrawAmountChange, onConfirm, isConfirmDisabled, balances, minAmount, t }) => {
+const RocketWithdrawCard = ({ title, withdrawAmount, onWithdrawAmountChange, onConfirm, isConfirmDisabled, balances, minAmount, maxAmount, feeRatePercent, isLoading, t }) => {
   return (
     <div
       className="w-[360vw] md:w-96 p-[20vw] md:p-5 rounded-[34vw] md:rounded-[34px] mb-[24vw] md:mb-6"
@@ -89,16 +89,36 @@ const RocketWithdrawCard = ({ title, withdrawAmount, onWithdrawAmountChange, onC
         {title}
       </div>
 
-      {/* 余额信息：平台Rocket余额 */}
+      {/* 余额信息：平台Rocket余额（独立一行） */}
       <div className="mb-[16vw] md:mb-4 lg:mb-5">
         <div className="flex items-center justify-between p-[16vw] md:p-4 lg:p-5 rounded-[12vw] md:rounded-lg lg:rounded-xl" style={{ backgroundColor: '#171818', border: '1px solid #1B1C1C' }}>
           <div className="flex items-center gap-[12vw] md:gap-3">
             <span className="text-[#8f8f8f] text-size-[14vw] md:text-sm">{t('exchange.platform_balance')}:</span>
             <span className="text-white text-size-[16vw] md:text-base font-medium">{(balances.Rocket || 0).toLocaleString()}</span>
           </div>
+        </div>
+      </div>
+
+      {/* 提现上下限（与余额行分开单独显示，同一行展示最小/最大） */}
+      <div className="mb-[12vw] md:mb-3">
+        <div className="flex items-center justify-between p-[16vw] md:p-4 lg:p-5 rounded-[12vw] md:rounded-lg lg:rounded-xl" style={{ backgroundColor: '#171818', border: '1px solid #1B1C1C' }}>
           <div className="flex items-center gap-[12vw] md:gap-3">
             <span className="text-[#8f8f8f] text-size-[14vw] md:text-sm">{t('exchange.min_withdraw_amount')}:</span>
             <span className="text-white text-size-[16vw] md:text-base font-medium">{minAmount}</span>
+          </div>
+          <div className="flex items-center gap-[12vw] md:gap-3">
+            <span className="text-[#8f8f8f] text-size-[14vw] md:text-sm">最大提现金额:</span>
+            <span className="text-white text-size-[16vw] md:text-base font-medium">{maxAmount > 0 ? maxAmount : '无限制'}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* 手续费显示 */}
+      <div className="mb-[12vw] md:mb-3">
+        <div className="flex items-center justify-between p-[16vw] md:p-4 lg:p-5 rounded-[12vw] md:rounded-lg lg:rounded-xl" style={{ backgroundColor: '#171818', border: '1px solid #1B1C1C' }}>
+          <div className="flex items-center gap-[12vw] md:gap-3">
+            <span className="text-[#8f8f8f] text-size-[14vw] md:text-sm">提现手续费:</span>
+            <span className="text-white text-size-[16vw] md:text-base font-medium">{feeRatePercent}</span>
           </div>
         </div>
       </div>
@@ -124,7 +144,16 @@ const RocketWithdrawCard = ({ title, withdrawAmount, onWithdrawAmountChange, onC
         className={`w-full h-[50vw] md:h-12 lg:h-14 mt-[20vw] md:mt-5 lg:mt-6 rounded-[12vw] md:rounded-lg lg:rounded-xl text-size-[16vw] md:text-base lg:text-lg font-medium transition-all ${isConfirmDisabled ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-80 cursor-pointer'}`}
         style={{ backgroundColor: isConfirmDisabled ? '#3d3d3d' : '#1D202F', borderColor: isConfirmDisabled ? 'transparent' : '#282B39', borderWidth: '1px', color: isConfirmDisabled ? '#8f8f8f' : '#5671FB' }}
       >
-        {t('exchange.confirm_withdraw')}
+        {isLoading ? (
+          <span className="flex items-center justify-center gap-2">
+            <svg className="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            提交中...
+          </span>
+        ) : (
+          t('exchange.confirm_withdraw')
+        )}
       </button>
     </div>
   );
@@ -226,10 +255,10 @@ const RocketWithdraw = () => {
   const [withdrawAmount, setWithdrawAmount] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [settings, setSettings] = useState(null);
-  const minWithdrawAmount = (() => {
-    const rocketSetting = (settings || []).find(s => s.token_symbol === 'ROCKET');
-    return rocketSetting ? parseFloat(rocketSetting.min_withdrawal_amount || '0') : 1; // 默认1
-  })();
+  const rocketSetting = (settings || []).find(s => s.token_symbol === 'ROCKET');
+  const minWithdrawAmount = rocketSetting ? parseFloat(rocketSetting.min_withdrawal_amount || '0') : 1;
+  const maxWithdrawAmount = rocketSetting ? parseFloat(rocketSetting.max_withdrawal_amount || '0') : 0;
+  const feeRatePercent = rocketSetting ? `${(parseFloat(rocketSetting.withdrawal_fee_rate || '0') * 100).toFixed(2)}%` : '0%';
 
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -244,6 +273,10 @@ const RocketWithdraw = () => {
     const num = parseFloat(value) || 0;
     if (value && num < minWithdrawAmount) {
       toast.error(`${t('exchange.min_withdraw_amount')}: ${minWithdrawAmount}`);
+      return;
+    }
+    if (value && maxWithdrawAmount > 0 && num > maxWithdrawAmount) {
+      toast.error(`提现金额不得超过 ${maxWithdrawAmount}`);
       return;
     }
     if (value && num > platformRocket) {
@@ -272,6 +305,10 @@ const RocketWithdraw = () => {
     const numAmt = parseFloat(withdrawAmount);
     if (!Number.isFinite(numAmt) || numAmt < minWithdrawAmount) {
       toast.error(`${t('exchange.min_withdraw_amount')}: ${minWithdrawAmount}`);
+      return;
+    }
+    if (maxWithdrawAmount > 0 && numAmt > maxWithdrawAmount) {
+      toast.error(`提现金额不得超过 ${maxWithdrawAmount}`);
       return;
     }
     if (numAmt > platformRocket) {
@@ -331,8 +368,11 @@ const RocketWithdraw = () => {
         onWithdrawAmountChange={handleWithdrawAmountChange}
         onConfirm={handleWithdrawConfirm}
         isConfirmDisabled={isSubmitting || !withdrawAmount}
+        isLoading={isSubmitting}
         balances={{ Rocket: platformRocket }}
         minAmount={minWithdrawAmount}
+        maxAmount={maxWithdrawAmount}
+        feeRatePercent={feeRatePercent}
         t={t}
       />
 
