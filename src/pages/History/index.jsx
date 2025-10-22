@@ -171,7 +171,7 @@ const History = () => {
     const connectWebSocket = () => {
       try {
         console.log('🔌 History页面连接WebSocket...');
-        wsRef.current = new WebSocket('wss://ws.bitrockets.xyz/ws/price');
+        wsRef.current = new WebSocket(`${import.meta.env.VITE_WS_URL}/ws/price`);
 
         wsRef.current.onopen = () => {
           console.log('✅ History页面WebSocket连接成功');

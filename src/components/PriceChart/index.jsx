@@ -619,8 +619,8 @@ const PriceChart = ({ onPriceUpdate, userBets = [], onVisibleUserBetsChange }) =
 
     const connectWebSocket = () => {
       try {
-        console.log('🔌 正在连接WebSocket到: wss://ws.bitrockets.xyz/ws/price');
-        wsRef.current = new WebSocket('wss://ws.bitrockets.xyz/ws/price');
+        console.log('🔌 正在连接WebSocket到:', `${import.meta.env.VITE_WS_URL}/ws/price`);
+        wsRef.current = new WebSocket(`${import.meta.env.VITE_WS_URL}/ws/price`);
 
         wsRef.current.onopen = () => {
           console.log('✅ WebSocket连接成功');
