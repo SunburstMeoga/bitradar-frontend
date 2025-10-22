@@ -78,28 +78,32 @@ const getWalletRocketBalance = async (address) => {
 };
 
 // Rocket提现卡片
-const RocketWithdrawCard = ({ title, withdrawAmount, onWithdrawAmountChange, onConfirm, isConfirmDisabled, balances, minAmount, maxAmount, feeRatePercent, isLoading, t }) => {
+const RocketWithdrawCard = ({ title, withdrawAmount, onWithdrawAmountChange, onConfirm, isConfirmDisabled, balances, minAmountText, maxAmountText, feeRatePercent, isLoading, t }) => {
   return (
     <div
       className="w-[360vw] md:w-96 p-[20vw] md:p-5 rounded-[34vw] md:rounded-[34px] mb-[24vw] md:mb-6"
       style={{ backgroundColor: '#121313', border: '1px solid #1F1F1F' }}
     >
-      {/* 标题（无需“USDT充提”） */}
       <div className="text-[#9D9D9D] text-size-[16vw] md:text-base lg:text-lg font-medium mb-[16vw] md:mb-4 lg:mb-5 text-center">
         {title}
       </div>
 
-
-      {/* 提现上下限（与余额行分开单独显示，同一行展示最小/最大） */}
+      {/* 最小提现金额（独立一行） */}
       <div className="mb-[12vw] md:mb-3">
         <div className="flex items-center justify-between p-[16vw] md:p-4 lg:p-5 rounded-[12vw] md:rounded-lg lg:rounded-xl" style={{ backgroundColor: '#171818', border: '1px solid #1B1C1C' }}>
           <div className="flex items-center gap-[12vw] md:gap-3">
-            <span className="text-[#8f8f8f] text-size-[14vw] md:text-sm">{t('exchange.min_withdraw_amount')}:</span>
-            <span className="text-white text-size-[16vw] md:text-base font-medium">{minAmount}</span>
+            <span className="text-[#8f8f8f] text-size-[14vw] md:text-sm">最小提现金额:</span>
+            <span className="text-white text-size-[16vw] md:text-base font-medium">{minAmountText}</span>
           </div>
+        </div>
+      </div>
+
+      {/* 最大提现金额（独立一行） */}
+      <div className="mb-[12vw] md:mb-3">
+        <div className="flex items-center justify-between p-[16vw] md:p-4 lg:p-5 rounded-[12vw] md:rounded-lg lg:rounded-xl" style={{ backgroundColor: '#171818', border: '1px solid #1B1C1C' }}>
           <div className="flex items-center gap-[12vw] md:gap-3">
             <span className="text-[#8f8f8f] text-size-[14vw] md:text-sm">最大提现金额:</span>
-            <span className="text-white text-size-[16vw] md:text-base font-medium">{maxAmount > 0 ? maxAmount : '无限制'}</span>
+            <span className="text-white text-size-[16vw] md:text-base font-medium">{maxAmountText}</span>
           </div>
         </div>
       </div>
@@ -123,7 +127,6 @@ const RocketWithdrawCard = ({ title, withdrawAmount, onWithdrawAmountChange, onC
             value={withdrawAmount}
             onChange={(e) => onWithdrawAmountChange(e.target.value)}
             placeholder="0.00"
-            min={minAmount}
             className="bg-transparent text-white text-size-[16vw] md:text-base lg:text-lg text-right outline-none w-[80vw] md:w-32 lg:w-40"
           />
         </div>
@@ -247,9 +250,12 @@ const RocketWithdraw = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [settings, setSettings] = useState(null);
   const rocketSetting = (settings || []).find(s => s.token_symbol === 'ROCKET');
-  const minWithdrawAmount = rocketSetting ? parseFloat(rocketSetting.min_withdrawal_amount || '0') : 1;
+  const minWithdrawAmount = rocketSetting ? parseFloat(rocketSetting.min_withdrawal_amount || '0') : 0; // 默认0
   const maxWithdrawAmount = rocketSetting ? parseFloat(rocketSetting.max_withdrawal_amount || '0') : 0;
   const feeRatePercent = rocketSetting ? `${(parseFloat(rocketSetting.withdrawal_fee_rate || '0') * 100).toFixed(2)}%` : '0%';
+  const isSettingsLoaded = settings !== null;
+  const minAmountText = isSettingsLoaded ? Number(minWithdrawAmount).toFixed(2) : '0.00';
+  const maxAmountText = isSettingsLoaded ? (maxWithdrawAmount > 0 ? Number(maxWithdrawAmount).toFixed(2) : '无限制') : '0.00';
 
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -262,18 +268,18 @@ const RocketWithdraw = () => {
 
   const handleWithdrawAmountChange = (value) => {
     const num = parseFloat(value) || 0;
-    if (value && num < minWithdrawAmount) {
-      toast.error(`${t('exchange.min_withdraw_amount')}: ${minWithdrawAmount}`);
-      return;
-    }
-    if (value && maxWithdrawAmount > 0 && num > maxWithdrawAmount) {
-      toast.error(`提现金额不得超过 ${maxWithdrawAmount}`);
-      return;
-    }
-    if (value && num > platformRocket) {
-      toast.error(t('exchange.insufficient_balance'));
-      return;
-    }
+    // if (value && num < minWithdrawAmount) {
+    //   toast.error(`${t('exchange.min_withdraw_amount')}: ${minWithdrawAmount}`);
+    //   return;
+    // }
+    // if (value && maxWithdrawAmount > 0 && num > maxWithdrawAmount) {
+    //   toast.error(`提现金额不得超过 ${maxWithdrawAmount}`);
+    //   return;
+    // }
+    // if (value && num > platformRocket) {
+    //   toast.error(t('exchange.insufficient_balance'));
+    //   return;
+    // }
     setWithdrawAmount(value);
   };
 
@@ -286,6 +292,23 @@ const RocketWithdraw = () => {
     }
   };
 
+  const handleWithdrawAmountBlur = () => {
+    if (!withdrawAmount) return;
+    const num = parseFloat(withdrawAmount) || 0;
+    if (num < minWithdrawAmount) {
+      toast.error(`最小输入金额：${minWithdrawAmount}`);
+      return;
+    }
+    if (maxWithdrawAmount > 0 && num > maxWithdrawAmount) {
+      toast.error(`最大输入金额：${maxWithdrawAmount}`);
+      return;
+    }
+    if (num > platformRocket) {
+      toast.error(t('exchange.insufficient_balance'));
+      return;
+    }
+  };
+
   const handleWithdrawConfirm = async () => {
     if (!withdrawAmount) return;
     const canProceed = await checkBanStatusBeforeAction();
@@ -295,11 +318,11 @@ const RocketWithdraw = () => {
 
     const numAmt = parseFloat(withdrawAmount);
     if (!Number.isFinite(numAmt) || numAmt < minWithdrawAmount) {
-      toast.error(`${t('exchange.min_withdraw_amount')}: ${minWithdrawAmount}`);
+      toast.error(`最小输入金额：${minWithdrawAmount}`);
       return;
     }
     if (maxWithdrawAmount > 0 && numAmt > maxWithdrawAmount) {
-      toast.error(`提现金额不得超过 ${maxWithdrawAmount}`);
+      toast.error(`最大输入金额：${maxWithdrawAmount}`);
       return;
     }
     if (numAmt > platformRocket) {
@@ -317,7 +340,7 @@ const RocketWithdraw = () => {
       if (res?.success) {
         toast.success(t('exchange.withdraw_tx_submitted'));
         setWithdrawAmount('');
-        await refreshBalances();
+        setTimeout(() => { refreshBalances(); }, 2000);
       } else {
         const msg = res?.message || t('exchange.tx_failed');
         toast.error(msg);
@@ -361,8 +384,8 @@ const RocketWithdraw = () => {
         isConfirmDisabled={isSubmitting || !withdrawAmount}
         isLoading={isSubmitting}
         balances={{ Rocket: platformRocket }}
-        minAmount={minWithdrawAmount}
-        maxAmount={maxWithdrawAmount}
+        minAmountText={minAmountText}
+        maxAmountText={maxAmountText}
         feeRatePercent={feeRatePercent}
         t={t}
       />

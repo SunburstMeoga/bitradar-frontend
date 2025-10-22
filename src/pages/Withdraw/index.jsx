@@ -405,7 +405,7 @@ const Withdraw = () => {
       if (res?.success) {
         toast.success(t('exchange.withdraw_tx_submitted'));
         setCard1WithdrawAmount('');
-        fetchBalance().catch(() => {});
+        setTimeout(() => { fetchBalance().catch(() => {}); }, 2000);
       } else {
         const msg = res?.message || t('exchange.tx_failed');
         toast.error(msg);
@@ -589,7 +589,8 @@ const Withdraw = () => {
       toast.success(t('exchange.withdraw_success'));
 
       // 触发余额刷新
-      await refreshBalances();
+-      await refreshBalances();
++      setTimeout(() => { refreshBalances(); }, 2000);
 
       // 清空输入
       setWithdrawAmount('');
