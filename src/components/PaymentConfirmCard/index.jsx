@@ -209,7 +209,8 @@ const PaymentConfirmCard = ({ membershipLevel, onBack, onClose, onPaymentSuccess
         current: numericCurrentBalance,
         shortfall: shortfall
       });
-      toast.error(`余额不足，需要 ${numericRequiredPrice.toFixed(2)} USDT，当前余额 ${numericCurrentBalance.toFixed(2)} USDT`);
+      // toast.error(`余额不足，需要 ${numericRequiredPrice.toFixed(2)} USDT，当前余额 ${numericCurrentBalance.toFixed(2)} USDT`);
+      toast.error('余额不足，请先充值再进行购买。')
       return false;
     }
 
