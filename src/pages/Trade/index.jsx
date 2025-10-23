@@ -33,8 +33,8 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
   const [tradeAmount, setTradeAmount] = useState(0);
   const [inputValue, setInputValue] = useState('');
   const [sliderValue, setSliderValue] = useState(0);
-  const [currentPrice, setCurrentPrice] = useState(67234.56);
-  const [priceChange, setPriceChange] = useState(2.34);
+  const [currentPrice, setCurrentPrice] = useState(0.00);
+  const [priceChange, setPriceChange] = useState(0.00);
   const [selectedToken, setSelectedToken] = useState(() => {
     try {
       return localStorage.getItem('selectedTradeToken') || '';
