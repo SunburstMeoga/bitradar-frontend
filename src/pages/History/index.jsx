@@ -289,12 +289,12 @@ const History = () => {
 
   // 计算倒计时信息
   const getCountdownInfo = (item) => {
-    if (!item.backend_confirm_time) {
+    if (!item.entry_time) {
       return null;
     }
 
-    // backend_confirm_time 已经是毫秒时间戳，直接使用
-    const confirmTime = item.backend_confirm_time;
+    // entry_time 已经是毫秒时间戳，直接使用
+    const confirmTime = item.entry_time;
     const settlementTime = confirmTime + 60000; // 加1分钟（60000毫秒）
     const remainingTime = settlementTime - currentTime;
 
@@ -658,7 +658,7 @@ const History = () => {
                 <span className="text-[#8f8f8f] font-size-[13vw] md:text-sm">
                   {item.settlement_time
                     ? formatTime(new Date(item.settlement_time).toISOString())
-                    : formatTime(new Date(item.backend_confirm_time + 60000).toISOString())
+                    : formatTime(new Date(item.entry_time + 60000).toISOString())
                   }
                 </span>
               </div>
