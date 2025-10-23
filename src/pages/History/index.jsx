@@ -656,10 +656,7 @@ const History = () => {
                   {formatTime(item.created_at)}
                 </span>
                 <span className="text-[#8f8f8f] font-size-[13vw] md:text-sm">
-                  {item.settlement_time
-                    ? formatTime(new Date(item.settlement_time).toISOString())
-                    : formatTime(new Date(item.entry_time + 60000).toISOString())
-                  }
+                  {formatTime(new Date(item.expiry_time).toISOString())}
                 </span>
               </div>
             </div>

@@ -151,18 +151,34 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
         let hasAnySettled = false;
         const newPendingIds = new Set(pendingOrderIdsRef.current);
 
-        // 根据订单盈亏字段判断结算：profit_loss !== "0" 表示已结算
-        updatedOrders.forEach(order => {
+        // 使用新的逻辑：通过订单详情API检查status字段
+        for (const order of updatedOrders) {
           const id = order.id;
-          const isPending = order.profit_loss === "0";
-          if (isPending) {
-            newPendingIds.add(id);
-          } else if (pendingOrderIdsRef.current.has(id)) {
-            // 从待结算转为已结算
-            newPendingIds.delete(id);
-            hasAnySettled = true;
+          try {
+            // 调用订单详情API获取真实状态
+            const orderDetail = await orderService.getOrder(id);
+            if (orderDetail.success && orderDetail.data) {
+              const orderData = orderDetail.data;
+              const isPending = orderData.status === 'PENDING';
+              
+              if (isPending) {
+                newPendingIds.add(id);
+              } else if (pendingOrderIdsRef.current.has(id)) {
+                // 从待结算转为已结算
+                newPendingIds.delete(id);
+                hasAnySettled = true;
+                console.log('🎯 检测到订单结算:', {
+                  id,
+                  status: orderData.status,
+                  profit_loss: orderData.profit_loss
+                });
+              }
+            }
+          } catch (error) {
+            console.error('❌ 查询订单详情失败:', id, error);
+            // 如果查询失败，保持原状态
           }
-        });
+        }
 
         // 更新引用
         pendingOrderIdsRef.current = newPendingIds;
@@ -567,8 +583,19 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
         // 创建本地下注记录（用于图表显示）
         // 适配新的API响应格式
         const responseOrderData = result.data.order || result.data;
+        
+        // 确保订单ID被正确保存
+        const orderId = responseOrderData.id;
+        if (!orderId) {
+          console.error('❌ 订单创建成功但缺少订单ID:', responseOrderData);
+          toast.error('订单创建成功但缺少订单ID');
+          return;
+        }
+
+        console.log('✅ 订单创建成功，订单ID:', orderId);
+
         const newBet = {
-          id: responseOrderData.id,
+          id: orderId, // 确保使用API返回的订单ID
           direction,
           amount: tradeAmount,
           price: parseFloat(responseOrderData.entryPrice || responseOrderData.entry_price) || currentPrice,
@@ -577,7 +604,7 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
           settlementPrice: null,
           isWin: null,
           profit: null,
-          status: 'active',
+          status: 'active', // 初始状态为活跃
           // 当前交易对（用于持久化和切换后过滤显示）
           pair: orderData.tradingPairSymbol,
           // 保存API返回的完整数据
@@ -591,7 +618,7 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
           } catch (_) {}
           return next;
         });
-        console.log('✅ 下注成功:', newBet);
+        console.log('✅ 下注记录已保存:', newBet);
 
         // 重置交易金额（先重置为0，随后刷新余额，触发默认1的设置）
         setTradeAmount(0);
@@ -720,7 +747,7 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
       setPriceChange(changePercent);
     }
 
-    // 检查并处理到期的下注记录
+    // 检查并处理到期的下注记录 - 使用新的订单详情API逻辑
     setUserBets(prev => {
       return prev.map(bet => {
         // 如果下注已经结算过，跳过
@@ -728,52 +755,74 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
 
         // 检查是否到达结算时间
         if (currentTime >= bet.settlementTime) {
-          // 优先使用按时间定位的结算价格（第一个时间 >= 结算时间的价格）
-          let settlementEntry = null;
-          const buf = recentPricesRef.current;
-          for (let i = 0; i < buf.length; i++) {
-            if (buf[i].timestamp >= bet.settlementTime) {
-              settlementEntry = buf[i];
-              break;
+          // 使用订单详情API获取真实的结算状态
+          const checkOrderStatus = async () => {
+            try {
+              if (!bet.id) {
+                console.warn('⚠️ 订单缺少ID，无法查询详情:', bet);
+                return bet;
+              }
+
+              console.log('🔍 查询订单详情:', bet.id);
+              const orderDetail = await orderService.getOrder(bet.id);
+              
+              if (orderDetail.success && orderDetail.data) {
+                const orderData = orderDetail.data;
+                console.log('📋 订单详情:', orderData);
+
+                 // 根据订单状态判断是否已结算
+                 if (orderData.status === 'PENDING') {
+                   // 订单仍在等待结算
+                   console.log('⏳ 订单仍在等待结算:', bet.id);
+                   return bet;
+                 } else {
+                   // 订单已结算，使用API返回的真实数据
+                   const isWin = orderData.status === 'WIN';
+                   const profit = parseFloat(orderData.profit_loss || '0');
+                   const settlementPrice = parseFloat(orderData.exit_price || '0');
+
+                   console.log('🎯 订单结算完成:', {
+                     id: bet.id,
+                     status: orderData.status,
+                     isWin,
+                     profit,
+                     settlementPrice,
+                     entryPrice: orderData.entry_price,
+                     exitPrice: orderData.exit_price
+                   });
+
+                   return {
+                     ...bet,
+                     settlementPrice,
+                     isWin,
+                     profit,
+                     status: 'settled',
+                     // 保存完整的订单详情数据
+                     orderDetail: orderData
+                   };
+                 }
+              } else {
+                console.error('❌ 获取订单详情失败:', orderDetail);
+                return bet;
+              }
+            } catch (error) {
+              console.error('❌ 查询订单详情出错:', error);
+              return bet;
             }
-          }
-          // 若未找到精确时间点，选择距离结算时间最近的点作为回退
-          if (!settlementEntry && buf.length > 0) {
-            let nearest = buf[0];
-            let minDiff = Math.abs(buf[0].timestamp - bet.settlementTime);
-            for (let i = 1; i < buf.length; i++) {
-              const d = Math.abs(buf[i].timestamp - bet.settlementTime);
-              if (d < minDiff) { minDiff = d; nearest = buf[i]; }
+          };
+
+          // 异步执行订单状态检查
+          checkOrderStatus().then(updatedBet => {
+            if (updatedBet.status === 'settled') {
+              // 如果订单已结算，更新状态
+              setUserBets(prevBets => 
+                prevBets.map(b => b.id === updatedBet.id ? updatedBet : b)
+              );
             }
-            settlementEntry = nearest;
-          }
-          const settlementPrice = settlementEntry ? settlementEntry.price : newPrice;
-
-          // 计算是否猜中（以结算点价格与入场价比较）
-          const priceChange = settlementPrice - bet.price;
-          const isWin = (bet.direction === 'up' && priceChange > 0) ||
-                       (bet.direction === 'down' && priceChange < 0);
-
-          // 计算盈利金额（赔率1赔1，手续费3%）
-          const profit = isWin ? bet.amount * (1 - 0.03) : 0;
-
-          console.log('🎯 交易结算:', {
-            id: bet.id,
-            direction: bet.direction,
-            betPrice: bet.price,
-            settlementPrice,
-            priceChange,
-            isWin,
-            profit
           });
 
-          return {
-            ...bet,
-            settlementPrice,
-            isWin,
-            profit,
-            status: 'settled'
-          };
+          // 暂时返回原始bet，等待异步更新
+          return bet;
         }
 
         return bet;
