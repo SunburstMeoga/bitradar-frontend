@@ -52,6 +52,7 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
   const [isCaptchaOpen, setIsCaptchaOpen] = useState(false);
   const [isCaptchaRequired, setIsCaptchaRequired] = useState(false);
   const [isCaptchaVerified, setIsCaptchaVerified] = useState(false);
+  const [isPostSuccessCooldown, setIsPostSuccessCooldown] = useState(false);
 
   // 计算PriceChart的动态高度
   const calculateChartHeight = () => {
@@ -164,6 +165,8 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
                   orderDetail: orderData
                 } : b)
               );
+              // 结算后从可见集合移除，避免继续轮询
+              try { visibleBetIdsRef.current.delete(id); } catch (_) {}
             }
           }
         } catch (error) {
@@ -223,7 +226,7 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
 
   const userBalance = getCurrentTokenBalance();
   const isUp = priceChange > 0;
-  const isButtonsDisabled = tradeAmount === 0 || isPlacingBet || userBalance < tradeAmount;
+  const isButtonsDisabled = tradeAmount === 0 || isPlacingBet || userBalance < tradeAmount || isPostSuccessCooldown;
 
   // 滑动条是否禁用（余额 <= 0）
   const isSliderDisabled = userBalance <= 0;
@@ -618,6 +621,10 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
           }
         }
 
+        // 下单成功后开启1.5秒冷却，防止恶意快速下单
+        setIsPostSuccessCooldown(true);
+        setTimeout(() => setIsPostSuccessCooldown(false), 1500);
+
         // 在所有成功后的逻辑完成后，按10%概率弹出验证码（不影响本次下注）
         const shouldShowCaptchaAfterSuccess = Math.random() < 0.1;
         if (shouldShowCaptchaAfterSuccess) {
@@ -847,7 +854,7 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
     if (!isAuthenticated) return;
     const loadOrdersToBets = async () => {
       try {
-        const result = await fetchOrders(1, 50, selectedToken || 'all', false);
+        const result = await fetchOrders(1, 100, selectedToken || 'all', false, 'all');
         if (result && result.success) {
           const orders = result.data || [];
           const mapped = orders.map(order => {

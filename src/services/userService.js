@@ -115,25 +115,23 @@ class UserService extends ApiService {
   /**
    * 获取订单历史
    * @param {number} page - 页码，默认1
-   * @param {number} limit - 每页数量，默认20
+   * @param {number} limit - 每页数量，默认20（最大100）
    * @param {string} betTokenSymbol - 下注代币筛选：LUSD, USDT, USDR等，默认all
+   * @param {string} status - 订单状态：pending, win, lose, all，默认all
    * @returns {Promise<Object>} 订单历史数据
    */
-  async getOrders(page = 1, limit = 20, betTokenSymbol = 'all') {
+  async getOrders(page = 1, limit = 20, betTokenSymbol = 'all', status = 'all') {
     try {
-      // 使用offset而不是page参数
       const offset = (page - 1) * limit;
       let url = `/users/orders?limit=${limit}&offset=${offset}`;
       if (betTokenSymbol && betTokenSymbol !== 'all') {
         url += `&bet_token_symbol=${betTokenSymbol}`;
       }
+      if (status) {
+        url += `&status=${status}`;
+      }
 
-      console.log('📋 请求订单历史:', {
-        url,
-        page,
-        limit,
-        betTokenSymbol
-      });
+      console.log('📋 请求订单历史:', { url, page, limit, betTokenSymbol, status });
 
       const response = await this.get(url);
 

@@ -238,10 +238,10 @@ export const useUserStore = create(
       },
 
       // 获取订单历史
-      fetchOrders: async (page = 1, limit = 20, betTokenSymbol = 'all', append = false) => {
+      fetchOrders: async (page = 1, limit = 20, betTokenSymbol = 'all', append = false, status = 'all') => {
         try {
-          const result = await userService.getOrders(page, limit, betTokenSymbol);
-
+          const result = await userService.getOrders(page, limit, betTokenSymbol, status);
+      
           if (result.success) {
             if (append) {
               set(state => ({
@@ -252,7 +252,7 @@ export const useUserStore = create(
             }
             return result;
           }
-
+      
           throw new Error('获取订单历史失败');
         } catch (error) {
           throw error;
