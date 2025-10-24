@@ -227,10 +227,12 @@ const userBetsPlugin = {
           const closePriceRaw = (typeof bet.settlementPrice === 'number') ? bet.settlementPrice : parseFloat(bet.settlementPrice);
           const normalizedOpen = Number.isFinite(openPriceRaw) ? openPriceRaw : betPriceValue;
           const normalizedClose = Number.isFinite(closePriceRaw) ? closePriceRaw : settlementPriceValue;
-          const isWin = (bet.direction === 'up')
-            ? (normalizedClose > normalizedOpen)
-            : (normalizedClose < normalizedOpen);
-          const profit = isWin ? (bet.amount * (1 - 0.03)) : 0;
+          const isWin = (typeof bet.isWin === 'boolean')
+            ? bet.isWin
+            : ((bet.direction === 'up') ? (normalizedClose > normalizedOpen) : (normalizedClose < normalizedOpen));
+          const profit = Number.isFinite(bet.profit)
+            ? bet.profit
+            : (isWin ? (bet.amount * (1 - 0.03)) : 0);
 
           if (isWin && profit > 0) {
             drawProfitAmount(ctx, settlementX, settlementY, profit, bet.direction);

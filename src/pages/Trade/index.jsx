@@ -139,59 +139,44 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
 
   // 跟踪待结算订单ID，订单结算后刷新余额
   const pendingOrderIdsRef = useRef(new Set());
+  const visibleBetIdsRef = useRef(new Set());
 
   const pollPendingOrders = useCallback(async () => {
     if (!isAuthenticated) return;
+    const ids = Array.from(visibleBetIdsRef.current || new Set());
+    if (ids.length === 0) return;
     try {
-      // 仅当有认证时轮询订单历史，检测订单是否从未结算转为已结算
-      const betTokenSymbol = selectedToken === 'LuckyUSD' ? 'LUSD' : (selectedToken || 'all');
-      const result = await fetchOrders(1, 20, betTokenSymbol, false);
-      if (result && result.success && Array.isArray(result.data)) {
-        const updatedOrders = result.data;
-        let hasAnySettled = false;
-        const newPendingIds = new Set(pendingOrderIdsRef.current);
-
-        // 使用新的逻辑：通过订单详情API检查status字段
-        for (const order of updatedOrders) {
-          const id = order.id;
-          try {
-            // 调用订单详情API获取真实状态
-            const orderDetail = await orderService.getOrder(id);
-            if (orderDetail.success && orderDetail.data) {
-              const orderData = orderDetail.data;
-              const isPending = orderData.status === 'PENDING';
-              
-              if (isPending) {
-                newPendingIds.add(id);
-              } else if (pendingOrderIdsRef.current.has(id)) {
-                // 从待结算转为已结算
-                newPendingIds.delete(id);
-                hasAnySettled = true;
-                console.log('🎯 检测到订单结算:', {
-                  id,
-                  status: orderData.status,
-                  profit_loss: orderData.profit_loss
-                });
-              }
+      let hasAnySettled = false;
+      for (const id of ids) {
+        try {
+          const orderDetail = await orderService.getOrder(id);
+          if (orderDetail.success && orderDetail.data) {
+            const orderData = orderDetail.data;
+            if (orderData.status !== 'PENDING') {
+              hasAnySettled = true;
+              setUserBets(prev =>
+                prev.map(b => b.id === id ? {
+                  ...b,
+                  settlementPrice: parseFloat(orderData.exit_price || '0'),
+                  isWin: orderData.status === 'WIN',
+                  profit: parseFloat(orderData.profit_loss || '0'),
+                  status: 'settled',
+                  orderDetail: orderData
+                } : b)
+              );
             }
-          } catch (error) {
-            console.error('❌ 查询订单详情失败:', id, error);
-            // 如果查询失败，保持原状态
           }
+        } catch (error) {
+          console.error('❌ 查询订单详情失败:', id, error);
         }
-
-        // 更新引用
-        pendingOrderIdsRef.current = newPendingIds;
-
-        // 只要有订单结算，立即刷新余额
-        if (hasAnySettled && typeof fetchBalance === 'function') {
-          await fetchBalance();
-        }
+      }
+      if (hasAnySettled && typeof fetchBalance === 'function') {
+        await fetchBalance();
       }
     } catch (error) {
       console.error('❌ 轮询订单状态失败:', error);
     }
-  }, [isAuthenticated, selectedToken, fetchOrders, fetchBalance]);
+  }, [isAuthenticated, fetchBalance]);
 
   // 启动轮询：每5秒检查一次订单状态，若有结算则刷新余额
   useEffect(() => {
@@ -613,9 +598,6 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
 
         setUserBets(prev => {
           const next = [...prev, newBet];
-          try {
-            localStorage.setItem('tradeUserBets', JSON.stringify(next));
-          } catch (_) {}
           return next;
         });
         console.log('✅ 下注记录已保存:', newBet);
@@ -860,38 +842,40 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
     }
   }, [isAuthenticated, profile, fetchProfile]);
 
-  // 挂载时恢复本地持久化的下注点
+  // 从服务器恢复订单为图表下注点（替代localStorage），并驱动后续轮询
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem('tradeUserBets');
-      if (raw) {
-        const stored = JSON.parse(raw);
-        if (Array.isArray(stored)) {
-          // 恢复所有持久化的下注点（不再按选中代币过滤）
-          setUserBets(stored);
+    if (!isAuthenticated) return;
+    const loadOrdersToBets = async () => {
+      try {
+        const result = await fetchOrders(1, 50, selectedToken || 'all', false);
+        if (result && result.success) {
+          const orders = result.data || [];
+          const mapped = orders.map(order => {
+            const isPending = order?.profit_loss === "0" || order?.status === 'PENDING';
+            const createdTs = Date.parse(order?.created_at);
+            const expiryTs = Date.parse(order?.expiry_time) || Date.parse(order?.expiry_at);
+            return {
+              id: order?.id,
+              timestamp: Number.isFinite(createdTs) ? createdTs : Date.now(),
+              settlementTime: Number.isFinite(expiryTs) ? expiryTs : (Number.isFinite(createdTs) ? createdTs + 60_000 : Date.now() + 60_000),
+              price: safeParseFloat(order?.entry_price, 0),
+              settlementPrice: isPending ? undefined : safeParseFloat(order?.exit_price, 0),
+              status: isPending ? 'active' : 'settled',
+              isWin: isPending ? undefined : (order?.status === 'WIN'),
+              profit: isPending ? undefined : safeParseFloat(order?.profit_loss, 0),
+              direction: order?.order_type === 'CALL' ? 'up' : 'down',
+              orderDetail: order
+            };
+          });
+          setUserBets(mapped);
         }
+      } catch (error) {
+        console.error('❌ 从服务器恢复下注点失败:', error);
       }
-    } catch (e) {
-      console.warn('读取本地下注点失败:', e);
-    }
-  }, []);
+    };
+    loadOrdersToBets();
+  }, [isAuthenticated, selectedToken, fetchOrders]);
 
-  // 当切换交易对时，从本地存储恢复（当前仅一个交易对，这里不做过滤）
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem('tradeUserBets');
-      if (raw) {
-        const stored = JSON.parse(raw);
-        if (Array.isArray(stored)) {
-          setUserBets(stored);
-        }
-      } else {
-        setUserBets([]);
-      }
-    } catch (_) {
-      // 忽略解析错误
-    }
-  }, [selectedToken]);
 
   // 移除通用的持久化effect，改为在新增下注或图表回传时写入
 
@@ -923,9 +907,11 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
 
   // 接收图表可见下注点集合，但不再用它覆盖完整 userBets
   // 仅用于后续可能的分析/调试，保持完整历史以避免开盘点消失
-  const handleVisibleUserBetsChange = useCallback((_visibleBets) => {
-    // 不进行任何状态替换，保持完整的 userBets 历史
-    // 如需使用可见集合，可在此记录或上报而非覆盖
+  const handleVisibleUserBetsChange = useCallback((visibleBets) => {
+    const ids = new Set(
+      (visibleBets || []).filter(b => b && b.id && b.status !== 'settled').map(b => b.id)
+    );
+    visibleBetIdsRef.current = ids;
   }, []);
 
 
