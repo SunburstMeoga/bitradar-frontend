@@ -247,7 +247,7 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
       if (result.success && result.data) {
         // 过滤只显示可下注的代币，并转换为UI需要的格式
         const formattedTokens = result.data
-          .filter(token => token.is_bet_enabled === true) // 只显示可下注的代币
+          .filter(token => token.is_bet_enabled === true && ['USDT', 'LUSD', 'LuckyUSD'].includes(token.symbol)) // 仅保留USDT与LUSD
           .map(token => ({
             name: token.symbol,
             displayName: token.name,
@@ -304,15 +304,7 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
           isBetEnabled: true,
           isSettlementEnabled: true
         },
-        {
-          name: 'USDR',
-          displayName: 'USDR',
-          icon: pUSDIcon,
-          decimals: 8,
-          isActive: true,
-          isBetEnabled: true,
-          isSettlementEnabled: true
-        },
+
         {
           name: 'LUSD',
           displayName: 'LuckyUSD',
@@ -1017,15 +1009,21 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
               />
             </div>
             <div className="w-[8vw] md:w-2 flex-shrink-0"></div>
-            <div
-              className="h-[34vw] md:h-8 bg-[#3d3d3d] rounded-[34vw] md:rounded-full px-[10vw] md:px-2.5 py-[8vw] md:py-2 flex items-center gap-[4vw] md:gap-1 cursor-pointer flex-shrink-0"
-              onClick={handleTokenSelectorClick}
-            >
-              <img src={pUSDIcon} alt="token" className="w-[14vw] md:w-3.5 h-[14vw] md:h-3.5 flex-shrink-0" />
-              <span className="text-white font-medium text-size-[12vw] md:text-xs whitespace-nowrap">
-                {selectedToken || (isLoadingTokens ? '加载中...' : '选择代币')}
-              </span>
-              <img src={upDownIcon} alt="up-down" className="w-[14vw] md:w-3.5 h-[14vw] md:h-3.5 flex-shrink-0" />
+            <div className="flex items-center gap-[8vw] md:gap-2 flex-shrink-0">
+              <button
+                type="button"
+                className={`h-[34vw] md:h-8 rounded-[34vw] md:rounded-full px-[12vw] md:px-3 py-[8vw] md:py-2 text-size-[12vw] md:text-xs font-medium ${selectedToken === 'LUSD' ? 'bg-[#c5ff33] text-black' : 'bg-[#3d3d3d] text-white'}`}
+                onClick={() => handleTokenSelect('LUSD')}
+              >
+                LUSD
+              </button>
+              <button
+                type="button"
+                className={`h-[34vw] md:h-8 rounded-[34vw] md:rounded-full px-[12vw] md:px-3 py-[8vw] md:py-2 text-size-[12vw] md:text-xs font-medium ${selectedToken === 'USDT' ? 'bg-[#c5ff33] text-black' : 'bg-[#3d3d3d] text-white'}`}
+                onClick={() => handleTokenSelect('USDT')}
+              >
+                USDT
+              </button>
             </div>
           </div>
 

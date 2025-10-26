@@ -354,7 +354,13 @@ const TransactionHistory = () => {
                 {/* 交易信息 */}
                 <div className="flex flex-col gap-[4vw] md:gap-1">
                   <span className="text-white text-size-[17vw] md:text-lg">
-                    {getTransactionTypeText(transaction.transaction_type)}
+                    {(
+                      activeTab === 'LuckyUSD' && transaction.transaction_type === 'BET'
+                        ? '下单'
+                        : activeTab === 'LuckyUSD' && transaction.transaction_type === 'WIN'
+                        ? '盈利'
+                        : getTransactionTypeText(transaction.transaction_type)
+                    )}
                   </span>
                   <span className="text-[#8f8f8f] text-size-[13vw] md:text-sm">
                     {formatTime(transaction.created_at)}

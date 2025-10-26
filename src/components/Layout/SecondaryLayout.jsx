@@ -5,6 +5,8 @@ import ScrollToTop from '../ScrollToTop';
 import AuthExpiredHandler from '../AuthExpiredHandler';
 import ErrorBoundary from '../ErrorBoundary';
 import { useTranslation } from 'react-i18next';
+import MobileWeb3Check from '../MobileWeb3Check';
+import LusdAutoClaimPrompt from '../LusdAutoClaimPrompt';
 
 const SecondaryLayout = ({ title, onBack, children }) => {
   const { t } = useTranslation();
@@ -51,6 +53,9 @@ const SecondaryLayout = ({ title, onBack, children }) => {
       />
       {/* 全局登录过期弹窗监听器 */}
       <AuthExpiredHandler />
++     {/* 手机+Web3检查与LuckyUSD自动领取 */}
++     <MobileWeb3Check />
++     <LusdAutoClaimPrompt />
     </div>
   );
 };
