@@ -89,7 +89,7 @@ apiClient.interceptors.response.use(
   async (error) => {
     const status = error.response?.status;
     // 统一处理401/403：触发全局登录过期弹窗
-    if (status === 401 || status === 403) {
+    if (status === 401) {
       try {
         window.dispatchEvent(new CustomEvent('auth:expired', {
           detail: {

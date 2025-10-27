@@ -346,8 +346,15 @@ const RocketWithdraw = () => {
         toast.error(msg);
       }
     } catch (err) {
-      const msg = err?.response?.data?.message || err?.message || t('exchange.tx_failed');
-      toast.error(msg);
+      const status = err?.response?.status;
+      const serverData = err?.response?.data;
+      if (status === 403 && (serverData?.data?.token_symbol === 'ROCKET' || serverData?.data?.current_membership === 'none')) {
+        const msg = serverData?.message || '只有金牌或銀牌會員才能提取 ROCKET，請先升級會員';
+        toast.error(msg);
+      } else {
+        const msg = err?.response?.data?.message || err?.message || t('exchange.tx_failed');
+        toast.error(msg);
+      }
     } finally {
       setIsSubmitting(false);
     }

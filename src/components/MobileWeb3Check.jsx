@@ -36,7 +36,7 @@ const MobileWeb3Check = () => {
 
   const handleInstall = () => {
     try {
-      window.open('https://www.tokenpocket.pro/zh/download/app', '_blank', 'noopener');
+      window.open('https://dl.tpstatic.net/apk/TokenPocket-pro.apk', '_blank', 'noopener');
     } catch (_) {}
     setOpen(false);
   };
