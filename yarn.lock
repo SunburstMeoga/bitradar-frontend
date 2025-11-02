@@ -1321,6 +1321,7 @@ __metadata:
     react-chartjs-2: "npm:^5.3.0"
     react-countup: "npm:^6.5.3"
     react-dom: "npm:^19.1.0"
+    react-fast-marquee: "npm:^1.6.5"
     react-hot-toast: "npm:^2.5.2"
     react-i18next: "npm:^15.6.1"
     react-router-dom: "npm:^7.7.1"
@@ -3427,6 +3428,16 @@ __metadata:
   peerDependencies:
     react: ^19.1.1
   checksum: 10c0/8c91198510521299c56e4e8d5e3a4508b2734fb5e52f29eeac33811de64e76fe586ad32c32182e2e84e070d98df67125da346c3360013357228172dbcd20bcdd
+  languageName: node
+  linkType: hard
+
+"react-fast-marquee@npm:^1.6.5":
+  version: 1.6.5
+  resolution: "react-fast-marquee@npm:1.6.5"
+  peerDependencies:
+    react: ">= 16.8.0 || ^18.0.0"
+    react-dom: ">= 16.8.0 || ^18.0.0"
+  checksum: 10c0/ea2378c4cd1eb323d004e8c2ff6222a7a4def311e00f0bd0c99adebc906aa56a078c2101b3c6697109b15dcf177bfa31edd95b9f7a114887072e3103fe234ecd
   languageName: node
   linkType: hard
 

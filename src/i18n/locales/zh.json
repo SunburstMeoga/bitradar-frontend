@@ -48,15 +48,6 @@
     "welcome": "欢迎来到 BitRocket DApp",
     "description": "您的去中心化金融门户"
   },
-  "captcha": {
-    "test_title": "验证码测试页",
-    "test_description": "验证码以弹窗形式展示。此页面用于体验与测试全局弹窗验证码组件。",
-    "open_modal": "打开验证码弹窗",
-    "verified_passed": "验证通过",
-    "verified_failed": "验证失败",
-    "dialog_title": "安全验证",
-    "dialog_description": "请输入下方验证码完成验证。"
-  },
   "wallet": {
     "not_connected": "钱包未连接",
     "connecting": "连接中...",
