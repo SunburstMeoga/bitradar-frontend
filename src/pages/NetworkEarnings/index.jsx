@@ -68,12 +68,12 @@ const NetworkEarnings = () => {
       if (response.success) {
         setEarningsData(response.data);
       } else {
-        throw new Error('获取收益数据失败');
+        throw new Error(t('network_earnings.loading_failed'));
       }
     } catch (err) {
       console.error('加载收益数据失败:', err);
-      setError(err.message || '加载收益数据失败');
-      toast.error('加载收益数据失败，请稍后重试');
+      setError(err.message || t('network_earnings.loading_failed'));
+      toast.error(t('network_earnings.error_retry'));
     } finally {
       setLoading(false);
     }
@@ -151,10 +151,10 @@ const NetworkEarnings = () => {
           onChange={(e) => handleFilterChange('reward_type', e.target.value)}
           className="px-[12vw] md:px-3 py-[8vw] md:py-2 bg-gray-700 text-white rounded-[6vw] md:rounded text-size-[14vw] md:text-sm"
         >
-          <option value="all">{t('network_details.earnings.reward_type')}: 全部</option>
-          <option value="differential">极差奖励</option>
-          <option value="flat">平级奖励</option>
-          <option value="fee">手续费分红</option>
+          <option value="all">{t('network_details.earnings.reward_type')}: {t('network_earnings.reward_type_all')}</option>
+          <option value="differential">{t('network_earnings.reward_type_differential')}</option>
+          <option value="flat">{t('network_earnings.reward_type_flat')}</option>
+          <option value="fee">{t('network_earnings.reward_type_fee')}</option>
         </select>
 
         {/* 时间范围筛选 */}
@@ -173,7 +173,7 @@ const NetworkEarnings = () => {
       {earningsData?.summary && (
         <div className="mb-[24vw] md:mb-6">
           <h2 className="text-white text-size-[18vw] md:text-xl font-semibold mb-[16vw] md:mb-4" style={{ fontWeight: 600 }}>
-            收益汇总
+            {t('network_earnings.summary_title')}
           </h2>
           
           <div className="grid grid-cols-2 gap-[12vw] md:gap-3 mb-[16vw] md:mb-4">
@@ -181,7 +181,7 @@ const NetworkEarnings = () => {
               className="p-[16vw] md:p-4 rounded-[8vw] md:rounded-lg"
               style={{ backgroundColor: 'rgb(41, 41, 41)' }}
             >
-              <div className="text-[#8f8f8f] text-size-[12vw] md:text-xs mb-[4vw] md:mb-1">极差奖励</div>
+              <div className="text-[#8f8f8f] text-size-[12vw] md:text-xs mb-[4vw] md:mb-1">{t('network_earnings.differential_label')}</div>
               {formatAmount(earningsData.summary.total_differential, '14vw', 'text-green-400')}
             </div>
             
@@ -189,7 +189,7 @@ const NetworkEarnings = () => {
               className="p-[16vw] md:p-4 rounded-[8vw] md:rounded-lg"
               style={{ backgroundColor: 'rgb(41, 41, 41)' }}
             >
-              <div className="text-[#8f8f8f] text-size-[12vw] md:text-xs mb-[4vw] md:mb-1">平级奖励</div>
+              <div className="text-[#8f8f8f] text-size-[12vw] md:text-xs mb-[4vw] md:mb-1">{t('network_earnings.flat_label')}</div>
               {formatAmount(earningsData.summary.total_flat, '14vw', 'text-blue-400')}
             </div>
             
@@ -197,7 +197,7 @@ const NetworkEarnings = () => {
               className="p-[16vw] md:p-4 rounded-[8vw] md:rounded-lg"
               style={{ backgroundColor: 'rgb(41, 41, 41)' }}
             >
-              <div className="text-[#8f8f8f] text-size-[12vw] md:text-xs mb-[4vw] md:mb-1">手续费分红</div>
+              <div className="text-[#8f8f8f] text-size-[12vw] md:text-xs mb-[4vw] md:mb-1">{t('network_earnings.fee_label')}</div>
               {formatAmount(earningsData.summary.total_fee_dividends, '14vw', 'text-yellow-400')}
             </div>
             
@@ -205,7 +205,7 @@ const NetworkEarnings = () => {
               className="p-[16vw] md:p-4 rounded-[8vw] md:rounded-lg"
               style={{ backgroundColor: 'rgb(41, 41, 41)' }}
             >
-              <div className="text-[#8f8f8f] text-size-[12vw] md:text-xs mb-[4vw] md:mb-1">总收益</div>
+              <div className="text-[#8f8f8f] text-size-[12vw] md:text-xs mb-[4vw] md:mb-1">{t('network_earnings.total_label')}</div>
               {formatAmount(earningsData.summary.grand_total, '14vw', 'text-white')}
             </div>
           </div>
@@ -215,7 +215,7 @@ const NetworkEarnings = () => {
       {/* 收益明细列表 */}
       <div>
         <h2 className="text-white text-size-[18vw] md:text-xl font-semibold mb-[16vw] md:mb-4" style={{ fontWeight: 600 }}>
-          收益明细
+          {t('network_earnings.details_title')}
         </h2>
         
         {earningsData?.earnings && earningsData.earnings.length > 0 ? (
@@ -242,7 +242,7 @@ const NetworkEarnings = () => {
                   {dayEarning.differential_rewards?.map((reward, idx) => (
                     <div key={idx} className="flex justify-between items-center text-size-[14vw] md:text-sm">
                       <div className="text-[#8f8f8f]">
-                        极差奖励 - 用户#{reward.from_user} (VIP{reward.from_user_level}→VIP{reward.my_level.replace('VIP', '')})
+                        {t('network_earnings.item_differential', { user: reward.from_user, fromLevel: reward.from_user_level, toLevel: reward.my_level.replace('VIP','') })}
                       </div>
                       <div className="text-green-400">+{reward.earned_amount} {reward.token}</div>
                     </div>
@@ -252,7 +252,7 @@ const NetworkEarnings = () => {
                   {dayEarning.flat_rewards?.map((reward, idx) => (
                     <div key={idx} className="flex justify-between items-center text-size-[14vw] md:text-sm">
                       <div className="text-[#8f8f8f]">
-                        平级奖励 - 用户#{reward.from_user} ({reward.same_level})
+                        {t('network_earnings.item_flat', { user: reward.from_user, sameLevel: reward.same_level })}
                       </div>
                       <div className="text-blue-400">+{reward.earned_amount} {reward.token}</div>
                     </div>
@@ -262,7 +262,7 @@ const NetworkEarnings = () => {
                   {dayEarning.fee_dividends?.map((dividend, idx) => (
                     <div key={idx} className="flex justify-between items-center text-size-[14vw] md:text-sm">
                       <div className="text-[#8f8f8f]">
-                        手续费分红 - 用户#{dividend.from_user} ({dividend.my_dividend_rate})
+                        {t('network_earnings.item_fee', { user: dividend.from_user, rate: dividend.my_dividend_rate })}
                       </div>
                       <div className="text-yellow-400">+{dividend.earned_amount} {dividend.token}</div>
                     </div>
@@ -274,7 +274,7 @@ const NetworkEarnings = () => {
         ) : (
           <div className="text-center py-8">
             <p className="text-[#8f8f8f] text-size-[16vw] md:text-lg">
-              暂无收益记录
+              {t('network_earnings.empty')}
             </p>
           </div>
         )}

@@ -141,8 +141,8 @@ const WithdrawCard = ({ title, withdrawAmount, onWithdrawAmountChange, onConfirm
             <span className="text-white text-size-[16vw] md:text-base font-medium">{minAmount}</span>
           </div>
           <div className="flex items-center gap-[12vw] md:gap-3">
-            <span className="text-[#8f8f8f] text-size-[14vw] md:text-sm">最大提现金额:</span>
-            <span className="text-white text-size-[16vw] md:text-base font-medium">{maxAmount > 0 ? maxAmount : '无限制'}</span>
+            <span className="text-[#8f8f8f] text-size-[14vw] md:text-sm">{t('exchange.max_withdraw_amount')}:</span>
+            <span className="text-white text-size-[16vw] md:text-base font-medium">{maxAmount > 0 ? maxAmount : t('common.unlimited')}</span>
           </div>
         </div>
       </div>
@@ -151,7 +151,7 @@ const WithdrawCard = ({ title, withdrawAmount, onWithdrawAmountChange, onConfirm
       <div className="mb-[12vw] md:mb-3">
         <div className="flex items-center justify-between p-[16vw] md:p-4 lg:p-5 rounded-[12vw] md:rounded-lg lg:rounded-xl" style={{ backgroundColor: '#171818', border: '1px solid #1B1C1C' }}>
           <div className="flex items-center gap-[12vw] md:gap-3">
-            <span className="text-[#8f8f8f] text-size-[14vw] md:text-sm">提现手续费:</span>
+            <span className="text-[#8f8f8f] text-size-[14vw] md:text-sm">{t('exchange.withdraw_fee_label')}:</span>
             <span className="text-white text-size-[16vw] md:text-base font-medium">{feeRatePercent}</span>
           </div>
         </div>
@@ -183,7 +183,7 @@ const WithdrawCard = ({ title, withdrawAmount, onWithdrawAmountChange, onConfirm
             <svg className="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
             </svg>
-            提交中...
+            {t('common.submitting')}
           </span>
         ) : (
           t('exchange.confirm_withdraw')
@@ -379,11 +379,11 @@ const Withdraw = () => {
     const canProceed = await checkBanStatusBeforeAction();
     if (!canProceed) return;
     if (!isAuthenticated) {
-      toast.error('请先登录');
+      toast.error(t('common.login_required'))
       return;
     }
     if (!account) {
-      toast.error('请先连接钱包');
+      toast.error(t('common.wallet_connect_required'))
       return;
     }
 
@@ -391,7 +391,7 @@ const Withdraw = () => {
     const minAmt = usdtSetting ? parseFloat(usdtSetting.min_withdrawal_amount || '0') : 0;
     const numAmt = parseFloat(card1WithdrawAmount);
     if (usdtSetting && Number.isFinite(numAmt) && numAmt < minAmt) {
-      toast.error(`提现金额必须大于等于 ${minAmt} USDT`);
+      toast.error(`${t('exchange.min_withdraw_amount')}: ${minAmt} USDT`);
       return;
     }
 
@@ -462,7 +462,7 @@ const Withdraw = () => {
   // 行标签配置
   const card1Rows = [
     {
-      title: t('exchange.usdt_deposit', { defaultValue: 'USDT充值' }),
+      title: t('exchange.usdt_deposit'),
       value: card1DepositAmount,
       onChange: handleCard1DepositChange,
       placeholder: t('exchange.enter_exchange_amount'),
@@ -472,7 +472,7 @@ const Withdraw = () => {
       isLoading: card1Submitting
     },
     {
-      title: t('exchange.usdt_withdraw', { defaultValue: 'USDT提现' }),
+      title: t('exchange.usdt_withdraw'),
       value: card1WithdrawAmount,
       onChange: handleCard1WithdrawChange,
       placeholder: t('exchange.enter_withdraw_amount'),
@@ -485,7 +485,7 @@ const Withdraw = () => {
 
   const card2Rows = [
     {
-      title: t('exchange.fiat_deposit', { defaultValue: '充值' }),
+      title: t('exchange.fiat_deposit'),
       value: card2DepositAmount,
       onChange: handleCard2DepositChange,
       placeholder: t('exchange.enter_exchange_amount'),
@@ -495,7 +495,7 @@ const Withdraw = () => {
       isLoading: card2Submitting
     },
     {
-      title: t('exchange.fiat_withdraw', { defaultValue: '提现' }),
+      title: t('exchange.fiat_withdraw'),
       value: card2WithdrawAmount,
       onChange: handleCard2WithdrawChange,
       placeholder: t('exchange.enter_withdraw_amount'),
@@ -589,15 +589,14 @@ const Withdraw = () => {
       toast.success(t('exchange.withdraw_success'));
 
       // 触发余额刷新
--      await refreshBalances();
-+      setTimeout(() => { refreshBalances(); }, 2000);
+      await refreshBalances();
 
       // 清空输入
       setWithdrawAmount('');
 
     } catch (error) {
       console.error('提现失败:', error);
-      toast.error('提现失败，请重试');
+      toast.error(t('exchange.withdraw_failed_retry'));
     }
   };
 
@@ -632,10 +631,10 @@ const Withdraw = () => {
       <GlobalConfirmDialog
         isOpen={banDialogOpen}
         onClose={() => setBanDialogOpen(false)}
-        title={t('ban_modal.title', { defaultValue: '账户已限制' })}
-        content={t('ban_modal.description', { defaultValue: '您的账户已被限制，请联系客服获取帮助。' })}
-        confirmText={t('ban_modal.contact_support', { defaultValue: '联系客服' })}
-        cancelText={t('ban_modal.dismiss', { defaultValue: '关闭' })}
+        title={t('ban_modal.title')}
+        content={t('ban_modal.description')}
+        confirmText={t('ban_modal.contact_support')}
+        cancelText={t('ban_modal.dismiss')}
         handleConfirm={handleContactSupport}
         handleCancel={() => {}}
       />

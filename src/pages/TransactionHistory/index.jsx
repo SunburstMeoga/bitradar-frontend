@@ -119,13 +119,13 @@ const TransactionHistory = () => {
       }
     } catch (error) {
       console.error('❌ 加载交易记录失败:', error);
-      setError(error.message || '加载失败');
+      setError(error.message || t('request_failed'));
 
       if (!isLoadMore) {
         setTransactions([]);
       }
 
-      toast.error('加载交易记录失败');
+      toast.error(t('request_failed'));
     } finally {
       setLoading(false);
     }
@@ -305,7 +305,7 @@ const TransactionHistory = () => {
             onClick={() => loadTransactions(1, false)}
             className="px-[24vw] md:px-6 py-[12vw] md:py-3 bg-blue-600 text-white rounded-[8vw] md:rounded-lg text-size-[14vw] md:text-sm"
           >
-            重试
+            {t('retry')}
           </button>
         </div>
       )}
@@ -314,7 +314,7 @@ const TransactionHistory = () => {
       {!isAuthenticated && (
         <div className="flex flex-col items-center justify-center py-[40vw] md:py-10">
           <div className="text-[#8f8f8f] text-size-[16vw] md:text-base">
-            请先连接钱包并登录
+            {t('not_authenticated')}
           </div>
         </div>
       )}
@@ -332,7 +332,7 @@ const TransactionHistory = () => {
       {!loading && !error && isAuthenticated && (!Array.isArray(transactions) || transactions.length === 0) && (
         <div className="flex flex-col items-center justify-center py-[40vw] md:py-10">
           <div className="text-[#8f8f8f] text-size-[16vw] md:text-base">
-            暂无交易记录
+            {t('no_data')}
           </div>
         </div>
       )}
@@ -356,9 +356,9 @@ const TransactionHistory = () => {
                   <span className="text-white text-size-[17vw] md:text-lg">
                     {(
                       activeTab === 'LuckyUSD' && transaction.transaction_type === 'BET'
-                        ? '下单'
+                        ? t('token_history.BET')
                         : activeTab === 'LuckyUSD' && transaction.transaction_type === 'WIN'
-                        ? '盈利'
+                        ? t('token_history.WIN')
                         : getTransactionTypeText(transaction.transaction_type)
                     )}
                   </span>
@@ -390,7 +390,7 @@ const TransactionHistory = () => {
           )}
           {!hasMore && !loading && totalCount > 0 && (
             <div className="text-[#8f8f8f] text-size-[14vw] md:text-sm">
-              {t('token_history.no_more_data')} (共 {totalCount} 条记录)
+              {t('token_history.no_more_data')}
             </div>
           )}
         </div>

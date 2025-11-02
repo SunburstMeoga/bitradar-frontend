@@ -49,7 +49,7 @@ const Account = () => {
       balanceFetchedRef.current = true;
       safeFetchBalance().catch(error => {
         console.error('获取余额失败:', error);
-        toast.error('获取余额失败');
+        toast.error(t('request_failed'));
         balanceFetchedRef.current = false; // 失败时重置，允许重试
       });
     }
@@ -158,7 +158,7 @@ const Account = () => {
   // 处理推荐码绑定点击
   const handleReferralBindClick = () => {
     if (!isConnected) {
-      toast.error('请先连接钱包');
+      toast.error(t('common.wallet_connect_required'));
       return;
     }
     setShowReferralBindModal(true);
@@ -189,18 +189,18 @@ const Account = () => {
   // 领取LuckyUSD或显示不可领取原因
   const handleClaimLusd = async () => {
     if (!isAuthenticated) {
-      toast.error('请先登录');
+      toast.error(t('account.claim.login_required'));
       return;
     }
 
     if (!isConnected) {
-      toast.error('请先连接钱包');
+      toast.error(t('account.claim.wallet_required'));
       return;
     }
 
     // 如果没有领取状态数据，先查询状态
     if (!lusdClaimStatus) {
-      toast.error('正在查询领取状态，请稍后再试');
+      toast.error(t('account.claim.querying_status'));
       fetchLusdClaimStatus();
       return;
     }
@@ -211,18 +211,18 @@ const Account = () => {
     const remainingMinutes = lusdClaimStatus.remaining_minutes || 0;
 
     if (hasPendingOrders) {
-      toast.error('当前不可领取（存在挂单）');
+      toast.error(t('account.claim.not_allowed_has_orders'));
       return;
     }
 
     if (Number.isFinite(currentBalanceNum) && currentBalanceNum >= 1) {
-      toast.error('不可领取：当前 LuckyUSD 余额 ≥ 1');
+      toast.error(t('account.claim.not_allowed_balance_ge_1'));
       return;
     }
 
     if (remainingMinutes > 0) {
       const remainingTime = lusdService.formatRemainingTime(remainingMinutes);
-      toast.error(`请在 ${remainingTime} 后再次领取`);
+      toast.error(t('account.claim.retry_after', { time: remainingTime }));
       return;
     }
 
@@ -232,7 +232,7 @@ const Account = () => {
       const result = await lusdService.claimLusd();
 
       if (result.success) {
-        toast.success(result.message || '成功领取LuckyUSD！');
+        toast.success(result.message || t('account.claim.success'));
 
         // 刷新余额和领取状态
         await Promise.all([
@@ -244,11 +244,11 @@ const Account = () => {
       console.error('领取LuckyUSD失败:', error);
 
       if (error.isTimeError) {
-        toast.error(`请在 ${lusdService.formatRemainingTime(error.remaining_minutes)} 后再次领取`);
+        toast.error(t('account.claim.retry_after', { time: lusdService.formatRemainingTime(error.remaining_minutes) }));
       } else if (error.isBalanceError) {
-        toast.error(error.message || '余额不符合领取条件');
+        toast.error(error.message || t('account.claim.failed_balance_mismatch'));
       } else {
-        toast.error(error.message || '领取失败，请稍后重试');
+        toast.error(error.message || t('account.claim.failed_retry'));
       }
     } finally {
       setIsClaiming(false);
@@ -331,7 +331,7 @@ const Account = () => {
               style={{ backgroundColor: 'transparent' }}
             >
               <span className="text-white text-size-[16vw] md:text-base font-medium">
-                {t('account.exchange')}
+                {t('exchange.exchange')}
               </span>
             </Link>
           )}
@@ -344,7 +344,7 @@ const Account = () => {
               style={{ backgroundColor: 'transparent' }}
             >
               <span className="text-white text-size-[16vw] md:text-base font-medium">
-                提现
+                {t('withdraw.withdraw')}
               </span>
             </Link>
           )}
@@ -355,7 +355,7 @@ const Account = () => {
               style={{ backgroundColor: 'transparent' }}
             >
               <span className="text-white text-size-[16vw] md:text-base font-medium">
-                提现
+                {t('withdraw.withdraw')}
               </span>
             </Link>
           )}
@@ -377,7 +377,7 @@ const Account = () => {
             {isLoadingClaimStatus ? (
               <div className="flex items-center space-x-2">
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                <span className="text-white text-size-[16vw] md:text-base">查询领取状态中...</span>
+                <span className="text-white text-size-[16vw] md:text-base">{t('account.claim.querying_status')}</span>
               </div>
             ) : lusdClaimStatus ? (
               <span className="text-white text-size-[18vw] md:text-lg font-medium">
@@ -386,13 +386,16 @@ const Account = () => {
                   const currentBalanceNum = parseFloat(lusdClaimStatus.current_balance || '0');
                   const remainingMinutes = lusdClaimStatus.remaining_minutes || 0;
 
-                  if (hasPending || (Number.isFinite(currentBalanceNum) && currentBalanceNum >= 1)) {
-                    return '不可领取';
+                  if (hasPending) {
+                    return t('account.claim.not_allowed_has_orders');
+                  }
+                  if (Number.isFinite(currentBalanceNum) && currentBalanceNum >= 1) {
+                    return t('account.claim.not_allowed_balance_ge_1');
                   }
                   if (remainingMinutes > 0) {
-                    return `下次领取: ${formatCountdown(lusdCountdown)}`;
+                    return `${t('account.next_distribution')}: ${formatCountdown(lusdCountdown)}`;
                   }
-                  return isClaiming ? '领取中...' : '领取LuckyUSD';
+                  return isClaiming ? t('common.submitting') : t('account.claim.cta');
                 })()}
               </span>
             ) : (

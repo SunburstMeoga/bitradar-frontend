@@ -15,7 +15,13 @@
     "submit": "Submit",
     "close": "Close",
     "not_available": "Not available yet",
-    "login_failed": "Login failed"
+    "login_failed": "Login failed",
+    "unlimited": "Unlimited",
+    "submitting": "Submitting...",
+    "login_required": "Please login first",
+    "wallet_connect_required": "Please connect wallet first",
+    "querying_please_wait": "Querying status, please wait",
+    "request_failed": "Request failed"
   },
   "auth": {
     "session_expired_title": "Session Expired",
@@ -40,6 +46,15 @@
     "title": "Hello BitRocket",
     "welcome": "Welcome to BitRocket DApp",
     "description": "Your gateway to decentralized finance"
+  },
+  "captcha": {
+    "test_title": "Captcha Test Page",
+    "test_description": "Captcha is displayed as a modal. This page is for experiencing and testing the global captcha modal component.",
+    "open_modal": "Open Captcha Modal",
+    "verified_passed": "Verification Passed",
+    "verified_failed": "Verification Failed",
+    "dialog_title": "Security Verification",
+    "dialog_description": "Please enter the captcha below to complete verification."
   },
   "wallet": {
     "not_connected": "Wallet not connected",
@@ -175,6 +190,18 @@
       "minutes": "minutes ago",
       "hours": "hours ago",
       "days": "days ago"
+    },
+    "claim": {
+      "login_required": "Please login first",
+      "wallet_required": "Please connect wallet first",
+      "querying_status": "Querying status, please wait",
+      "cta": "Claim LuckyUSD",
+      "not_allowed_has_orders": "Cannot claim: There are active orders",
+      "not_allowed_balance_ge_1": "Cannot claim: Current LuckyUSD balance ≥ 1",
+      "retry_after": "Please try again after {{time}}",
+      "success": "Successfully claimed LuckyUSD!",
+      "failed_balance_mismatch": "Balance does not meet claim conditions",
+      "failed_retry": "Claim failed, please retry later"
     }
   },
   "network_details": {
@@ -282,6 +309,27 @@
   "withdraw": {
     "title": "Withdraw"
   },
+  "rocket_withdraw": {
+    "membership_required": "Only Gold or Silver members can withdraw ROCKET. Please upgrade membership first."
+  },
+  "network_earnings": {
+    "loading_failed": "Failed to load earnings",
+    "error_retry": "Failed to load earnings, please retry later",
+    "reward_type_all": "All",
+    "reward_type_differential": "Differential Reward",
+    "reward_type_flat": "Flat Reward",
+    "reward_type_fee": "Fee Dividend",
+    "summary_title": "Earnings Summary",
+    "details_title": "Earnings Details",
+    "total_label": "Total Earnings",
+    "differential_label": "Differential Reward",
+    "flat_label": "Flat Reward",
+    "fee_label": "Fee Dividend",
+    "item_differential": "Differential Reward - User#{{user}} (VIP{{fromLevel}}→VIP{{toLevel}})",
+    "item_flat": "Flat Reward - User#{{user}} ({{sameLevel}})",
+    "item_fee": "Fee Dividend - User#{{user}} ({{rate}})",
+    "empty": "No earnings records"
+  },
   "exchange": {
     "title": "Exchange",
     "wallet_address": "Wallet Address",
@@ -311,6 +359,9 @@
     "withdraw_amount": "Withdraw Amount",
     "confirm_withdraw": "Confirm Withdraw",
     "min_withdraw_amount": "Min Withdraw Amount",
+    "max_withdraw_amount": "Max Withdraw Amount",
+    "withdraw_fee_label": "Withdraw Fee",
+    "withdraw_failed_retry": "Withdraw failed, please retry",
     "withdraw_success": "Withdraw Successful!",
     "rocket_platform_balance": "Rocket",
     "web3_wallet_balance": "Wallet Balance",
