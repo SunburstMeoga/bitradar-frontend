@@ -272,7 +272,7 @@ const Account = () => {
       {/* 第二部分：Tabs */}
       <div className="px-[16vw] md:px-4 pb-[24vw] md:pb-6">
         <div className="flex gap-[8vw] md:gap-2">
-          {['USDT', 'USDR', 'LuckyUSD', 'Rocket'].map((tab) => (
+          {['USDT', 'LuckyUSD', 'Rocket'].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}

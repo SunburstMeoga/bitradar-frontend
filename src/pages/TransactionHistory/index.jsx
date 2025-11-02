@@ -254,7 +254,7 @@ const TransactionHistory = () => {
       {/* Tab选择器 */}
       <div className="pb-[16vw] md:pb-4">
         <div className="flex gap-[8vw] md:gap-2">
-          {['USDT', 'USDR', 'LuckyUSD', 'Rocket'].map((tab) => (
+          {['USDT', 'LuckyUSD', 'Rocket'].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -314,7 +314,7 @@ const TransactionHistory = () => {
       {!isAuthenticated && (
         <div className="flex flex-col items-center justify-center py-[40vw] md:py-10">
           <div className="text-[#8f8f8f] text-size-[16vw] md:text-base">
-            {t('not_authenticated')}
+            {t('wallet.not_authenticated')}
           </div>
         </div>
       )}
