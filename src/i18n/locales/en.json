@@ -403,7 +403,8 @@
     "down": "Down",
     "select_token": "Select Token",
     "price_chart_area": "Price Chart Area",
-    "binary_options": "Binary Options"
+    "binary_options": "Binary Options",
+    "previous_order_unfinished": "The previous order has not ended yet, betting is temporarily unavailable"
   },
   "token_history": {
     "title": "Token History",

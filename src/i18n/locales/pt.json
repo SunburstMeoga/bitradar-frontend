@@ -403,7 +403,8 @@
     "down": "Baixa",
     "select_token": "Selecionar token",
     "price_chart_area": "Área do gráfico de preço",
-    "binary_options": "Opções binárias"
+    "binary_options": "Opções binárias",
+    "previous_order_unfinished": "O pedido anterior ainda não foi concluído, aposta indisponível no momento"
   },
   "token_history": {
     "title": "Histórico de Tokens",

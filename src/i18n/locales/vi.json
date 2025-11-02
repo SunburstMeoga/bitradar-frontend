@@ -403,7 +403,8 @@
     "down": "Giảm",
     "select_token": "Chọn token",
     "price_chart_area": "Khu vực biểu đồ giá",
-    "binary_options": "Quyền chọn nhị phân"
+    "binary_options": "Quyền chọn nhị phân",
+    "previous_order_unfinished": "Đơn trước chưa kết thúc, hiện chưa thể đặt cược"
   },
   "token_history": {
     "title": "Lịch sử token",

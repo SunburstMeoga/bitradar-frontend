@@ -403,7 +403,8 @@
     "down": "下降",
     "select_token": "トークンを選択",
     "price_chart_area": "価格チャートエリア",
-    "binary_options": "二項オプション"
+    "binary_options": "二項オプション",
+    "previous_order_unfinished": "前回の注文がまだ終了していないため、現在はベットできません"
   },
   "token_history": {
     "title": "トークン履歴",

@@ -403,7 +403,8 @@
     "down": "하락",
     "select_token": "토큰 선택",
     "price_chart_area": "가격 차트 영역",
-    "binary_options": "이진 옵션"
+    "binary_options": "이진 옵션",
+    "previous_order_unfinished": "이전 주문이 아직 종료되지 않아, 현재 베팅할 수 없습니다"
   },
   "token_history": {
     "title": "토큰 기록",

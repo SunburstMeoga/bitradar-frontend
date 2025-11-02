@@ -659,10 +659,29 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
       return;
     }
 
+    // 点击后立即显示 loading，然后进行未完成订单检查
+    setIsPlacingBet(true);
+    try {
+      const res = await fetchOrders(1, 120, selectedToken || 'all', false, 'pending');
+      if (res && res.success) {
+        const orders = res.data || [];
+        const hasUnfinished = orders.some(order => order?.profit_loss === "0" || order?.status === 'PENDING');
+        if (hasUnfinished) {
+          toast(t('trade.previous_order_unfinished'));
+          setIsPlacingBet(false);
+          return;
+        }
+      }
+    } catch (err) {
+      console.error('❌ 检查未完成订单失败:', err);
+      // 不中断下注流程，继续执行现有逻辑
+    }
+
     // 检查用户是否已认证
     if (!isAuthenticated) {
       console.log('❌ 用户未认证');
       toast.error(t('wallet_connect_required'));
+      setIsPlacingBet(false);
       return;
     }
 
@@ -673,12 +692,14 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
     if (!currentToken) {
       console.log('❌ 没有认证token');
       toast.error(t('wallet.not_authenticated'));
+      setIsPlacingBet(false);
       return;
     }
 
     // 检查选中的代币
     if (!selectedToken || selectedToken === '') {
       toast.error(t('trade.select_token'));
+      setIsPlacingBet(false);
       return;
     }
 
@@ -686,6 +707,7 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
     const userBalance = getCurrentTokenBalance();
     if (userBalance < tradeAmount) {
       toast.error(t('exchange.insufficient_balance'));
+      setIsPlacingBet(false);
       return;
     }
 
@@ -695,6 +717,7 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
       setIsCaptchaOpen(true);
       pendingDirectionRef.current = direction;
       toast(t('captcha.title'));
+      setIsPlacingBet(false);
       return;
     }
 
