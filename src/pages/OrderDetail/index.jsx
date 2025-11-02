@@ -133,12 +133,12 @@ const OrderDetail = () => {
       if (result && result.success) {
         setOrderDetail(result.data.order || result.data);
       } else {
-        throw new Error(result?.message || t('request_failed'));
+        throw new Error(result?.message || t('common.request_failed'));
       }
     } catch (err) {
       console.error('Error loading order detail:', err);
       setError(err);
-      toast.error(t('request_failed'));
+      toast.error(t('common.request_failed'));
     } finally {
       setLoading(false);
     }
@@ -180,7 +180,7 @@ const OrderDetail = () => {
           <ErrorDisplay
             error={error}
             onRetry={() => loadOrderDetail()}
-            message={t('request_failed')}
+            message={t('common.request_failed')}
           />
         )}
 

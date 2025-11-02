@@ -313,7 +313,8 @@
     }
   },
   "withdraw": {
-    "title": "入金"
+    "title": "出金",
+    "withdraw": "出金"
   },
   "rocket_withdraw": {
     "membership_required": "ROCKET の出金はゴールドまたはシルバー会員のみ可能です。まず会員をアップグレードしてください。"
@@ -415,6 +416,8 @@
       "trade": "取引",
       "reward": "受け取り"
     },
+    "BET": "ベット",
+    "WIN": "勝ち",
     "transaction_types": {
       "check_in": "チェックイン",
       "reward": "報酬",

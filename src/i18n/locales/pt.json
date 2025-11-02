@@ -313,7 +313,8 @@
     }
   },
   "withdraw": {
-    "title": "Depósito"
+    "title": "Saque",
+    "withdraw": "Saque"
   },
   "rocket_withdraw": {
     "membership_required": "Apenas membros Ouro ou Prata podem sacar ROCKET. Atualize sua associação primeiro."
@@ -415,6 +416,8 @@
       "trade": "Negociação",
       "reward": "Recebimento"
     },
+    "BET": "Aposta",
+    "WIN": "Vitória",
     "transaction_types": {
       "check_in": "Check-in",
       "reward": "Recompensa",

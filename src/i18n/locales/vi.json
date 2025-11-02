@@ -313,7 +313,8 @@
     }
   },
   "withdraw": {
-    "title": "Nạp tiền"
+    "title": "Rút",
+    "withdraw": "Rút"
   },
   "rocket_withdraw": {
     "membership_required": "Chỉ thành viên Vàng hoặc Bạc mới có thể rút ROCKET. Vui lòng nâng cấp hạng thành viên trước."
@@ -415,6 +416,8 @@
       "trade": "Giao dịch",
       "reward": "Nhận"
     },
+    "BET": "Đặt cược",
+    "WIN": "Thắng",
     "transaction_types": {
       "check_in": "Điểm danh",
       "reward": "Phần thưởng",
