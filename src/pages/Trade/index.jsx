@@ -672,7 +672,7 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
 
     if (!currentToken) {
       console.log('❌ 没有认证token');
-      toast.error(t('not_authenticated'));
+      toast.error(t('wallet.not_authenticated'));
       return;
     }
 
