@@ -685,7 +685,7 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
     // 检查余额是否足够
     const userBalance = getCurrentTokenBalance();
     if (userBalance < tradeAmount) {
-      toast.error(t('insufficient_balance'));
+      toast.error(t('exchange.insufficient_balance'));
       return;
     }
 
