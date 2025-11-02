@@ -133,12 +133,12 @@ const OrderDetail = () => {
       if (result && result.success) {
         setOrderDetail(result.data.order || result.data);
       } else {
-        throw new Error(result?.message || '获取订单详情失败');
+        throw new Error(result?.message || t('request_failed'));
       }
     } catch (err) {
       console.error('Error loading order detail:', err);
       setError(err);
-      toast.error('加载订单详情失败');
+      toast.error(t('request_failed'));
     } finally {
       setLoading(false);
     }
@@ -179,14 +179,14 @@ const OrderDetail = () => {
         {error && !loading && (
           <ErrorDisplay
             error={error}
-            onRetry={loadOrderDetail}
-            message="加载订单详情失败"
+            onRetry={() => loadOrderDetail()}
+            message={t('request_failed')}
           />
         )}
 
         {/* 加载状态 */}
         {loading && (
-          <LoadingSpinner message="加载订单详情中..." />
+          <LoadingSpinner message={t('loading')} />
         )}
 
         {/* 订单详情 */}

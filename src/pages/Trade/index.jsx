@@ -549,7 +549,7 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
 
       if (validationErrors.length > 0) {
         console.error('❌ 订单数据验证失败:', validationErrors);
-        toast.error('订单数据验证失败: ' + validationErrors.join(', '));
+        toast.error(t('validation_failed'));
         return;
       }
 
@@ -558,7 +558,7 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
 
       if (result.success) {
         // API调用成功，显示成功消息
-        toast.success(result.message || '下单成功');
+        toast.success(t('success'));
 
         // 创建本地下注记录（用于图表显示）
         // 适配新的API响应格式
@@ -568,7 +568,7 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
         const orderId = responseOrderData.id;
         if (!orderId) {
           console.error('❌ 订单创建成功但缺少订单ID:', responseOrderData);
-          toast.error('订单创建成功但缺少订单ID');
+          toast.error(t('validation_failed'));
           return;
         }
 
@@ -623,14 +623,14 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
           // 标记后续下注需通过安全验证
           setIsCaptchaRequired(true);
           setIsCaptchaOpen(true);
-          toast('请完成安全验证');
+          toast(t('captcha.title'));
         }
       }
     } catch (error) {
       console.error('❌ 下注失败:', error);
 
       // 显示错误消息
-      const errorMessage = error.message || '下注失败，请重试';
+      const errorMessage = error.message || t('retry');
       toast.error(errorMessage);
     } finally {
       setIsPlacingBet(false);
@@ -662,7 +662,7 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
     // 检查用户是否已认证
     if (!isAuthenticated) {
       console.log('❌ 用户未认证');
-      toast.error('请先连接钱包并登录');
+      toast.error(t('wallet_connect_required'));
       return;
     }
 
@@ -672,20 +672,20 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
 
     if (!currentToken) {
       console.log('❌ 没有认证token');
-      toast.error('认证token无效，请重新登录');
+      toast.error(t('not_authenticated'));
       return;
     }
 
     // 检查选中的代币
     if (!selectedToken || selectedToken === '') {
-      toast.error('请选择下注代币');
+      toast.error(t('trade.select_token'));
       return;
     }
 
     // 检查余额是否足够
     const userBalance = getCurrentTokenBalance();
     if (userBalance < tradeAmount) {
-      toast.error('余额不足');
+      toast.error(t('insufficient_balance'));
       return;
     }
 
@@ -694,7 +694,7 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
     if (shouldGateByCaptcha) {
       setIsCaptchaOpen(true);
       pendingDirectionRef.current = direction;
-      toast('请完成安全验证后继续下注');
+      toast(t('captcha.title'));
       return;
     }
 
@@ -1086,7 +1086,7 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
                 disabled={isConnecting}
                 className="w-[200vw] md:w-64 h-[50vw] md:h-12 bg-[#c5ff33] text-black text-size-[17vw] md:text-lg font-semibold rounded-[12vw] md:rounded-lg flex items-center justify-center disabled:opacity-60 disabled:cursor-not-allowed"
               >
-                {isConnecting ? '连接中...' : '连接钱包开始交易'}
+                {isConnecting ? t('connecting') : t('connect_wallet')}
               </button>
             </div>
           ) : (
@@ -1107,14 +1107,14 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
               <img src={buyUpIcon} alt="Up" className="w-[24vw] md:w-6 h-[24vw] md:h-6" />
             )}
             <span className="text-white text-size-[17vw] md:text-lg font-semibold">
-              {isPlacingBet ? '下注中...' : t('trade.up')}
+              {isPlacingBet ? t('loading') : t('trade.up')}
             </span>
           </div>
 
           {/* 中间时间显示 */}
           <div className="flex-1 h-[38vw] md:h-10 flex flex-col items-center justify-center">
             <img src={timeIcon} alt="Time" className="w-[16vw] md:w-4 h-[16vw] md:h-4 mb-[4vw] md:mb-1" />
-            <span className="text-white text-size-[15vw] md:text-sm font-semibold">1m</span>
+            <span className="text-white text-size-[15vw] md:text-sm font-semibold">{t('history.duration_1m')}</span>
           </div>
 
           {/* Down按钮 */}
@@ -1132,7 +1132,7 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
               <img src={buyDownIcon} alt="Down" className="w-[24vw] md:w-6 h-[24vw] md:h-6" />
             )}
             <span className="text-white text-size-[17vw] md:text-lg font-semibold">
-              {isPlacingBet ? '下注中...' : t('trade.down')}
+              {isPlacingBet ? t('loading') : t('trade.down')}
             </span>
           </div>
             </>
@@ -1154,12 +1154,12 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
               // 加载状态
               <div className="flex items-center justify-center py-[40vw] md:py-10">
                 <div className="w-[32vw] md:w-8 h-[32vw] md:h-8 border-2 border-[#c5ff33] border-t-transparent rounded-full animate-spin"></div>
-                <span className="ml-[12vw] md:ml-3 text-white text-size-[14vw] md:text-sm">加载代币列表...</span>
+                <span className="ml-[12vw] md:ml-3 text-white text-size-[14vw] md:text-sm">{t('loading')}</span>
               </div>
             ) : tokenOptions.length === 0 ? (
               // 空状态
               <div className="flex items-center justify-center py-[40vw] md:py-10">
-                <span className="text-[#8f8f8f] text-size-[14vw] md:text-sm">暂无可用代币</span>
+                <span className="text-[#8f8f8f] text-size-[14vw] md:text-sm">{t('no_data')}</span>
               </div>
             ) : (
               // 代币列表

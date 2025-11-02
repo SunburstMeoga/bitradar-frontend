@@ -408,12 +408,12 @@ const History = () => {
         }
       } else {
         console.error('❌ API调用结果无效:', result);
-        throw new Error(result?.message || '获取订单历史失败');
+        throw new Error(result?.message || t('request_failed'));
       }
     } catch (err) {
       console.error('Error loading data:', err);
       setError(err);
-      toast.error('加载数据失败');
+      toast.error(t('request_failed'));
     } finally {
       setLoading(false);
     }
@@ -486,13 +486,13 @@ const History = () => {
           <ErrorDisplay
             error={error}
             onRetry={() => loadData(1, true)}
-            message="加载交易历史失败"
+            message={t('request_failed')}
           />
         )}
 
         {/* 初始加载状态 */}
         {loading && historyData.length === 0 && (
-          <LoadingSpinner message="加载交易历史中..." />
+          <LoadingSpinner message={t('history.loading')} />
         )}
 
         {Array.isArray(historyData) && historyData.map((item) => (

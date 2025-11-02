@@ -92,7 +92,7 @@ const RocketWithdrawCard = ({ title, withdrawAmount, onWithdrawAmountChange, onC
       <div className="mb-[12vw] md:mb-3">
         <div className="flex items-center justify-between p-[16vw] md:p-4 lg:p-5 rounded-[12vw] md:rounded-lg lg:rounded-xl" style={{ backgroundColor: '#171818', border: '1px solid #1B1C1C' }}>
           <div className="flex items-center gap-[12vw] md:gap-3">
-            <span className="text-[#8f8f8f] text-size-[14vw] md:text-sm">最小提现金额:</span>
+            <span className="text-[#8f8f8f] text-size-[14vw] md:text-sm">{t('exchange.min_withdraw_amount')}:</span>
             <span className="text-white text-size-[16vw] md:text-base font-medium">{minAmountText}</span>
           </div>
         </div>
@@ -102,7 +102,7 @@ const RocketWithdrawCard = ({ title, withdrawAmount, onWithdrawAmountChange, onC
       <div className="mb-[12vw] md:mb-3">
         <div className="flex items-center justify-between p-[16vw] md:p-4 lg:p-5 rounded-[12vw] md:rounded-lg lg:rounded-xl" style={{ backgroundColor: '#171818', border: '1px solid #1B1C1C' }}>
           <div className="flex items-center gap-[12vw] md:gap-3">
-            <span className="text-[#8f8f8f] text-size-[14vw] md:text-sm">最大提现金额:</span>
+            <span className="text-[#8f8f8f] text-size-[14vw] md:text-sm">{t('exchange.max_withdraw_amount')}:</span>
             <span className="text-white text-size-[16vw] md:text-base font-medium">{maxAmountText}</span>
           </div>
         </div>
@@ -112,7 +112,7 @@ const RocketWithdrawCard = ({ title, withdrawAmount, onWithdrawAmountChange, onC
       <div className="mb-[12vw] md:mb-3">
         <div className="flex items-center justify-between p-[16vw] md:p-4 lg:p-5 rounded-[12vw] md:rounded-lg lg:rounded-xl" style={{ backgroundColor: '#171818', border: '1px solid #1B1C1C' }}>
           <div className="flex items-center gap-[12vw] md:gap-3">
-            <span className="text-[#8f8f8f] text-size-[14vw] md:text-sm">提现手续费:</span>
+            <span className="text-[#8f8f8f] text-size-[14vw] md:text-sm">{t('exchange.withdraw_fee_label')}:</span>
             <span className="text-white text-size-[16vw] md:text-base font-medium">{feeRatePercent}</span>
           </div>
         </div>
@@ -143,7 +143,7 @@ const RocketWithdrawCard = ({ title, withdrawAmount, onWithdrawAmountChange, onC
             <svg className="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
             </svg>
-            提交中...
+            {t('common.submitting')}
           </span>
         ) : (
           t('exchange.confirm_withdraw')
@@ -255,7 +255,7 @@ const RocketWithdraw = () => {
   const feeRatePercent = rocketSetting ? `${(parseFloat(rocketSetting.withdrawal_fee_rate || '0') * 100).toFixed(2)}%` : '0%';
   const isSettingsLoaded = settings !== null;
   const minAmountText = isSettingsLoaded ? Number(minWithdrawAmount).toFixed(2) : '0.00';
-  const maxAmountText = isSettingsLoaded ? (maxWithdrawAmount > 0 ? Number(maxWithdrawAmount).toFixed(2) : '无限制') : '0.00';
+  const maxAmountText = isSettingsLoaded ? (maxWithdrawAmount > 0 ? Number(maxWithdrawAmount).toFixed(2) : t('unlimited')) : '0.00';
 
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -273,7 +273,7 @@ const RocketWithdraw = () => {
     //   return;
     // }
     // if (value && maxWithdrawAmount > 0 && num > maxWithdrawAmount) {
-    //   toast.error(`提现金额不得超过 ${maxWithdrawAmount}`);
+    //   toast.error(`${t('exchange.max_withdraw_amount')}: ${maxWithdrawAmount}`);
     //   return;
     // }
     // if (value && num > platformRocket) {
@@ -296,11 +296,11 @@ const RocketWithdraw = () => {
     if (!withdrawAmount) return;
     const num = parseFloat(withdrawAmount) || 0;
     if (num < minWithdrawAmount) {
-      toast.error(`最小输入金额：${minWithdrawAmount}`);
+      toast.error(`${t('exchange.min_withdraw_amount')}: ${minWithdrawAmount}`);
       return;
     }
     if (maxWithdrawAmount > 0 && num > maxWithdrawAmount) {
-      toast.error(`最大输入金额：${maxWithdrawAmount}`);
+      toast.error(`${t('exchange.max_withdraw_amount')}: ${maxWithdrawAmount}`);
       return;
     }
     if (num > platformRocket) {
@@ -313,16 +313,16 @@ const RocketWithdraw = () => {
     if (!withdrawAmount) return;
     const canProceed = await checkBanStatusBeforeAction();
     if (!canProceed) return;
-    if (!isAuthenticated) { toast.error('请先登录'); return; }
-    if (!account) { toast.error('请先连接钱包'); return; }
+    if (!isAuthenticated) { toast.error(t('login_required')); return; }
+    if (!account) { toast.error(t('wallet_connect_required')); return; }
 
     const numAmt = parseFloat(withdrawAmount);
     if (!Number.isFinite(numAmt) || numAmt < minWithdrawAmount) {
-      toast.error(`最小输入金额：${minWithdrawAmount}`);
+      toast.error(`${t('exchange.min_withdraw_amount')}: ${minWithdrawAmount}`);
       return;
     }
     if (maxWithdrawAmount > 0 && numAmt > maxWithdrawAmount) {
-      toast.error(`最大输入金额：${maxWithdrawAmount}`);
+      toast.error(`${t('exchange.max_withdraw_amount')}: ${maxWithdrawAmount}`);
       return;
     }
     if (numAmt > platformRocket) {
@@ -349,7 +349,7 @@ const RocketWithdraw = () => {
       const status = err?.response?.status;
       const serverData = err?.response?.data;
       if (status === 403 && (serverData?.data?.token_symbol === 'ROCKET' || serverData?.data?.current_membership === 'none')) {
-        const msg = serverData?.message || '只有金牌或銀牌會員才能提取 ROCKET，請先升級會員';
+        const msg = serverData?.message || t('rocket_withdraw.membership_required');
         toast.error(msg);
       } else {
         const msg = err?.response?.data?.message || err?.message || t('exchange.tx_failed');
@@ -384,7 +384,7 @@ const RocketWithdraw = () => {
 
       {/* Rocket 提现卡片（无USDT/法币充值项）*/}
       <RocketWithdrawCard
-        title={t('exchange.withdraw_to_wallet', { defaultValue: '提至钱包' })}
+        title={t('exchange.withdraw_to_wallet')}
         withdrawAmount={withdrawAmount}
         onWithdrawAmountChange={handleWithdrawAmountChange}
         onConfirm={handleWithdrawConfirm}
@@ -400,17 +400,17 @@ const RocketWithdraw = () => {
       {/* 提现记录入口：跳转到Rocket的提现记录 */}
       <div className="flex justify-center mt-[12vw] md:mt-3 lg:mt-4">
         <button onClick={() => navigate('/token-history?token_symbol=ROCKET&transaction_type=WITHDRAW')} className="text-[#5671FB] text-size-[14vw] md:text-sm lg:text-sm font-medium hover:opacity-80 transition-opacity underline">
- 提现记录
+ {t('exchange.records')}
         </button>
       </div>
 
       <GlobalConfirmDialog
         isOpen={banDialogOpen}
         onClose={() => setBanDialogOpen(false)}
-        title={t('ban_modal.title', { defaultValue: '账户已限制' })}
-        content={t('ban_modal.description', { defaultValue: '您的账户已被限制，请联系客服获取帮助。' })}
-        confirmText={t('ban_modal.contact_support', { defaultValue: '联系客服' })}
-        cancelText={t('ban_modal.dismiss', { defaultValue: '关闭' })}
+        title={t('ban_modal.title')}
+        content={t('ban_modal.description')}
+        confirmText={t('ban_modal.contact_support')}
+        cancelText={t('ban_modal.dismiss')}
         handleConfirm={handleContactSupport}
         handleCancel={() => {}}
       />

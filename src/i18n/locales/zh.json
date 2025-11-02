@@ -16,7 +16,13 @@
     "submit": "提交",
     "close": "关闭",
     "not_available": "暂未开通",
-    "login_failed": "登录失败"
+    "login_failed": "登录失败",
+    "unlimited": "无限制",
+    "submitting": "提交中...",
+    "login_required": "请先登录",
+    "wallet_connect_required": "请先连接钱包",
+    "querying_please_wait": "正在查询领取状态，请稍后再试",
+    "request_failed": "请求失败"
   },
   "auth": {
     "session_expired_title": "登录过期",
@@ -191,6 +197,18 @@
       "minutes": "分钟前",
       "hours": "小时前",
       "days": "天前"
+    },
+    "claim": {
+      "login_required": "请先登录",
+      "wallet_required": "请先连接钱包",
+      "querying_status": "正在查询领取状态，请稍后再试",
+      "cta": "领取LuckyUSD",
+      "not_allowed_has_orders": "当前不可领取（存在挂单）",
+      "not_allowed_balance_ge_1": "不可领取：当前 LuckyUSD 余额 ≥ 1",
+      "retry_after": "请在 {{time}} 后再次领取",
+      "success": "成功领取LuckyUSD！",
+      "failed_balance_mismatch": "余额不符合领取条件",
+      "failed_retry": "领取失败，请稍后重试"
     }
   },
   "network_details": {
@@ -298,6 +316,27 @@
   "withdraw": {
     "title": "充值"
   },
+  "rocket_withdraw": {
+    "membership_required": "只有金牌或银牌会员才能提取 ROCKET，请先升级会员"
+  },
+  "network_earnings": {
+    "loading_failed": "加载收益数据失败",
+    "error_retry": "加载收益数据失败，请稍后重试",
+    "reward_type_all": "全部",
+    "reward_type_differential": "极差奖励",
+    "reward_type_flat": "平级奖励",
+    "reward_type_fee": "手续费分红",
+    "summary_title": "收益汇总",
+    "details_title": "收益明细",
+    "total_label": "总收益",
+    "differential_label": "极差奖励",
+    "flat_label": "平级奖励",
+    "fee_label": "手续费分红",
+    "item_differential": "极差奖励 - 用户#{{user}} (VIP{{fromLevel}}→VIP{{toLevel}})",
+    "item_flat": "平级奖励 - 用户#{{user}} ({{sameLevel}})",
+    "item_fee": "手续费分红 - 用户#{{user}} ({{rate}})",
+    "empty": "暂无收益记录"
+  },
   "exchange": {
     "title": "充值",
     "wallet_address": "钱包地址",
@@ -327,6 +366,9 @@
     "withdraw_amount": "提现金额",
     "confirm_withdraw": "确认提现",
     "min_withdraw_amount": "最小提现金额",
+    "max_withdraw_amount": "最大提现金额",
+    "withdraw_fee_label": "提现手续费",
+    "withdraw_failed_retry": "提现失败，请重试",
     "withdraw_success": "提现成功！",
     "rocket_platform_balance": "Rocket",
     "web3_wallet_balance": "钱包余额",

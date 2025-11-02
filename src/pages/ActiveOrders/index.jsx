@@ -134,12 +134,12 @@ const ActiveOrders = () => {
         }
       } else {
         console.error('❌ API调用结果无效:', result);
-        throw new Error(result?.message || '获取活跃订单失败');
+        throw new Error(result?.message || t('request_failed'));
       }
     } catch (err) {
       console.error('Error loading active orders:', err);
       setError(err);
-      toast.error('加载活跃订单失败');
+      toast.error(t('request_failed'));
     } finally {
       setLoading(false);
     }
@@ -207,13 +207,13 @@ const ActiveOrders = () => {
           <ErrorDisplay
             error={error}
             onRetry={() => loadData(1, true)}
-            message="加载活跃订单失败"
+            message={t('request_failed')}
           />
         )}
 
         {/* 初始加载状态 */}
         {loading && activeOrders.length === 0 && (
-          <LoadingSpinner message="加载活跃订单中..." />
+          <LoadingSpinner message={t('loading')} />
         )}
 
         {Array.isArray(activeOrders) && activeOrders.map((item) => (

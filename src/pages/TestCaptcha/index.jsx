@@ -9,9 +9,9 @@ export default function TestCaptcha() {
 
   return (
     <div style={{ padding: 16 }}>
-      <h2 style={{ fontSize: 20, fontWeight: 600, marginBottom: 12 }}>验证码测试页</h2>
+      <h2 style={{ fontSize: 20, fontWeight: 600, marginBottom: 12 }}>{t('captcha.test_title')}</h2>
       <p style={{ color: '#64748b', marginBottom: 12 }}>
-        验证码以弹窗形式展示。此页面用于体验与测试全局弹窗验证码组件。
+        {t('captcha.test_description')}
       </p>
 
       <button
@@ -27,23 +27,23 @@ export default function TestCaptcha() {
           cursor: 'pointer',
         }}
       >
-        打开验证码弹窗
+        {t('captcha.open_modal')}
       </button>
 
       <div style={{ marginTop: 12 }}>
         {status === 'success' && (
-          <div style={{ color: '#10b981' }}>验证通过</div>
+          <div style={{ color: '#10b981' }}>{t('captcha.success')}</div>
         )}
         {status === 'failure' && (
-          <div style={{ color: '#ef4444' }}>验证失败</div>
+          <div style={{ color: '#ef4444' }}>{t('captcha.fail')}</div>
         )}
       </div>
 
       <CaptchaModal
         isOpen={open}
         onClose={() => setOpen(false)}
-        title="安全验证"
-        description="请输入下方验证码完成验证。"
+        title={t('captcha.dialog_title')}
+        description={t('captcha.dialog_description')}
         captchaType="math"
         placeholder={t('captcha.placeholder_math')}
         reloadText={t('captcha.reload_text')}
