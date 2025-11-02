@@ -404,7 +404,8 @@
     "down": "跌",
     "select_token": "选择币种",
     "price_chart_area": "价格图表区域",
-    "binary_options": "二元期权"
+    "binary_options": "二元期权",
+    "previous_order_unfinished": "上一笔订单暂未结束，暂时无法下注"
   },
   "token_history": {
     "title": "代币记录",
