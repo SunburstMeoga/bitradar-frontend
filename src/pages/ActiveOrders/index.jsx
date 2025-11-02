@@ -134,12 +134,12 @@ const ActiveOrders = () => {
         }
       } else {
         console.error('❌ API调用结果无效:', result);
-        throw new Error(result?.message || t('request_failed'));
+        throw new Error(result?.message || t('common.request_failed'));
       }
     } catch (err) {
       console.error('Error loading active orders:', err);
       setError(err);
-      toast.error(t('request_failed'));
+      toast.error(t('common.request_failed'));
     } finally {
       setLoading(false);
     }
@@ -207,7 +207,7 @@ const ActiveOrders = () => {
           <ErrorDisplay
             error={error}
             onRetry={() => loadData(1, true)}
-            message={t('request_failed')}
+            message={t('common.request_failed')}
           />
         )}
 

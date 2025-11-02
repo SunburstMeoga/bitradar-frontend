@@ -633,15 +633,15 @@ const NetworkDetails = () => {
                   className="px-[12vw] md:px-3 py-[6vw] md:py-1.5 rounded-[6vw] md:rounded bg-[#2a2a2a] text-white text-size-[12vw] md:text-xs hover:opacity-80 disabled:opacity-50"
                   onClick={() => setGoldPage(Math.max((goldRewardsData.pagination.page || 1) - 1, 1))}
                   disabled={(goldRewardsData.pagination.page || 1) <= 1}
-                >上一页</button>
+                >{t('token_history.pagination.previous')}</button>
                 <div className="text-[#8f8f8f] text-size-[12vw] md:text-xs">
-                  第 {goldRewardsData.pagination.page || 1} / {goldRewardsData.pagination.total_pages || 1} 页
+                  {t('token_history.pagination.page_of_total', { current: goldRewardsData.pagination.page || 1, total: goldRewardsData.pagination.total_pages || 1 })}
                 </div>
                 <button
                   className="px-[12vw] md:px-3 py-[6vw] md:py-1.5 rounded-[6vw] md:rounded bg-[#2a2a2a] text-white text-size-[12vw] md:text-xs hover:opacity-80 disabled:opacity-50"
                   onClick={() => setGoldPage(Math.min((goldRewardsData.pagination.page || 1) + 1, goldRewardsData.pagination.total_pages || 1))}
                   disabled={(goldRewardsData.pagination.page || 1) >= (goldRewardsData.pagination.total_pages || 1)}
-                >下一页</button>
+                >{t('token_history.pagination.next')}</button>
               </div>
             )}
           </div>
@@ -832,15 +832,15 @@ const NetworkDetails = () => {
                   className="px-[12vw] md:px-3 py-[6vw] md:py-1.5 rounded-[6vw] md:rounded bg-[#2a2a2a] text-white text-size-[12vw] md:text-xs hover:opacity-80 disabled:opacity-50"
                   onClick={() => setMiningPage(Math.max((miningRewardsData.pagination.page || 1) - 1, 1))}
                   disabled={(miningRewardsData.pagination.page || 1) <= 1}
-                >上一页</button>
+                >{t('token_history.pagination.previous')}</button>
                 <div className="text-[#8f8f8f] text-size-[12vw] md:text-xs">
-                  第 {miningRewardsData.pagination.page || 1} / {miningRewardsData.pagination.total_pages || 1} 页
+                  {t('token_history.pagination.page_of_total', { current: miningRewardsData.pagination.page || 1, total: miningRewardsData.pagination.total_pages || 1 })}
                 </div>
                 <button
                   className="px-[12vw] md:px-3 py-[6vw] md:py-1.5 rounded-[6vw] md:rounded bg-[#2a2a2a] text-white text-size-[12vw] md:text-xs hover:opacity-80 disabled:opacity-50"
                   onClick={() => setMiningPage(Math.min((miningRewardsData.pagination.page || 1) + 1, miningRewardsData.pagination.total_pages || 1))}
                   disabled={(miningRewardsData.pagination.page || 1) >= (miningRewardsData.pagination.total_pages || 1)}
-                >下一页</button>
+                >{t('token_history.pagination.next')}</button>
               </div>
             )}
           </div>

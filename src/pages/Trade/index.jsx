@@ -1086,7 +1086,7 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
                 disabled={isConnecting}
                 className="w-[200vw] md:w-64 h-[50vw] md:h-12 bg-[#c5ff33] text-black text-size-[17vw] md:text-lg font-semibold rounded-[12vw] md:rounded-lg flex items-center justify-center disabled:opacity-60 disabled:cursor-not-allowed"
               >
-                {isConnecting ? t('connecting') : t('connect_wallet')}
+                {isConnecting ? t('wallet.connecting') : t('common.connect_wallet')}
               </button>
             </div>
           ) : (
@@ -1132,7 +1132,7 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
               <img src={buyDownIcon} alt="Down" className="w-[24vw] md:w-6 h-[24vw] md:h-6" />
             )}
             <span className="text-white text-size-[17vw] md:text-lg font-semibold">
-              {isPlacingBet ? t('loading') : t('trade.down')}
+              {isPlacingBet ? t('common.loading') : t('trade.down')}
             </span>
           </div>
             </>

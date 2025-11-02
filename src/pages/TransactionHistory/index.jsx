@@ -119,13 +119,13 @@ const TransactionHistory = () => {
       }
     } catch (error) {
       console.error('❌ 加载交易记录失败:', error);
-      setError(error.message || t('request_failed'));
+      setError(error.message || t('common.request_failed'));
 
       if (!isLoadMore) {
         setTransactions([]);
       }
 
-      toast.error(t('request_failed'));
+      toast.error(t('common.request_failed'));
     } finally {
       setLoading(false);
     }

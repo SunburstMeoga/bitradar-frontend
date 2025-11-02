@@ -313,7 +313,8 @@
     }
   },
   "withdraw": {
-    "title": "Deposit"
+    "title": "Withdraw",
+    "withdraw": "Withdraw"
   },
   "rocket_withdraw": {
     "membership_required": "Only Gold or Silver members can withdraw ROCKET. Please upgrade your membership first."
@@ -415,6 +416,13 @@
       "trade": "Trade",
       "reward": "Claim"
     },
+    "pagination": {
+      "previous": "Previous",
+      "next": "Next",
+      "page_of_total": "Page {{current}} / {{total}}"
+    },
+    "BET": "Bet",
+    "WIN": "Win",
     "transaction_types": {
       "check_in": "Check-in",
       "reward": "Reward",

@@ -49,7 +49,7 @@ const Account = () => {
       balanceFetchedRef.current = true;
       safeFetchBalance().catch(error => {
         console.error('获取余额失败:', error);
-        toast.error(t('request_failed'));
+        toast.error(t('common.request_failed'));
         balanceFetchedRef.current = false; // 失败时重置，允许重试
       });
     }

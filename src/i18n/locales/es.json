@@ -322,7 +322,8 @@
     }
   },
   "withdraw": {
-    "title": "Depósito"
+    "title": "Retiro",
+    "withdraw": "Retiro"
   },
   "rocket_withdraw": {
     "membership_required": "Solo los miembros Oro o Plata pueden retirar ROCKET. Mejora tu membresía primero."
@@ -424,6 +425,8 @@
       "trade": "Operación",
       "reward": "Reclamo"
     },
+    "BET": "Apuesta",
+    "WIN": "Gana",
     "transaction_types": {
       "check_in": "Registro",
       "reward": "Recompensa",
