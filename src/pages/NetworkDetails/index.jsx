@@ -99,9 +99,11 @@ const NetworkDetails = () => {
   const rocketMembershipRef = useRef(null);
   const rocketMiningRef = useRef(null);
 
-  // tabs切换后，平滑滚动至对应的“ROCKET奖励详情”区块
+  // tabs切换后，平滑滚动至对应的“ROCKET奖励详情”区块（推广机制不滚动）
   useEffect(() => {
-    const targetEl = selectedTab === 'membership' ? rocketMembershipRef.current : rocketMiningRef.current;
+    let targetEl = null;
+    if (selectedTab === 'membership') targetEl = rocketMembershipRef.current;
+    else if (selectedTab === 'mining') targetEl = rocketMiningRef.current;
     if (targetEl && typeof targetEl.scrollIntoView === 'function') {
       try {
         targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -443,6 +445,12 @@ const NetworkDetails = () => {
           className={`px-[12vw] md:px-3 py-[6vw] md:py-1.5 rounded-[6vw] md:rounded text-size-[12vw] md:text-xs ${selectedTab === 'mining' ? 'bg-blue-600 text-white' : 'bg-[#2a2a2a] text-white'} hover:opacity-80`}
         >
           {t('network_details.tabs.mining_network')}
+        </div>
+        <div
+          onClick={() => setSelectedTab('promotion')}
+          className={`px-[12vw] md:px-3 py-[6vw] md:py-1.5 rounded-[6vw] md:rounded text-size-[12vw] md:text-xs ${selectedTab === 'promotion' ? 'bg-blue-600 text-white' : 'bg-[#2a2a2a] text-white'} hover:opacity-80`}
+        >
+          {t('network_details.tabs.promotion_mechanism')}
         </div>
         {/* 理财网体Tab先隐藏，不删除 */}
       </div>
@@ -843,6 +851,46 @@ const NetworkDetails = () => {
                 >{t('token_history.pagination.next')}</button>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {selectedTab === 'promotion' && (
+        <div>
+          {/* 推广机制说明内容块 */}
+          <div className="space-y-[12vw] md:space-y-3">
+            <div className="p-[16vw] md:p-4 rounded-[8vw] md:rounded-lg" style={{ backgroundColor: 'rgb(41, 41, 41)' }}>
+              <h3 className="text-white text-size-[16vw] md:text-base font-medium mb-[8vw] md:mb-2" style={{ fontWeight: 600 }}>
+                {t('network_details.tabs.promotion_mechanism')}
+              </h3>
+              <p className="text-[#cfcfcf] text-size-[14vw] md:text-sm mb-[6vw] md:mb-1">{t('network_details.promotion.intro_1')}</p>
+              <p className="text-[#cfcfcf] text-size-[14vw] md:text-sm mb-[6vw] md:mb-1">{t('network_details.promotion.intro_2')}</p>
+              <p className="text-[#cfcfcf] text-size-[14vw] md:text-sm">{t('network_details.promotion.intro_3')}</p>
+            </div>
+
+            <div className="p-[16vw] md:p-4 rounded-[8vw] md:rounded-lg" style={{ backgroundColor: 'rgb(41, 41, 41)' }}>
+              <h4 className="text-white text-size-[16vw] md:text-base font-medium mb-[8vw] md:mb-2" style={{ fontWeight: 600 }}>
+                {t('network_details.promotion.section1_title')}
+              </h4>
+              <p className="text-[#cfcfcf] text-size-[14vw] md:text-sm mb-[6vw] md:mb-1">{t('network_details.promotion.section1_example')}</p>
+              <p className="text-[#cfcfcf] text-size-[14vw] md:text-sm">{t('network_details.promotion.section1_silver_note')}</p>
+            </div>
+
+            <div className="p-[16vw] md:p-4 rounded-[8vw] md:rounded-lg" style={{ backgroundColor: 'rgb(41, 41, 41)' }}>
+              <h4 className="text-white text-size-[16vw] md:text-base font-medium mb-[8vw] md:mb-2" style={{ fontWeight: 600 }}>
+                {t('network_details.promotion.section2_title')}
+              </h4>
+              <p className="text-[#cfcfcf] text-size-[14vw] md:text-sm">{t('network_details.promotion.section2_example')}</p>
+            </div>
+
+            <div className="p-[16vw] md:p-4 rounded-[8vw] md:rounded-lg" style={{ backgroundColor: 'rgb(41, 41, 41)' }}>
+              <h4 className="text-white text-size-[16vw] md:text-base font-medium mb-[8vw] md:mb-2" style={{ fontWeight: 600 }}>
+                {t('network_details.promotion.section3_title')}
+              </h4>
+              <p className="text-[#cfcfcf] text-size-[14vw] md:text-sm mb-[6vw] md:mb-1">{t('network_details.promotion.section3_desc')}</p>
+              <p className="text-[#cfcfcf] text-size-[14vw] md:text-sm mb-[6vw] md:mb-1">{t('network_details.promotion.section3_example_intro')}</p>
+              <p className="text-[#cfcfcf] text-size-[14vw] md:text-sm">{t('network_details.promotion.section3_rewards')}</p>
+            </div>
           </div>
         </div>
       )}
