@@ -70,18 +70,24 @@ const MembershipLevelCard = ({ level, price, benefits, onBuy, isCurrentLevel = f
 
       {/* 购买按钮 */}
       <button
-        onClick={() => onBuy(level)}
-        disabled={isCurrentLevel}
+        onClick={() => {
+          if (!isCurrentLevel && !isDisabled) {
+            onBuy(level);
+          }
+        }}
+        disabled={isCurrentLevel || isDisabled}
         className={`w-full h-[40px] md:h-10 rounded-[8px] md:rounded-lg text-[14px] md:text-sm font-medium transition-colors ${
           isCurrentLevel
             ? 'bg-[#3d3d3d] text-[#8f8f8f] cursor-not-allowed'
             : isDisabled
-            ? 'bg-[#3d3d3d] text-[#8f8f8f]'
+            ? 'bg-[#3d3d3d] text-[#8f8f8f] cursor-not-allowed'
             : 'bg-[#5671FB] text-white hover:bg-[#4A63E8]'
         }`}
       >
         {isCurrentLevel
           ? t('wallet.membership_current_level')
+          : (isDisabled && level === MEMBERSHIP_LEVELS.SILVER)
+          ? t('wallet.membership_silver_quota_full')
           : t('wallet.membership_buy_button')
         }
       </button>
@@ -165,9 +171,8 @@ const MembershipCard = ({ onBack, onClose, onBuyMembership }) => {
 
   // 处理购买会员
   const handleBuyMembership = (level) => {
-    // 禁止购买银牌会员，提示名额已满
+    // 禁止购买银牌会员，不显示toast，直接无操作
     if (level === MEMBERSHIP_LEVELS.SILVER) {
-      toast(t('wallet.membership_silver_quota_full'));
       return;
     }
     if (onBuyMembership) {
@@ -289,7 +294,7 @@ const MembershipCard = ({ onBack, onClose, onBuyMembership }) => {
                 benefits={getBenefitsInfo(MEMBERSHIP_LEVELS.SILVER)}
                 onBuy={handleBuyMembership}
                 isCurrentLevel={currentMembershipLevel === MEMBERSHIP_LEVELS.SILVER}
-                // 银牌按钮置灰但可点击，点击后toast提示
+                // 银牌按钮置灰且不可点击，文案显示名额已满
                 isDisabled={true}
               />
             )}
