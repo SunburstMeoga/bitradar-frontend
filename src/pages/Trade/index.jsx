@@ -667,7 +667,7 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
         const orders = res.data || [];
         const hasUnfinished = orders.some(order => order?.profit_loss === "0" || order?.status === 'PENDING');
         if (hasUnfinished) {
-          toast(t('trade.previous_order_unfinished'));
+          toast.error(t('trade.previous_order_unfinished'));
           setIsPlacingBet(false);
           return;
         }
