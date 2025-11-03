@@ -49,7 +49,7 @@ const PaymentConfirmCard = ({ membershipLevel, onBack, onClose, onPaymentSuccess
         return benefits[MEMBERSHIP_LEVELS.SILVER];
       }
       return [
-        t('wallet.membership_silver_benefit_1'),
+       t('wallet.membership_silver_benefit_1'),
         t('wallet.membership_silver_benefit_2'),
         t('wallet.membership_silver_benefit_3')
       ];
@@ -60,10 +60,12 @@ const PaymentConfirmCard = ({ membershipLevel, onBack, onClose, onPaymentSuccess
         return benefits[MEMBERSHIP_LEVELS.GOLD];
       }
       return [
-        t('wallet.membership_gold_benefit_1'),
+         t('wallet.membership_gold_benefit_1'),
         t('wallet.membership_gold_benefit_2'),
         t('wallet.membership_gold_benefit_3'),
-        t('wallet.membership_gold_benefit_4')
+        t('wallet.membership_gold_benefit_4'),
+        t('wallet.membership_gold_benefit_5'),
+        t('wallet.membership_gold_benefit_6')
       ];
     };
 
