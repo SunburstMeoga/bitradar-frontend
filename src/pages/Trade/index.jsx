@@ -1069,12 +1069,12 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
         </div>
 
         {/* 第二部分：Payout */}
-        <div
+        {/* <div
           className="w-[343vw] md:w-full h-[50vw] md:h-12 -mt-[17vw] md:-mt-4 border rounded-[12vw] md:rounded-lg flex items-center justify-center"
           style={{ borderColor: '#1f1f1f' }}
         >
           <span className="text-[#8f8f8f] text-size-[13vw] md:text-sm pb-[2vw]"> <br /> {t('trade.payout')}: {formatNumber(safeParseFloat(profile?.total_profit, 0), 2)}</span>
-        </div>
+        </div> */}
 
         {/* 第三部分：按钮和时间 */}
         <div className="w-full md:w-full flex items-center justify-between mt-[12vw] md:mt-3">
