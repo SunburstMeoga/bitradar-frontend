@@ -417,6 +417,11 @@
       "trade": "取引",
       "reward": "受け取り"
     },
+    "pagination": {
+      "previous": "前のページ",
+      "next": "次のページ",
+      "page_of_total": "{{current}} / {{total}} ページ"
+    },
     "BET": "ベット",
     "WIN": "勝ち",
     "transaction_types": {

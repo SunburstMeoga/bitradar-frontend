@@ -426,6 +426,11 @@
       "trade": "Operación",
       "reward": "Reclamo"
     },
+    "pagination": {
+      "previous": "Anterior",
+      "next": "Siguiente",
+      "page_of_total": "Página {{current}} de {{total}}"
+    },
     "BET": "Apuesta",
     "WIN": "Gana",
     "transaction_types": {
