@@ -63,4 +63,8 @@
     "membership_level_none": "Ninguno",
     "membership_buy": "Comprar membresía"
   }
+  ,
+  "system_maintenance": {
+    "banner_text": "Estimados usuarios: El mantenimiento comenzará en 5 minutos y se espera que dure 5 minutos. La liquidación se pausará; las apuestas pueden no procesarse ni liquidarse correctamente. Gracias por su comprensión."
+  }
 }
