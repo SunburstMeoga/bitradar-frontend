@@ -435,6 +435,11 @@
       "trade": "거래",
       "reward": "수령"
     },
+    "pagination": {
+      "previous": "이전 페이지",
+      "next": "다음 페이지",
+      "page_of_total": "{{current}} / {{total}} 페이지"
+    },
     "BET": "베팅",
     "WIN": "승리",
     "transaction_types": {

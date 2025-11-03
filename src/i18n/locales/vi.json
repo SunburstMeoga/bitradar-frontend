@@ -435,6 +435,11 @@
       "trade": "Giao dịch",
       "reward": "Nhận"
     },
+    "pagination": {
+      "previous": "Trang trước",
+      "next": "Trang sau",
+      "page_of_total": "Trang {{current}} / {{total}}"
+    },
     "BET": "Đặt cược",
     "WIN": "Thắng",
     "transaction_types": {

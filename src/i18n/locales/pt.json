@@ -435,6 +435,11 @@
       "trade": "Negociação",
       "reward": "Recebimento"
     },
+    "pagination": {
+      "previous": "Anterior",
+      "next": "Próximo",
+      "page_of_total": "Página {{current}} de {{total}}"
+    },
     "BET": "Aposta",
     "WIN": "Vitória",
     "transaction_types": {
