@@ -514,4 +514,8 @@
     "description": "Đã xảy ra lỗi không mong muốn. Hãy tải lại trang và thử lại.",
     "refresh": "Tải lại"
   }
+  ,
+  "system_maintenance": {
+    "banner_text": "Quý khách: Hệ thống sẽ bảo trì sau 5 phút và dự kiến kéo dài 5 phút. Trong thời gian này việc quyết toán sẽ tạm dừng; các lệnh cược có thể không được xử lý hoặc quyết toán đúng. Cảm ơn sự thông cảm của bạn."
+  }
 }

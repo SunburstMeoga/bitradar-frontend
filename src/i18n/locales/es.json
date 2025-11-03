@@ -523,4 +523,27 @@
     "description": "Ocurrió un error inesperado. Actualiza la página e inténtalo de nuevo.",
     "refresh": "Actualizar"
   }
+  ,
+  "wallet": {
+    "language": "Idioma",
+    "disconnect": "Desconectar",
+    "referrer": "Referente",
+    "add_referrer": "Agregar código de referencia",
+    "generate_referral_link": "Generar código de referencia",
+    "generating_referral_code": "Generando...",
+    "referrer_address": "Código de referencia",
+    "address_copied": "Dirección copiada",
+    "referrer_address_copied": "Código de referencia copiado",
+    "copy_failed": "Error al copiar",
+    "copy_failed_manual": "Error al copiar. Copie manualmente",
+    "invite_code_copied": "Código de invitación copiado",
+    "membership_level_gold": "Oro",
+    "membership_level_silver": "Plata",
+    "membership_level_none": "Ninguno",
+    "membership_buy": "Comprar membresía"
+  }
+  ,
+  "system_maintenance": {
+    "banner_text": "Estimados usuarios: El mantenimiento comenzará en 5 minutos y se espera que dure 5 minutos. La liquidación se pausará; las apuestas pueden no procesarse ni liquidarse correctamente. Gracias por su comprensión."
+  }
 }
