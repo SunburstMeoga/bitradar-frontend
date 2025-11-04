@@ -48,6 +48,13 @@ const useWebSocket = (url) => {
               console.log('💰 价格更新:', priceData);
               setData(priceData);
               break;
+            case 'maintenance_status':
+              console.log('🔧 维护状态更新:', message.data);
+              // 使用自定义事件通知维护横幅组件
+              window.dispatchEvent(new CustomEvent('maintenance-status-update', {
+                detail: message.data
+              }));
+              break;
             default:
               console.log('❓ 未知消息类型:', message);
           }
