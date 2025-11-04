@@ -439,6 +439,6 @@
   }
   ,
   "system_maintenance": {
-    "banner_text": "Dear users: Maintenance will start in 5 minutes and is expected to last 5 minutes. Settlement will be paused; bets may not process or settle properly. Thank you for your understanding."
+    "banner_text": "尊敬的用户：系统正在维护，预计将于纽约冬令时（EST）19:00 结束。维护期间将暂停下注功能，敬请谅解！"
   }
 }
