@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 const SystemMaintenanceBanner = () => {
   const { t } = useTranslation();
   const message = t('system_maintenance.banner_text', {
-    defaultValue: '尊敬的用户：系统正在维护，预计UTC 00:00结束。维护期间将暂停下注功能！感谢您的配合与理解！'
+    defaultValue: '尊敬的用户：系统正在维护，预计将于纽约冬令时（EST）19:00 结束。维护期间将暂停下注功能，敬请谅解！'
   });
   return (
     <div className="w-full" style={{ backgroundColor: '#EF4444' }}>
