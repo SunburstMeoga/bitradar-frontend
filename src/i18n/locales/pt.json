@@ -519,4 +519,8 @@
     "description": "Ocorreu um erro inesperado. Atualize a página e tente novamente.",
     "refresh": "Atualizar"
   }
+  ,
+  "system_maintenance": {
+    "banner_text": "Prezados usuários: A manutenção começará em 5 minutos e deve durar 5 minutos. A liquidação ficará pausada; as apostas podem não ser processadas ou liquidadas corretamente. Obrigado pela compreensão."
+  }
 }

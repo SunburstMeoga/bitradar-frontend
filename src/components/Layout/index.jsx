@@ -9,6 +9,7 @@ import ErrorBoundary from '../ErrorBoundary';
 import { useTranslation } from 'react-i18next';
 import MobileWeb3Check from '../MobileWeb3Check';
 import LusdAutoClaimPrompt from '../LusdAutoClaimPrompt';
+import SystemMaintenanceBanner from '../SystemMaintenanceBanner';
 
 const Layout = () => {
   const { t } = useTranslation();
@@ -17,6 +18,7 @@ const Layout = () => {
       <ScrollToTop />
       <ResponsiveContainer>
         <Header />
+        <SystemMaintenanceBanner />
         <main className="flex-1">
           <ErrorBoundary
             title={t('error_boundary.title', { defaultValue: '出现错误' })}

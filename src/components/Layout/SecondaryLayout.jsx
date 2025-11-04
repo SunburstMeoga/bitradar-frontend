@@ -7,6 +7,7 @@ import ErrorBoundary from '../ErrorBoundary';
 import { useTranslation } from 'react-i18next';
 import MobileWeb3Check from '../MobileWeb3Check';
 import LusdAutoClaimPrompt from '../LusdAutoClaimPrompt';
+import SystemMaintenanceBanner from '../SystemMaintenanceBanner';
 
 const SecondaryLayout = ({ title, onBack, children }) => {
   const { t } = useTranslation();
@@ -15,6 +16,7 @@ const SecondaryLayout = ({ title, onBack, children }) => {
       <ScrollToTop />
       <ResponsiveContainer>
         <SecondaryHeader title={title} onBack={onBack} />
+        <SystemMaintenanceBanner />
         <main className="flex-1">
           <ErrorBoundary
             title={t('error_boundary.title', { defaultValue: '出现错误' })}
