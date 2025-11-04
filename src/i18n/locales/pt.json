@@ -276,7 +276,7 @@
     },
     "promotion": {
       "intro_1": "Apenas usuários que atualizam para associação (Ouro ou Prata) desfrutam do direito de mineração de negociações.",
-      "intro_2": "A primeira mineração requer ativação. Padrão de ativação: alcançar lucro líquido de 300 LUSD antes do horário de liquidação (00:00 horário de Nova York / 12:00 horário de Pequim). Se não atingir o padrão inicialmente, as perdas acumulam até alcançar o lucro líquido requerido; então ativa e as recompensas ROCKET correspondentes são concedidas.",
+      "intro_2": "A primeira mineração requer ativação. Padrão de ativação: alcançar lucro líquido de 300 LUSD antes do horário de liquidação (00:00 horário de Nova York / 13:00 horário de Pequim). Se não atingir o padrão inicialmente, as perdas acumulam até alcançar o lucro líquido requerido; então ativa e as recompensas ROCKET correspondentes são concedidas.",
       "intro_3": "Após a ativação, a liquidação é diária; as perdas do dia anterior não são consideradas no dia seguinte.",
       "section1_title": "Recompensas de mineração de negociações em 6 níveis para membros:",
       "section1_example": "Exemplo: A → B → C → D → E → F; A, B, C, D, E, F são todos membros Ouro. Se F gerar 60 ROCKET na mineração de negociações, A, B, C, D e E recebem 10 ROCKET cada.",

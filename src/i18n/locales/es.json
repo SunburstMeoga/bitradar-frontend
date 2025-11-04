@@ -285,7 +285,7 @@
     },
     "promotion": {
       "intro_1": "Solo los usuarios que se actualizan a membresía (Oro o Plata) disfrutan del derecho de minería de trading.",
-      "intro_2": "La primera minería requiere activación. Estándar de activación: alcanzar una ganancia neta de 300 LUSD antes del momento de liquidación (00:00 hora de Nueva York / 12:00 hora de Beijing). Si el primer intento no cumple el estándar, las pérdidas se acumulan hasta alcanzar la ganancia neta requerida; entonces se activa y se otorgan las recompensas de ROCKET correspondientes.",
+      "intro_2": "La primera minería requiere activación. Estándar de activación: alcanzar una ganancia neta de 300 LUSD antes del momento de liquidación (00:00 hora de Nueva York / 13:00 hora de Beijing). Si el primer intento no cumple el estándar, las pérdidas se acumulan hasta alcanzar la ganancia neta requerida; entonces se activa y se otorgan las recompensas de ROCKET correspondientes.",
       "intro_3": "Después de la activación, la liquidación es diaria; las pérdidas del día anterior no se trasladan al siguiente día.",
       "section1_title": "Recompensas de minería de trading de 6 niveles para miembros:",
       "section1_example": "Ejemplo: A → B → C → D → E → F; A, B, C, D, E, F son todos miembros Oro. Si F genera 60 ROCKET en minería de trading, A, B, C, D y E reciben 10 ROCKET cada uno.",
