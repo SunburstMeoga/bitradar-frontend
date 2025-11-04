@@ -637,7 +637,17 @@ const PriceChart = ({ onPriceUpdate, userBets = [], onVisibleUserBetsChange }) =
           try {
             const message = JSON.parse(event.data);
 
-            // 只处理价格更新消息
+            // 处理维护状态更新
+            if (message.type === 'maintenance_status') {
+              console.log('🔧 WebSocket 維護狀態更新:', message.data);
+              // 触发自定义事件通知维护横幅组件
+              window.dispatchEvent(new CustomEvent('maintenance-status-update', {
+                detail: message.data
+              }));
+              return;
+            }
+
+            // 处理价格更新消息
             if (message.type === 'price_update') {
               const newPrice = parseFloat(message.data.price);
               const newTimestamp = message.timestamp;
