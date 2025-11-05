@@ -364,7 +364,8 @@ const Withdraw = () => {
         if (mounted) {
           setFiatChannels(list);
           setSelectedFiatChannelCode(defaultCh.channel_code);
-          const rateCandidate = defaultCh?.exchange_rate;
+          // 新接口在顶层返回 exchange_rate，表示 1 CNY = rate USDT
+          const rateCandidate = chRes?.exchange_rate;
           setFiatRate(rateCandidate ? parseFloat(rateCandidate) : null);
         }
       } catch (err) {
@@ -621,14 +622,12 @@ const Withdraw = () => {
                   {fiatChannels.map(ch => (
                     <div
                       key={ch.channel_code}
-                      onClick={() => {
-                        setSelectedFiatChannelCode(ch.channel_code);
-                        const rateCandidate = ch?.exchange_rate;
-                        setFiatRate(rateCandidate ? parseFloat(rateCandidate) : null);
-                        setIsFiatChannelOpen(false);
-                      }}
-                      className="px-[12vw] md:px-3 py-[8vw] md:py-2 hover:bg-[#2A2B2C] cursor-pointer flex items-center justify-between"
-                    >
+                    onClick={() => {
+                      setSelectedFiatChannelCode(ch.channel_code);
+                      setIsFiatChannelOpen(false);
+                    }}
+                    className="px-[12vw] md:px-3 py-[8vw] md:py-2 hover:bg-[#2A2B2C] cursor-pointer flex items-center justify-between"
+                  >
                       <div className="flex items-center gap-[6vw] md:gap-2">
                         <span className="w-[10vw] h-[10vw] md:w-3 md:h-3 rounded-full" style={{ backgroundColor: (ch.channel_code || '').includes('ALIPAY') ? '#00A3EE' : '#22C55E' }}></span>
                         <span className="text-white text-size-[12vw] md:text-xs">{ch.name || ch.channel_code.replace('_H5','')}</span>
@@ -657,17 +656,19 @@ const Withdraw = () => {
       extraBottom: (
         <div className="flex items-center justify-between">
           <div className="text-[#8f8f8f] text-size-[12vw] md:text-xs">
-            <span>{t('exchange.exchange_rate')}:</span>
-            <span className="ml-[6vw] md:ml-2 text-white">{fiatRate ? `${fiatRate} CNY/USDT` : '—'}</span>
+            <span>{t('exchange.cny_to_usdt_prefix')} </span>
+            <span className="text-white">{fiatRate ? `${fiatRate}` : '—'}</span>
+            <span> {t('exchange.usdt_suffix')}</span>
           </div>
           <div className="text-[#8f8f8f] text-size-[12vw] md:text-xs">
             {(() => {
               const cnyNum = parseFloat(card2DepositAmount || '0');
               const rateNum = parseFloat(fiatRate || '0');
-              const usd = rateNum > 0 && cnyNum > 0 ? (cnyNum / rateNum) : null;
+              // 新汇率含义：1 CNY = rate USDT，因此预计USDT = CNY * rate
+              const usd = rateNum > 0 && cnyNum > 0 ? (cnyNum * rateNum) : null;
               return (
                 <span>
-                  预计USDT：<span className="text-white">{usd ? usd.toFixed(2) : '—'}</span>
+                  {t('exchange.estimated_received')}: <span className="text-white">{usd ? usd.toFixed(2) : '—'}</span>
                 </span>
               );
             })()}

@@ -414,7 +414,10 @@
     "withdraw_not_permitted": "当前账户无提现权限，请通过申请",
     "tx_failed": "交易失败",
     "fiat_exchange_request_submitted": "法币充值请求已提交",
-    "fiat_withdraw_request_submitted": "法币提现请求已提交"
+    "fiat_withdraw_request_submitted": "法币提现请求已提交",
+    "estimated_received": "预估到账",
+    "cny_to_usdt_prefix": "1 CNY =",
+    "usdt_suffix": "USDT"
   },
   "trade": {
     "trade_amount": "交易金额",

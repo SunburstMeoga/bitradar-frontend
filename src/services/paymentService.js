@@ -11,7 +11,9 @@ class PaymentService extends ApiService {
       if (response.success) {
         // 标准化返回结构，确保调用方容易使用
         const channels = Array.isArray(response.data) ? response.data : [];
-        return { success: true, data: channels };
+        // 新接口含有全局汇率字段 exchange_rate（例如 "0.14" 表示 1 CNY = 0.14 USDT）
+        const exchangeRate = response.exchange_rate ?? null;
+        return { success: true, data: channels, exchange_rate: exchangeRate };
       }
       throw new Error(response.message || '获取支付渠道失败');
     } catch (error) {
