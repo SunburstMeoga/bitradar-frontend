@@ -18,6 +18,7 @@ const GlobalConfirmDialog = ({
   handleCancel,
   closeOnOverlayClick = false,
   confirmLoading = false,
+  hideCancel = false,
 }) => {
   const { t } = useTranslation();
 
@@ -52,9 +53,9 @@ const GlobalConfirmDialog = ({
         </div>
 
         {/* Content */}
-        <div className="px-5 py-4 text-[#d1d5db] text-[14px] leading-6">
+        <div className="px-5 py-4 text-[#d1d5db] text-[14px] leading-6 break-all whitespace-normal overflow-x-hidden">
           {typeof content === 'string' ? (
-            <p>{content}</p>
+            <p className="break-all whitespace-normal">{content}</p>
           ) : (
             content
           )}
@@ -62,18 +63,20 @@ const GlobalConfirmDialog = ({
 
         {/* Actions */}
         <div className="px-5 pb-5 pt-2 flex gap-3">
-          <button
-            type="button"
-            onClick={onCancel}
-            className="flex-1 h-[38px] rounded-[10px] bg-[#2a2a2a] text-[#e5e7eb] text-[14px] font-medium hover:bg-[#343434] transition-colors"
-          >
-            {cancelText || t('common.cancel')}
-          </button>
+          {hideCancel ? null : (
+            <button
+              type="button"
+              onClick={onCancel}
+              className="flex-1 h-[38px] rounded-[10px] bg-[#2a2a2a] text-[#e5e7eb] text-[14px] font-medium hover:bg-[#343434] transition-colors"
+            >
+              {cancelText || t('common.cancel')}
+            </button>
+          )}
           <button
             type="button"
             onClick={onConfirm}
             disabled={confirmLoading}
-            className={`flex-1 h-[38px] rounded-[10px] text-[14px] font-semibold transition-colors flex items-center justify-center gap-2 ${confirmLoading ? 'bg-[#3b82f6]/80 cursor-not-allowed' : 'bg-[#3b82f6] hover:bg-[#2563eb] text-white'}`}
+            className={`${hideCancel ? 'w-full' : 'flex-1'} h-[38px] rounded-[10px] text-[14px] font-semibold transition-colors flex items-center justify-center gap-2 ${confirmLoading ? 'bg-[#3b82f6]/80 cursor-not-allowed' : 'bg-[#3b82f6] hover:bg-[#2563eb] text-white'}`}
           >
             {confirmLoading && (
               <span className="inline-block w-4 h-4 border-2 border-white/60 border-t-transparent rounded-full animate-spin" />

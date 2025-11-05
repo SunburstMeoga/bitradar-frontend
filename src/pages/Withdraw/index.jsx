@@ -589,20 +589,14 @@ const Withdraw = () => {
       title: t('exchange.fiat_deposit'),
       value: card2DepositAmount,
       onChange: handleCard2DepositChange,
-      placeholder: (() => {
-        const ch = fiatChannels.find(c => c.channel_code === selectedFiatChannelCode);
-        const minAmt = ch ? parseFloat(ch.min_amount || '0') : 0;
-        const maxAmt = ch ? parseFloat(ch.max_amount || '0') : 0;
-        const maxText = maxAmt > 0 ? `${maxAmt}` : '无限制';
-        return `请输入充值金额（￥${minAmt} - ￥${maxText}）`;
-      })(),
+      placeholder: t('exchange.enter_exchange_amount'),
       actionLabel: t('exchange.exchange'),
       onAction: handleCard2Deposit,
       disabled: card2Submitting,
       isLoading: card2Submitting,
       extraTop: (
         <div className="flex flex-col gap-[10vw] md:gap-3">
-          {/* 渠道选择（美化下拉） */}
+          {/* 渠道选择（美化下拉）与限额同一行显示 */}
           <div className="relative">
             <button
               type="button"
@@ -648,17 +642,14 @@ const Withdraw = () => {
               </div>
             )}
           </div>
-
-          {/* 最低/最高限额分两行显示 */}
+          {/* 限额同一行显示：限额：￥min - ￥max */}
           {(() => {
             const ch = fiatChannels.find(c => c.channel_code === selectedFiatChannelCode);
             const minAmt = ch ? parseFloat(ch.min_amount || '0') : 0;
             const maxAmt = ch ? parseFloat(ch.max_amount || '0') : 0;
+            const maxText = maxAmt > 0 ? `${maxAmt}` : '无限制';
             return (
-              <div className="space-y-[6vw] md:space-y-2">
-                <div className="text-[#8f8f8f] text-size-[12vw] md:text-xs">{t('exchange.min_deposit_amount')}: <span className="text-white">{minAmt} CNY</span></div>
-                <div className="text-[#8f8f8f] text-size-[12vw] md:text-xs">{t('exchange.max_deposit_amount')}: <span className="text-white">{maxAmt > 0 ? `${maxAmt} CNY` : t('common.unlimited')}</span></div>
-              </div>
+              <div className="text-[#8f8f8f] text-size-[12vw] md:text-xs">限额：￥{minAmt} - ￥{maxText}</div>
             );
           })()}
         </div>
@@ -831,17 +822,16 @@ const Withdraw = () => {
       <GlobalConfirmDialog
         isOpen={isPaymentDialogOpen}
         onClose={() => setIsPaymentDialogOpen(false)}
-        title={'支付订单创建成功'}
+      title={'支付订单创建成功'}
         content={paymentUrlForDialog ? `支付链接：${paymentUrlForDialog}` : '支付链接创建成功'}
-        confirmText={t('common.confirm') || '确认'}
-        cancelText={t('common.cancel') || '取消'}
+        confirmText={'打开链接支付'}
+        hideCancel={true}
         handleConfirm={() => {
           if (paymentUrlForDialog) {
             window.open(paymentUrlForDialog, '_blank');
           }
           setIsPaymentDialogOpen(false);
         }}
-        handleCancel={() => setIsPaymentDialogOpen(false)}
       />
     </div>
   );
