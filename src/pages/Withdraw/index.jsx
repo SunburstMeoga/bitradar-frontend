@@ -5,7 +5,7 @@ import toast from 'react-hot-toast';
 import { useAuthStore, useUserStore, useWeb3Store } from '../../store';
 import { useNavigate } from 'react-router-dom';
 import { depositUSDT, getWalletUSDTBalance } from '../../services/vaultService';
-import { withdrawalService, userService } from '../../services';
+import { withdrawalService, userService, paymentService } from '../../services';
 import GlobalConfirmDialog from '../../components/GlobalConfirmDialog';
 
 // 自定义动画金额组件（借鉴网体详情页面）
@@ -435,12 +435,76 @@ const Withdraw = () => {
     setCard2WithdrawAmount(value);
   };
 
-  const handleCard2Deposit = () => {
+  const handleCard2Deposit = async () => {
     if (!card2DepositAmount) return;
+    if (!isAuthenticated) {
+      toast.error(t('common.login_required'));
+      return;
+    }
+
     setCard2Submitting(true);
     try {
-      toast.success(t('exchange.fiat_exchange_request_submitted'));
-      setCard2DepositAmount('');
+      // 1) 获取可用渠道
+      const chRes = await paymentService.getChannels();
+      const channels = (chRes?.data || []).filter(ch => ch?.is_enabled);
+      if (!channels.length) {
+        toast.error(t('common.error'));
+        return;
+      }
+
+      // 默认选择优先渠道：ALIPAY_H5 -> WECHAT_H5 -> 第一项
+      const preferredOrder = ['ALIPAY_H5', 'WECHAT_H5'];
+      let selectedChannel = channels.find(ch => preferredOrder.includes(ch.channel_code)) || channels[0];
+
+      // 2) 校验金额范围（CNY）
+      const cnyStr = String(card2DepositAmount);
+      const cnyNum = parseFloat(cnyStr);
+      const minAmt = parseFloat(selectedChannel.min_amount || '0');
+      const maxAmt = parseFloat(selectedChannel.max_amount || '0');
+      if (!Number.isFinite(cnyNum) || cnyNum <= 0) {
+        toast.error(t('exchange.enter_exchange_amount'));
+        return;
+      }
+      if (cnyNum < minAmt) {
+        toast.error(`${t('exchange.min_withdraw_amount')}: ${minAmt} CNY`);
+        return;
+      }
+      if (maxAmt > 0 && cnyNum > maxAmt) {
+        toast.error(`${t('exchange.max_withdraw_amount')}: ${maxAmt} CNY`);
+        return;
+      }
+
+      // 3) 创建订单
+      const orderRes = await paymentService.createOrder({
+        channel_code: selectedChannel.channel_code,
+        cny_amount: cnyStr,
+      });
+
+      if (orderRes?.success) {
+        const data = orderRes.data;
+        const url = data?.payment_url;
+        if (url) {
+          // 打开第三方支付链接
+          window.open(url, '_blank', 'noopener');
+        }
+
+        // 展示汇率与预期获得USDT
+        if (data?.exchange_rate && data?.usdt_amount) {
+          toast.success(`¥${cnyStr} → ${data.usdt_amount} USDT @ ${data.exchange_rate}`);
+        } else {
+          toast.success(orderRes?.message || t('exchange.deposit_success'));
+        }
+
+        // 清空输入并刷新余额
+        setCard2DepositAmount('');
+        setTimeout(() => { fetchBalance().catch(() => {}); }, 1500);
+      } else {
+        const msg = orderRes?.message || t('common.error');
+        toast.error(msg);
+      }
+    } catch (err) {
+      const msg = err?.response?.data?.message || err?.message || t('common.error');
+      toast.error(msg);
     } finally {
       setCard2Submitting(false);
     }

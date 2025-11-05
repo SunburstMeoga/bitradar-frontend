@@ -10,6 +10,7 @@ export { default as membershipService } from './membershipService.js';
 export { default as lusdService } from './lusdService.js';
 export { default as transactionService } from './transactionService.js';
 export { default as withdrawalService } from './withdrawalService.js';
+export { default as paymentService } from './paymentService.js';
 export { ApiService, TokenManager, apiClient } from './api.js';
 
 // 便捷的服务实例导出
@@ -23,6 +24,7 @@ import networkService from './networkService.js';
 import membershipService from './membershipService.js';
 import lusdService from './lusdService.js';
 import withdrawalService from './withdrawalService.js';
+import paymentService from './paymentService.js';
 
 export const services = {
   auth: authService,
@@ -34,7 +36,8 @@ export const services = {
   network: networkService,
   membership: membershipService,
   lusd: lusdService,
-  withdrawal: withdrawalService
+  withdrawal: withdrawalService,
+  payment: paymentService
 };
 
 export default services;
