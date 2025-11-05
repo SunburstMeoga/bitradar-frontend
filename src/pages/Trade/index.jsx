@@ -1100,7 +1100,7 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
         </div> */}
 
         {/* 第三部分：按钮和时间 */}
-        <div className="w-full md:w-full flex items-center justify-between mt-[12vw] md:mt-3">
+        <div className="w-full md:w-full mt-[12vw] md:mt-3">
           {!isAuthenticated ? (
             /* 未认证时显示连接钱包按钮 */
             <div className="w-full flex justify-center">
@@ -1115,6 +1115,8 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
           ) : (
             /* 已认证时显示交易按钮 */
             <>
+              {/* 按钮行 */}
+              <div className="w-full flex items-center justify-between">
               {/* Up按钮 */}
               <div
                 className={`w-[100vw] md:w-32 h-[50vw] md:h-12 rounded-[12vw] md:rounded-lg flex items-center justify-center gap-[8vw] md:gap-2 ${isButtonsDisabled ? 'cursor-not-allowed' : 'cursor-pointer'}`}
@@ -1133,13 +1135,6 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
               {isPlacingBet ? t('loading') : t('trade.up')}
             </span>
           </div>
-
-          {/* 中间时间显示 */}
-          <div className="flex-1 h-[38vw] md:h-10 flex flex-col items-center justify-center">
-            <img src={timeIcon} alt="Time" className="w-[16vw] md:w-4 h-[16vw] md:h-4 mb-[4vw] md:mb-1" />
-            <span className="text-white text-size-[15vw] md:text-sm font-semibold">{t('history.duration_1m')}</span>
-          </div>
-
           {/* Down按钮 */}
           <div
             className={`w-[100vw] md:w-32 h-[50vw] md:h-12 rounded-[12vw] md:rounded-lg flex items-center justify-center gap-[8vw] md:gap-2 ${isButtonsDisabled ? 'cursor-not-allowed' : 'cursor-pointer'}`}
@@ -1158,6 +1153,15 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
               {isPlacingBet ? t('common.loading') : t('trade.down')}
             </span>
           </div>
+              </div>
+
+              {/* 时间模块：移动到按钮下方并居中 */}
+              <div className="w-full flex items-center justify-center mt-[8vw] md:mt-2">
+                <div className="h-[38vw] md:h-10 flex flex-col items-center justify-center">
+                  <img src={timeIcon} alt="Time" className="w-[16vw] md:w-4 h-[16vw] md:h-4 mb-[4vw] md:mb-1" />
+                  <span className="text-white text-size-[15vw] md:text-sm font-semibold">{t('history.duration_1m')}</span>
+                </div>
+              </div>
             </>
           )}
         </div>
