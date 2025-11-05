@@ -1,46 +1,110 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
+import Marquee from 'react-fast-marquee';
+import { useTranslation } from 'react-i18next';
 
-// 系统维护横幅组件：监听全局维护状态事件，显示提示条
 const SystemMaintenanceBanner = () => {
-  const [status, setStatus] = useState(null);
-  const [dismissed, setDismissed] = useState(false);
+  const { i18n } = useTranslation();
+  const [config, setConfig] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  const handleUpdate = useCallback((event) => {
-    const payload = event?.detail || {};
-    // 兼容不同结构：is_maintenance / status === 'maintenance' / active
-    const isActive = Boolean(
-      payload?.is_maintenance ||
-      payload?.active ||
-      (typeof payload?.status === 'string' && payload.status.toLowerCase() === 'maintenance')
-    );
-    setStatus({
-      active: isActive,
-      message: payload?.message || '系统维护中，部分功能暂不可用',
-      ...payload
-    });
-    // 一旦状态有更新，重新显示（取消之前的隐藏）
-    setDismissed(false);
+  // 滾動速度映射
+  const speedMap = {
+    slow: 30,
+    medium: 50,
+    fast: 80,
+  };
+
+  // 首次載入：主動查詢維護狀態
+  useEffect(() => {
+    const fetchMaintenanceStatus = async () => {
+      try {
+        // 從 bitradar-go 查詢維護狀態（公開 API，無需認證）
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/v1/maintenance/status`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success && data.data.is_enabled) {
+            setConfig(data.data);
+            console.log('🔧 初始維護狀態:', data.data);
+          } else {
+            setConfig(null);
+          }
+        } else {
+          console.warn('⚠️ 獲取維護狀態失敗:', response.status);
+          setConfig(null);
+        }
+      } catch (error) {
+        console.error('❌ 獲取維護狀態錯誤:', error);
+        setConfig(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMaintenanceStatus();
   }, []);
 
+  // WebSocket 監聽：即時更新維護狀態
   useEffect(() => {
-    // 监听来自 WebSocket 的维护状态更新事件
-    window.addEventListener('maintenance-status-update', handleUpdate);
-    return () => {
-      window.removeEventListener('maintenance-status-update', handleUpdate);
-    };
-  }, [handleUpdate]);
+    const handleMaintenanceUpdate = (event) => {
+      const data = event.detail;
+      console.log('🔧 WebSocket 維護狀態更新:', data);
 
-  if (!status?.active || dismissed) return null;
+      if (data.is_enabled) {
+        setConfig(data);
+      } else {
+        setConfig(null);
+      }
+    };
+
+    // 監聽自定義事件
+    window.addEventListener('maintenance-status-update', handleMaintenanceUpdate);
+
+    // 清理事件監聽器
+    return () => {
+      window.removeEventListener('maintenance-status-update', handleMaintenanceUpdate);
+    };
+  }, []);
+
+  // 如果正在載入或沒有配置，不顯示橫幅
+  if (loading || !config) {
+    return null;
+  }
+
+  // 根據當前語言獲取訊息
+  const currentLanguage = i18n.language || 'en';
+  const message = config.messages?.[currentLanguage] || config.messages?.en || '系統維護中，請稍後訪問';
+
+  // 獲取滾動速度
+  const scrollSpeed = speedMap[config.scroll_speed] || speedMap.medium;
 
   return (
-    <div className="w-full px-4 py-2 bg-[#c5ff33] text-black text-sm flex items-center justify-center gap-3">
-      <span>🔧 {status.message}</span>
-      <button
-        onClick={() => setDismissed(true)}
-        className="px-2 py-1 bg-black/10 rounded hover:bg-black/20"
+    <div
+      className="w-full fixed top-0 left-0 right-0"
+      style={{
+        backgroundColor: '#EF4444',
+        zIndex: 9999,
+      }}
+    >
+      <Marquee
+        pauseOnHover={false}
+        speed={scrollSpeed}
+        gradient={false}
+        delay={0}
+        className="py-[8vw] md:py-2"
       >
-        关闭
-      </button>
+        <span
+          className="text-white text-size-[14vw] md:text-sm font-medium"
+          style={{ fontWeight: 500 }}
+        >
+          {message} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        </span>
+      </Marquee>
     </div>
   );
 };
