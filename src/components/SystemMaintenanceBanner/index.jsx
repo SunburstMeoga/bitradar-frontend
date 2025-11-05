@@ -85,10 +85,9 @@ const SystemMaintenanceBanner = () => {
 
   return (
     <div
-      className="w-full fixed top-0 left-0 right-0"
+      className="w-full"
       style={{
         backgroundColor: '#EF4444',
-        zIndex: 9999,
       }}
     >
       <Marquee

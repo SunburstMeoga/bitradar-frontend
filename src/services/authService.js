@@ -146,9 +146,9 @@ class AuthService extends ApiService {
 
     // 根据语言返回对应的签名消息
     const messages = {
-      'en': 'Welcome to BitRocket Binary Options Trading Platform! 🚀',
-      'zh': '欢迎使用 BitRocket 二元期权交易平台！🚀',
-      'ko': 'BitRocket 바이너리 옵션 거래 플랫폼에 오신 것을 환영합니다! 🚀'
+      'en': 'Welcome to the BitRocket Trading Platform! 🚀',
+      'zh': '欢迎使用 BitRocket 交易平台！🚀',
+      'ko': 'BitRocket 거래 플랫폼에 오신 것을 환영합니다! 🚀'
     };
 
     return messages[currentLanguage] || messages['en'];
