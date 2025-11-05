@@ -386,6 +386,8 @@
     "confirm_withdraw": "确认提现",
     "min_withdraw_amount": "最小提现金额",
     "max_withdraw_amount": "最大提现金额",
+    "min_deposit_amount": "最低充值金额",
+    "max_deposit_amount": "最高充值金额",
     "withdraw_fee_label": "提现手续费",
     "withdraw_failed_retry": "提现失败，请重试",
     "withdraw_success": "提现成功！",

@@ -385,6 +385,8 @@
     "confirm_withdraw": "Xác nhận rút",
     "min_withdraw_amount": "Số tiền rút tối thiểu",
     "max_withdraw_amount": "Số tiền rút tối đa",
+    "min_deposit_amount": "Số tiền nạp tối thiểu",
+    "max_deposit_amount": "Số tiền nạp tối đa",
     "withdraw_fee_label": "Phí rút",
     "withdraw_failed_retry": "Rút thất bại, vui lòng thử lại",
     "withdraw_success": "Rút thành công!",
