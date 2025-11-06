@@ -40,12 +40,12 @@ const LusdAutoClaimPrompt = () => {
     setConfirmLoading(true);
     try {
       await lusdService.claimLusd();
-      toast.success('成功领取LuckyUSD！');
+      toast.success(t('account.claim.success'));
       try { fetchUserBalance && fetchUserBalance(); } catch (_) {}
       setOpen(false);
     } catch (err) {
       console.warn('[LusdAutoClaimPrompt] 领取LuckyUSD失败:', err);
-      toast.error('领取LuckyUSD失败，请稍后重试');
+      toast.error(t('account.claim.failed_retry'));
       setOpen(false); // 按“失败后关闭，下次加载再提示”的策略
     } finally {
       setConfirmLoading(false);
@@ -60,10 +60,10 @@ const LusdAutoClaimPrompt = () => {
     <GlobalConfirmDialog
       isOpen={open}
       onClose={() => setOpen(false)}
-      title={'LuckyUSD 领取'}
-      content={'当前可领取LuckyUSD，是否立即领取 LuckyUSD？'}
-      confirmText={'领取'}
-      cancelText={'取消'}
+      title={t('account.claim.modal_title')}
+      content={t('account.claim.modal_content')}
+      confirmText={t('account.claim.cta')}
+      cancelText={t('cancel')}
       handleConfirm={handleClaim}
       handleCancel={handleCancel}
       closeOnOverlayClick={false}
