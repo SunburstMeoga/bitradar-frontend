@@ -27,6 +27,10 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
   // 获取视口高度信息
   const { mainAreaHeight, isMobile } = useViewportHeight();
 
+  // 用于测量页面中固定元素的真实高度
+  const priceBarRef = useRef(null);
+  const tradingCardRef = useRef(null);
+
   // 设置页面标题
   usePageTitle('trade');
 
@@ -54,50 +58,30 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
   const [isCaptchaVerified, setIsCaptchaVerified] = useState(false);
   const [isPostSuccessCooldown, setIsPostSuccessCooldown] = useState(false);
 
-  // 计算PriceChart的动态高度
+  // 计算PriceChart的动态高度：填满可视区剩余高度（基于真实渲染尺寸）
   const calculateChartHeight = () => {
-    if (mainAreaHeight === 0) {
-      // 如果还没有计算出可用高度，使用默认值
-      return isMobile ? '346vw' : '320px';
-    }
+    // 若 mainAreaHeight 尚未就绪，给出合理的默认值以避免闪烁
+    const available = mainAreaHeight || window.innerHeight || 0;
 
-    // 计算其他固定元素的高度
-    let fixedElementsHeight = 0;
+    // 工具：计算包含 margin 的元素总高度
+    const totalWithMargins = (el) => {
+      if (!el) return 0;
+      const rectHeight = el.getBoundingClientRect()?.height || 0;
+      const styles = window.getComputedStyle(el);
+      const mt = parseFloat(styles.marginTop) || 0;
+      const mb = parseFloat(styles.marginBottom) || 0;
+      return rectHeight + mt + mb;
+    };
 
-    if (isMobile) {
-      // 移动端计算（基于375px设计稿）
-      const windowWidth = window.innerWidth;
+    // 真实测量价格栏与交易卡片高度（含外边距）
+    const priceBarTotal = totalWithMargins(priceBarRef.current);
+    const tradingCardTotal = totalWithMargins(tradingCardRef.current);
 
-      // 价格信息栏：h-[64vw] + mt-[10vw] + mb-[10vw]（图表的margin）
-      const priceBarHeight = (64 / 375) * windowWidth;
-      const priceBarMargins = (10 / 375) * windowWidth + (10 / 375) * windowWidth;
+    const fixedElementsHeight = priceBarTotal + tradingCardTotal;
 
-      // 交易卡片：估算高度（包含所有子元素）
-      // 第一部分：h-[116vw] + 第二部分：h-[50vw] + 第三部分：h-[50vw] + 间距
-      const tradingCard1 = (116 / 375) * windowWidth;
-      const tradingCard2 = (50 / 375) * windowWidth;
-      const tradingCard3 = (50 / 375) * windowWidth;
-      const cardMargins = (17 / 375) * windowWidth + (12 / 375) * windowWidth; // -mt-[17vw] + mt-[12vw]
-      const tradingCardHeight = tradingCard1 + tradingCard2 + tradingCard3 + cardMargins;
-
-      fixedElementsHeight = priceBarHeight + priceBarMargins + tradingCardHeight;
-    } else {
-      // PC端计算
-      // 价格信息栏：h-16 + mt-3 + mb-3
-      const priceBarHeight = 64; // 16 * 4 = 64px
-      const priceBarMargins = 12 + 12; // 3 * 4 = 12px each
-
-      // 交易卡片：估算高度（h-auto的情况）
-      // 第一部分：约120px + 第二部分：48px + 第三部分：48px + 间距
-      const tradingCardHeight = 120 + 48 + 48 + 16 + 12; // 约244px
-
-      fixedElementsHeight = priceBarHeight + priceBarMargins + tradingCardHeight;
-    }
-
-    // 计算图表可用高度，确保最小高度
-    const chartHeight = Math.max(mainAreaHeight - fixedElementsHeight, isMobile ? 200 : 250);
-
-    return `${chartHeight}px`;
+    // 计算图表高度，保证最小值，确保其它元素正常显示
+    const chartHeight = Math.max(available - fixedElementsHeight, isMobile ? 200 : 250);
+    return `${Math.round(chartHeight)}px`;
   };
 
   const dynamicChartHeight = calculateChartHeight();
@@ -942,6 +926,7 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
     <div className="flex flex-col pb-[86vw] md:pb-20" style={{ backgroundColor: '#121212' }}>
       {/* 价格信息栏 */}
       <div
+        ref={priceBarRef}
         className="w-full h-[64vw] md:h-16 px-[16vw] md:px-4 flex items-center justify-between border-t border-b mt-[10vw] md:mt-3"
         style={{ borderColor: '#292929' }}
       >
@@ -998,7 +983,7 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
       </div>
 
       {/* 交易卡片 */}
-      <div className="w-[375vw] md:w-full flex-shrink-0 flex flex-col items-center justify-center px-[16vw] md:px-4" style={{ marginBottom: isKeyboardOpen ? '20vh' : 0 }}>
+      <div ref={tradingCardRef} className="w-[375vw] md:w-full flex-shrink-0 flex flex-col items-center justify-center px-[16vw] md:px-4" style={{ marginBottom: isKeyboardOpen ? '20vh' : 0 }}>
         {/* 第一部分：Trade Amount */}
         <div
           className="w-[343vw] md:w-full h-[116vw] md:h-auto pt-[16vw] md:pt-4 pr-[16vw] md:pr-4 pb-[14vw] md:pb-4 pl-[16vw] md:pl-4 rounded-[12vw] md:rounded-lg"
