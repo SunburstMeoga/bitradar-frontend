@@ -77,7 +77,7 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
     const priceBarTotal = totalWithMargins(priceBarRef.current);
     const tradingCardTotal = totalWithMargins(tradingCardRef.current);
 
-    const fixedElementsHeight = priceBarTotal + tradingCardTotal;
+    const fixedElementsHeight = priceBarTotal + tradingCardTotal + 34;
 
     // 计算图表高度，保证最小值，确保其它元素正常显示
     const chartHeight = Math.max(available - fixedElementsHeight, isMobile ? 200 : 250);
