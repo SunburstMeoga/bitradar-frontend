@@ -1115,51 +1115,50 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
           ) : (
             /* 已认证时显示交易按钮 */
             <>
-              {/* 按钮行 */}
+              {/* 按钮与时间同一行 */}
               <div className="w-full flex items-center justify-between">
-              {/* Up按钮 */}
-              <div
-                className={`w-[100vw] md:w-32 h-[50vw] md:h-12 rounded-[12vw] md:rounded-lg flex items-center justify-center gap-[8vw] md:gap-2 ${isButtonsDisabled ? 'cursor-not-allowed' : 'cursor-pointer'}`}
-                style={{
-                  backgroundColor: '#00bc4b',
-                  filter: isButtonsDisabled ? 'brightness(0.3)' : 'brightness(1)'
-                }}
-                onClick={() => !isButtonsDisabled && handlePlaceBet('up')}
-              >
-            {isPlacingBet ? (
-              <div className="w-[24vw] md:w-6 h-[24vw] md:h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-            ) : (
-              <img src={buyUpIcon} alt="Up" className="w-[24vw] md:w-6 h-[24vw] md:h-6" />
-            )}
-            <span className="text-white text-size-[17vw] md:text-lg font-semibold">
-              {isPlacingBet ? t('loading') : t('trade.up')}
-            </span>
-          </div>
-          {/* Down按钮 */}
-          <div
-            className={`w-[100vw] md:w-32 h-[50vw] md:h-12 rounded-[12vw] md:rounded-lg flex items-center justify-center gap-[8vw] md:gap-2 ${isButtonsDisabled ? 'cursor-not-allowed' : 'cursor-pointer'}`}
-            style={{
-              backgroundColor: '#f5384e',
-              filter: isButtonsDisabled ? 'brightness(0.3)' : 'brightness(1)'
-            }}
-            onClick={() => !isButtonsDisabled && handlePlaceBet('down')}
-          >
-            {isPlacingBet ? (
-              <div className="w-[24vw] md:w-6 h-[24vw] md:h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-            ) : (
-              <img src={buyDownIcon} alt="Down" className="w-[24vw] md:w-6 h-[24vw] md:h-6" />
-            )}
-            <span className="text-white text-size-[17vw] md:text-lg font-semibold">
-              {isPlacingBet ? t('common.loading') : t('trade.down')}
-            </span>
-          </div>
-              </div>
+                {/* Up按钮 */}
+                <div
+                  className={`w-[100vw] md:w-32 h-[50vw] md:h-12 rounded-[12vw] md:rounded-lg flex items-center justify-center gap-[8vw] md:gap-2 ${isButtonsDisabled ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+                  style={{
+                    backgroundColor: '#00bc4b',
+                    filter: isButtonsDisabled ? 'brightness(0.3)' : 'brightness(1)'
+                  }}
+                  onClick={() => !isButtonsDisabled && handlePlaceBet('up')}
+                >
+                  {isPlacingBet ? (
+                    <div className="w-[24vw] md:w-6 h-[24vw] md:h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  ) : (
+                    <img src={buyUpIcon} alt="Up" className="w-[24vw] md:w-6 h-[24vw] md:h-6" />
+                  )}
+                  <span className="text-white text-size-[17vw] md:text-lg font-semibold">
+                    {isPlacingBet ? t('loading') : t('trade.up')}
+                  </span>
+                </div>
 
-              {/* 时间模块：移动到按钮下方并居中 */}
-              <div className="w-full flex items-center justify-center mt-[8vw] md:mt-2">
+                {/* 时间模块：放置在中间 */}
                 <div className="h-[38vw] md:h-10 flex flex-col items-center justify-center">
                   <img src={timeIcon} alt="Time" className="w-[16vw] md:w-4 h-[16vw] md:h-4 mb-[4vw] md:mb-1" />
                   <span className="text-white text-size-[15vw] md:text-sm font-semibold">{t('history.duration_1m')}</span>
+                </div>
+
+                {/* Down按钮 */}
+                <div
+                  className={`w-[100vw] md:w-32 h-[50vw] md:h-12 rounded-[12vw] md:rounded-lg flex items-center justify-center gap-[8vw] md:gap-2 ${isButtonsDisabled ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+                  style={{
+                    backgroundColor: '#f5384e',
+                    filter: isButtonsDisabled ? 'brightness(0.3)' : 'brightness(1)'
+                  }}
+                  onClick={() => !isButtonsDisabled && handlePlaceBet('down')}
+                >
+                  {isPlacingBet ? (
+                    <div className="w-[24vw] md:w-6 h-[24vw] md:h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  ) : (
+                    <img src={buyDownIcon} alt="Down" className="w-[24vw] md:w-6 h-[24vw] md:h-6" />
+                  )}
+                  <span className="text-white text-size-[17vw] md:text-lg font-semibold">
+                    {isPlacingBet ? t('common.loading') : t('trade.down')}
+                  </span>
                 </div>
               </div>
             </>
