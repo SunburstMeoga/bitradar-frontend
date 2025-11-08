@@ -76,9 +76,9 @@ const ExchangeCard = ({ title, rows, onOpenRecords }) => {
             )}
             <div className="flex items-center gap-[10vw] md:gap-3">
               <input
-                type="text"
-                inputMode="decimal"
-                pattern="^[0-9]*[.,]?[0-9]*$"
+                type="number"
+                min={0}
+                step={1}
                 value={row.value}
                 onChange={(e) => row.onChange(e.target.value)}
                 placeholder={row.placeholder}
@@ -457,11 +457,20 @@ const Withdraw = () => {
 
   // 卡片2交互
   const handleCard2DepositChange = (value) => {
-    const numValue = parseFloat(value) || 0;
-    if (value && !validateBalance(t('exchange.fiat'), numValue, { [t('exchange.fiat')]: balances.Fiat })) {
-      return;
+    // 仅保留数字，禁止负数与非数字字符（不允许小数点）
+    let sanitized = String(value).replace(/\D+/g, '');
+
+    // 根据当前选择的渠道最高限额，限制位数
+    const channel = fiatChannels.find(ch => ch.channel_code === selectedFiatChannelCode);
+    const maxAmt = channel ? parseFloat(channel.max_amount || '0') : 0;
+    if (Number.isFinite(maxAmt) && maxAmt > 0) {
+      const maxInt = Math.floor(Math.abs(maxAmt));
+      const digitsLimit = String(maxInt).length; // 例如5000 -> 4位；50000 -> 5位
+      if (sanitized.length > digitsLimit) {
+        sanitized = sanitized.slice(0, digitsLimit);
+      }
     }
-    setCard2DepositAmount(value);
+    setCard2DepositAmount(sanitized);
   };
 
   const handleCard2WithdrawChange = (value) => {
