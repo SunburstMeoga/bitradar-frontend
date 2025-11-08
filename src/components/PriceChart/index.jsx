@@ -232,7 +232,7 @@ const userBetsPlugin = {
             : ((bet.direction === 'up') ? (normalizedClose > normalizedOpen) : (normalizedClose < normalizedOpen));
           const profit = Number.isFinite(bet.profit)
             ? bet.profit
-            : (isWin ? (bet.amount * (1 - 0.03)) : 0);
+            : (isWin ? (bet.amount * (1 - (chart.options && typeof chart.options.feeRate === 'number' ? chart.options.feeRate : 0.03))) : 0);
 
           if (isWin && profit > 0) {
             drawProfitAmount(ctx, settlementX, settlementY, profit, bet.direction);
@@ -511,7 +511,7 @@ const referenceLinePlugin = {
 
 ChartJS.register(customDrawPlugin, userBetsPlugin, referenceLinePlugin);
 
-const PriceChart = ({ onPriceUpdate, userBets = [], onVisibleUserBetsChange }) => {
+const PriceChart = ({ onPriceUpdate, userBets = [], onVisibleUserBetsChange, feeRate = 0.03 }) => {
   const chartRef = useRef(null);
 
   const [priceData, setPriceData] = useState([]); // 存储价格数据（120个数据点）
@@ -950,6 +950,7 @@ const PriceChart = ({ onPriceUpdate, userBets = [], onVisibleUserBetsChange }) =
     priceChanged: priceChanged, // 传递价格变化状态给插件
     blinkStartTime: blinkStartTimeRef.current, // 传递闪烁开始时间给插件
     userBets: userBets, // 传递用户下注数据给插件
+    feeRate: (typeof feeRate === 'number' && Number.isFinite(feeRate)) ? feeRate : 0.03, // 传递手续费率给插件
     indexTimestampsLeft: combinedData.slice(-120).map(d => d.timestamp),
     lastTimestamp: combinedData.length ? combinedData[combinedData.length - 1].timestamp : null,
     // 禁用初始与更新动画，避免进入页面时的上升/淡入效果

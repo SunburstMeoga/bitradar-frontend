@@ -2,6 +2,27 @@ import { ApiService } from './api.js';
 
 class OrderService extends ApiService {
   /**
+   * 获取订单配置（手续费、下注区间、赔付比等）
+   * @returns {Promise<Object>} 配置数据 { fee_rate, max_bet_amount, min_bet_amount, payout_ratio }
+   */
+  async getOrderConfigs() {
+    try {
+      const response = await this.get('/order-configs');
+      if (response && (response.success === true || response.success === undefined)) {
+        const data = response.data || response;
+        return {
+          success: true,
+          data,
+          message: response.message || 'Order configs retrieved successfully'
+        };
+      }
+      throw new Error(response?.message || '获取订单配置失败');
+    } catch (error) {
+      console.error('获取订单配置失败:', error);
+      throw error;
+    }
+  }
+  /**
    * 创建新的二元期权订单
    * @param {Object} orderData - 订单数据
    * @param {string} orderData.orderType - 订单类型 (CALL, PUT)
