@@ -52,6 +52,8 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
   const [tokenOptions, setTokenOptions] = useState([]); // 可选择的币种列表
   const [isLoadingTokens, setIsLoadingTokens] = useState(true); // 代币列表加载状态
   const [isConnecting, setIsConnecting] = useState(false); // 连接钱包状态
+  // 订单配置（手续费、下注区间等）
+  const [orderConfigs, setOrderConfigs] = useState(null);
   // 验证码相关状态
   const [isCaptchaOpen, setIsCaptchaOpen] = useState(false);
   const [isCaptchaRequired, setIsCaptchaRequired] = useState(false);
@@ -96,6 +98,20 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
 
   // 监听移动端键盘打开/关闭（基于 visualViewport）
   useEffect(() => {
+    // 获取订单配置
+    const fetchOrderConfigs = async () => {
+      try {
+        const res = await orderService.getOrderConfigs();
+        if (res && res.success) {
+          setOrderConfigs(res.data);
+          console.log('✅ 订单配置已加载:', res.data);
+        }
+      } catch (error) {
+        console.error('❌ 获取订单配置失败:', error);
+      }
+    };
+    fetchOrderConfigs();
+
     const vv = window.visualViewport;
     if (!vv) return;
 
@@ -515,6 +531,23 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
       if (!orderData.amount || orderData.amount < 1.0) {
         validationErrors.push('下注金额必须大于等于1.00');
       }
+      // 检查下注金额是否在配置区间内
+      try {
+        const minAmt = orderConfigs ? parseFloat(orderConfigs.min_bet_amount) : undefined;
+        const maxAmt = orderConfigs ? parseFloat(orderConfigs.max_bet_amount) : undefined;
+        if (Number.isFinite(minAmt) && Number.isFinite(maxAmt)) {
+          if (orderData.amount < minAmt || orderData.amount > maxAmt) {
+            toast.error(`下注金额需在 ${minAmt} - ${maxAmt} 之间`);
+            return;
+          }
+        } else if (Number.isFinite(minAmt) && orderData.amount < minAmt) {
+          toast.error(`下注金额不能低于最小值 ${minAmt}`);
+          return;
+        } else if (Number.isFinite(maxAmt) && orderData.amount > maxAmt) {
+          toast.error(`下注金额不能超过最大值 ${maxAmt}`);
+          return;
+        }
+      } catch (_) {}
       if (!orderData.betTokenSymbol) {
         validationErrors.push('必须选择下注代币');
       }
@@ -980,6 +1013,7 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
           userBets={userBets}
           onPriceUpdate={handlePriceUpdate}
           onVisibleUserBetsChange={handleVisibleUserBetsChange}
+          feeRate={(() => { try { return parseFloat(orderConfigs?.fee_rate) } catch (_) { return 0.03 } })()}
         />
       </div>
 
