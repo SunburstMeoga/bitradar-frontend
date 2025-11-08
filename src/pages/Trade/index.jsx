@@ -602,7 +602,8 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
         setTimeout(() => setIsPostSuccessCooldown(false), 1500);
 
         // 在所有成功后的逻辑完成后，按10%概率弹出验证码（不影响本次下注）
-        const shouldShowCaptchaAfterSuccess = Math.random() < 0.1;
+        // const shouldShowCaptchaAfterSuccess = Math.random() < 0.1; //验证弹窗出现概率 0.1
+        const shouldShowCaptchaAfterSuccess = false //不出验证弹窗
         if (shouldShowCaptchaAfterSuccess) {
           // 标记后续下注需通过安全验证
           setIsCaptchaRequired(true);
