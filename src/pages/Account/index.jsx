@@ -174,7 +174,7 @@ const Account = () => {
 
       if (result.success) {
         setLusdClaimStatus(result.data);
-        // 改为使用接口返回的 remaining_minutes 字段进行倒计时
+        // 使用接口返回的 remaining_minutes 字段进行倒计时
         const remainingMinutes = parseInt(result.data.remaining_minutes || 0, 10);
         setLusdCountdown(Number.isFinite(remainingMinutes) && remainingMinutes > 0 ? remainingMinutes * 60 : 0);
       }
@@ -186,7 +186,7 @@ const Account = () => {
     }
   };
 
-  // 领取LuckyUSD或显示不可领取原因
+  // 领取LuckyUSD或显示不可领取原因（优先依据 can_claim）
   const handleClaimLusd = async () => {
     if (!isAuthenticated) {
       toast.error(t('account.claim.login_required'));
@@ -205,54 +205,53 @@ const Account = () => {
       return;
     }
 
-    // 按新的接口逻辑进行领取前检查
-    const hasPendingOrders = lusdClaimStatus.has_pending_orders === true;
+    // 新逻辑：优先检查 can_claim；为 true 则直接允许领取
+    const canClaim = lusdClaimStatus.can_claim === true;
     const currentBalanceNum = parseFloat(lusdClaimStatus.current_balance || '0');
-    const remainingMinutes = lusdClaimStatus.remaining_minutes || 0;
+    const remainingMinutes = parseInt(lusdClaimStatus.remaining_minutes || 0, 10);
 
-    if (hasPendingOrders) {
-      toast.error(t('account.claim.not_allowed_has_orders'));
+    if (canClaim) {
+      try {
+        setIsClaiming(true);
+        const result = await lusdService.claimLusd();
+
+        if (result.success) {
+          toast.success(result.message || t('account.claim.success'));
+          await Promise.all([
+            safeFetchBalance(),
+            fetchLusdClaimStatus()
+          ]);
+        }
+      } catch (error) {
+        console.error('领取LuckyUSD失败:', error);
+
+        if (error.isTimeError) {
+          const timeText = formatCountdown((error.remaining_minutes || 0) * 60);
+          toast.error(t('account.claim.retry_after', { time: timeText }));
+        } else if (error.isBalanceError) {
+          toast.error(error.message || t('account.claim.failed_balance_mismatch'));
+        } else {
+          toast.error(error.message || t('account.claim.failed_retry'));
+        }
+      } finally {
+        setIsClaiming(false);
+      }
       return;
     }
 
+    // 不可领取：若余额不满足或时间未到，分别提示
     if (Number.isFinite(currentBalanceNum) && currentBalanceNum >= 1) {
       toast.error(t('account.claim.not_allowed_balance_ge_1'));
       return;
     }
-
-    if (remainingMinutes > 0) {
-      const remainingTime = lusdService.formatRemainingTime(remainingMinutes);
-      toast.error(t('account.claim.retry_after', { time: remainingTime }));
+    if (Number.isFinite(remainingMinutes) && remainingMinutes > 0) {
+      const timeText = formatCountdown(remainingMinutes * 60);
+      toast.error(t('account.claim.retry_after', { time: timeText }));
       return;
     }
 
-    // 可以领取，执行领取操作
-    try {
-      setIsClaiming(true);
-      const result = await lusdService.claimLusd();
-
-      if (result.success) {
-        toast.success(result.message || t('account.claim.success'));
-
-        // 刷新余额和领取状态
-        await Promise.all([
-          safeFetchBalance(),
-          fetchLusdClaimStatus()
-        ]);
-      }
-    } catch (error) {
-      console.error('领取LuckyUSD失败:', error);
-
-      if (error.isTimeError) {
-        toast.error(t('account.claim.retry_after', { time: lusdService.formatRemainingTime(error.remaining_minutes) }));
-      } else if (error.isBalanceError) {
-        toast.error(error.message || t('account.claim.failed_balance_mismatch'));
-      } else {
-        toast.error(error.message || t('account.claim.failed_retry'));
-      }
-    } finally {
-      setIsClaiming(false);
-    }
+    // 兜底：状态不可领取但条件看似满足
+    toast.error(t('account.claim.querying_status'));
   };
 
 
@@ -382,20 +381,23 @@ const Account = () => {
             ) : lusdClaimStatus ? (
               <span className="text-white text-size-[18vw] md:text-lg font-medium">
                 {(() => {
-                  const hasPending = lusdClaimStatus.has_pending_orders === true;
+                  const canClaim = lusdClaimStatus.can_claim === true;
                   const currentBalanceNum = parseFloat(lusdClaimStatus.current_balance || '0');
-                  const remainingMinutes = lusdClaimStatus.remaining_minutes || 0;
+                  const remainingMinutes = parseInt(lusdClaimStatus.remaining_minutes || 0, 10);
 
-                  if (hasPending) {
-                    return t('account.claim.not_allowed_has_orders');
+                  // 优先：可领取则直接显示CTA
+                  if (canClaim) {
+                    return isClaiming ? t('common.submitting') : t('account.claim.cta');
                   }
+                  // 不可领取：分别展示不满足的条件
                   if (Number.isFinite(currentBalanceNum) && currentBalanceNum >= 1) {
                     return t('account.claim.not_allowed_balance_ge_1');
                   }
-                  if (remainingMinutes > 0) {
+                  if (Number.isFinite(remainingMinutes) && remainingMinutes > 0) {
                     return `${t('account.next_distribution')}: ${formatCountdown(lusdCountdown)}`;
                   }
-                  return isClaiming ? t('common.submitting') : t('account.claim.cta');
+                  // 兜底：状态不可领取但条件看似满足
+                  return t('account.claim.querying_status');
                 })()}
               </span>
             ) : (
