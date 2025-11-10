@@ -5,7 +5,7 @@ import toast from 'react-hot-toast';
 import { useAuthStore, useUserStore, useWeb3Store } from '../../store';
 import { useNavigate } from 'react-router-dom';
 import { depositUSDT, getWalletUSDTBalance } from '../../services/vaultService';
-import { withdrawalService, userService } from '../../services';
+import { withdrawalService, userService, paymentService } from '../../services';
 import GlobalConfirmDialog from '../../components/GlobalConfirmDialog';
 
 // 自定义动画金额组件（借鉴网体详情页面）
@@ -71,11 +71,14 @@ const ExchangeCard = ({ title, rows, onOpenRecords }) => {
             <div className="flex items-center justify-start mb-[10vw] md:mb-2">
               <span className="text-white text-size-[16vw] md:text-base lg:text-lg">{row.title}</span>
             </div>
+            {row.extraTop && (
+              <div className="mb-[10vw] md:mb-2">{row.extraTop}</div>
+            )}
             <div className="flex items-center gap-[10vw] md:gap-3">
               <input
-                type="text"
-                inputMode="decimal"
-                pattern="^[0-9]*[.,]?[0-9]*$"
+                type="number"
+                min={0}
+                step={1}
                 value={row.value}
                 onChange={(e) => row.onChange(e.target.value)}
                 placeholder={row.placeholder}
@@ -99,6 +102,9 @@ const ExchangeCard = ({ title, rows, onOpenRecords }) => {
                 )}
               </button>
             </div>
+            {row.extraBottom && (
+              <div className="mt-[10vw] md:mt-2">{row.extraBottom}</div>
+            )}
           </div>
         ))}
       </div>
@@ -338,6 +344,37 @@ const Withdraw = () => {
   const [card2DepositAmount, setCard2DepositAmount] = useState('');
   const [card2WithdrawAmount, setCard2WithdrawAmount] = useState('');
   const [card2Submitting, setCard2Submitting] = useState(false);
+  const [fiatChannels, setFiatChannels] = useState([]);
+  const [selectedFiatChannelCode, setSelectedFiatChannelCode] = useState('');
+  const [fiatRate, setFiatRate] = useState(null);
+  const [isFiatChannelOpen, setIsFiatChannelOpen] = useState(false);
+  const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
+  const [paymentUrlForDialog, setPaymentUrlForDialog] = useState('');
+
+  // 加载法币支付渠道（登录后）
+  useEffect(() => {
+    let mounted = true;
+    const loadChannels = async () => {
+      try {
+        const chRes = await paymentService.getChannels();
+        const list = (chRes?.data || []).filter(ch => ch?.is_enabled);
+        if (!list.length) return;
+        const preferredOrder = ['ALIPAY_H5', 'WECHAT_H5'];
+        const defaultCh = list.find(ch => preferredOrder.includes(ch.channel_code)) || list[0];
+        if (mounted) {
+          setFiatChannels(list);
+          setSelectedFiatChannelCode(defaultCh.channel_code);
+          // 新接口在顶层返回 exchange_rate，表示 1 CNY = rate USDT
+          const rateCandidate = chRes?.exchange_rate;
+          setFiatRate(rateCandidate ? parseFloat(rateCandidate) : null);
+        }
+      } catch (err) {
+        console.warn('获取支付渠道失败:', err);
+      }
+    };
+    if (isAuthenticated) { loadChannels(); }
+    return () => { mounted = false; };
+  }, [isAuthenticated]);
 
   // 余额展示/校验统一使用状态 balances（在下方 useState 中定义）
 
@@ -420,11 +457,20 @@ const Withdraw = () => {
 
   // 卡片2交互
   const handleCard2DepositChange = (value) => {
-    const numValue = parseFloat(value) || 0;
-    if (value && !validateBalance(t('exchange.fiat'), numValue, { [t('exchange.fiat')]: balances.Fiat })) {
-      return;
+    // 仅保留数字，禁止负数与非数字字符（不允许小数点）
+    let sanitized = String(value).replace(/\D+/g, '');
+
+    // 根据当前选择的渠道最高限额，限制位数
+    const channel = fiatChannels.find(ch => ch.channel_code === selectedFiatChannelCode);
+    const maxAmt = channel ? parseFloat(channel.max_amount || '0') : 0;
+    if (Number.isFinite(maxAmt) && maxAmt > 0) {
+      const maxInt = Math.floor(Math.abs(maxAmt));
+      const digitsLimit = String(maxInt).length; // 例如5000 -> 4位；50000 -> 5位
+      if (sanitized.length > digitsLimit) {
+        sanitized = sanitized.slice(0, digitsLimit);
+      }
     }
-    setCard2DepositAmount(value);
+    setCard2DepositAmount(sanitized);
   };
 
   const handleCard2WithdrawChange = (value) => {
@@ -435,12 +481,77 @@ const Withdraw = () => {
     setCard2WithdrawAmount(value);
   };
 
-  const handleCard2Deposit = () => {
+  const handleCard2Deposit = async () => {
     if (!card2DepositAmount) return;
+    if (!isAuthenticated) {
+      toast.error(t('common.login_required'));
+      return;
+    }
+
     setCard2Submitting(true);
     try {
-      toast.success(t('exchange.fiat_exchange_request_submitted'));
-      setCard2DepositAmount('');
+      // 使用已加载的渠道与当前选择
+      let selectedChannel = fiatChannels.find(ch => ch.channel_code === selectedFiatChannelCode);
+      if (!selectedChannel) {
+        const preferredOrder = ['ALIPAY_H5', 'WECHAT_H5'];
+        selectedChannel = fiatChannels.find(ch => preferredOrder.includes(ch.channel_code)) || fiatChannels[0];
+      }
+      if (!selectedChannel) {
+        toast.error(t('common.error'));
+        return;
+      }
+
+      // 2) 校验金额范围（CNY）
+      const cnyStr = String(card2DepositAmount);
+      const cnyNum = parseFloat(cnyStr);
+      const minAmt = parseFloat(selectedChannel.min_amount || '0');
+      const maxAmt = parseFloat(selectedChannel.max_amount || '0');
+      if (!Number.isFinite(cnyNum) || cnyNum <= 0) {
+        toast.error(t('exchange.enter_exchange_amount'));
+        return;
+      }
+      if (cnyNum < minAmt) {
+        toast.error(`${t('exchange.min_deposit_amount')}: ${minAmt} CNY`);
+        return;
+      }
+      if (maxAmt > 0 && cnyNum > maxAmt) {
+        toast.error(`${t('exchange.max_deposit_amount')}: ${maxAmt} CNY`);
+        return;
+      }
+
+      // 3) 创建订单
+      const orderRes = await paymentService.createOrder({
+        channel_code: selectedChannel.channel_code,
+        cny_amount: cnyStr,
+      });
+
+      if (orderRes?.success) {
+        const data = orderRes.data;
+        const url = data?.payment_url || data?.pay_url;
+        if (url) {
+          // 弹出确认对话框，点击确认再打开链接
+          setPaymentUrlForDialog(url);
+          setIsPaymentDialogOpen(true);
+        }
+        
+        // 展示汇率与预期获得USDT
+        if (data?.exchange_rate && data?.usdt_amount) {
+          toast.success(`¥${cnyStr} → ${data.usdt_amount} USDT @ ${data.exchange_rate}`);
+          setFiatRate(parseFloat(data.exchange_rate));
+        } else {
+          toast.success(orderRes?.message || t('exchange.deposit_success'));
+        }
+
+        // 清空输入并刷新余额
+        setCard2DepositAmount('');
+        setTimeout(() => { fetchBalance().catch(() => {}); }, 1500);
+      } else {
+        const msg = orderRes?.message || t('common.error');
+        toast.error(msg);
+      }
+    } catch (err) {
+      const msg = err?.response?.data?.message || err?.message || t('common.error');
+      toast.error(msg);
     } finally {
       setCard2Submitting(false);
     }
@@ -492,7 +603,87 @@ const Withdraw = () => {
       actionLabel: t('exchange.exchange'),
       onAction: handleCard2Deposit,
       disabled: card2Submitting,
-      isLoading: card2Submitting
+      isLoading: card2Submitting,
+      extraTop: (
+        <div className="flex flex-col gap-[10vw] md:gap-3">
+          {/* 渠道选择（美化下拉）与限额同一行显示 */}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setIsFiatChannelOpen(v => !v)}
+              className="w-full flex items-center justify-between px-[12vw] md:px-3 py-[8vw] md:py-2 rounded-[12vw] md:rounded-lg border border-[#282B39]"
+              style={{ backgroundColor: '#1B1C1C' }}
+            >
+              <span className="inline-flex items-center gap-[6vw] md:gap-2">
+                <span className="w-[10vw] h-[10vw] md:w-3 md:h-3 rounded-full" style={{ backgroundColor: (selectedFiatChannelCode || '').includes('ALIPAY') ? '#00A3EE' : '#22C55E' }}></span>
+                <span className="text-white text-size-[12vw] md:text-xs">
+                  {(() => {
+                    const ch = fiatChannels.find(c => c.channel_code === selectedFiatChannelCode);
+                    return ch?.name || (selectedFiatChannelCode || '').replace('_H5','');
+                  })()}
+                </span>
+              </span>
+              <span className="text-[#9D9D9D]">▾</span>
+            </button>
+            {isFiatChannelOpen && (
+              <div className="absolute left-0 right-0 mt-[6vw] md:mt-2 rounded-[12vw] md:rounded-lg border border-[#313445] shadow-lg" style={{ backgroundColor: '#1B1C1C', zIndex: 10 }}>
+                <div className="max-h-[200px] overflow-auto">
+                  {fiatChannels.map(ch => (
+                    <div
+                      key={ch.channel_code}
+                    onClick={() => {
+                      setSelectedFiatChannelCode(ch.channel_code);
+                      setIsFiatChannelOpen(false);
+                    }}
+                    className="px-[12vw] md:px-3 py-[8vw] md:py-2 hover:bg-[#2A2B2C] cursor-pointer flex items-center justify-between"
+                  >
+                      <div className="flex items-center gap-[6vw] md:gap-2">
+                        <span className="w-[10vw] h-[10vw] md:w-3 md:h-3 rounded-full" style={{ backgroundColor: (ch.channel_code || '').includes('ALIPAY') ? '#00A3EE' : '#22C55E' }}></span>
+                        <span className="text-white text-size-[12vw] md:text-xs">{ch.name || ch.channel_code.replace('_H5','')}</span>
+                      </div>
+                      {selectedFiatChannelCode === ch.channel_code && (
+                        <span className="text-[#5671FB] text-size-[12vw] md:text-xs">✓</span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+          {/* 限额同一行显示：限额：￥min - ￥max */}
+          {(() => {
+            const ch = fiatChannels.find(c => c.channel_code === selectedFiatChannelCode);
+            const minAmt = ch ? parseFloat(ch.min_amount || '0') : 0;
+            const maxAmt = ch ? parseFloat(ch.max_amount || '0') : 0;
+            const maxText = maxAmt > 0 ? `${maxAmt}` : '无限制';
+            return (
+              <div className="text-[#8f8f8f] text-size-[12vw] md:text-xs">限额：￥{minAmt} - ￥{maxText}</div>
+            );
+          })()}
+        </div>
+      ),
+      extraBottom: (
+        <div className="flex items-center justify-between">
+          <div className="text-[#8f8f8f] text-size-[12vw] md:text-xs">
+            <span>{t('exchange.cny_to_usdt_prefix')} </span>
+            <span className="text-white">{fiatRate ? `${fiatRate}` : '—'}</span>
+            <span> {t('exchange.usdt_suffix')}</span>
+          </div>
+          <div className="text-[#8f8f8f] text-size-[12vw] md:text-xs">
+            {(() => {
+              const cnyNum = parseFloat(card2DepositAmount || '0');
+              const rateNum = parseFloat(fiatRate || '0');
+              // 新汇率含义：1 CNY = rate USDT，因此预计USDT = CNY * rate
+              const usd = rateNum > 0 && cnyNum > 0 ? (cnyNum * rateNum) : null;
+              return (
+                <span>
+                  {t('exchange.estimated_received')}: <span className="text-white">{usd ? usd.toFixed(2) : '—'}</span>
+                </span>
+              );
+            })()}
+          </div>
+        </div>
+      )
     },
     {
       title: t('exchange.fiat_withdraw'),
@@ -637,6 +828,20 @@ const Withdraw = () => {
         cancelText={t('ban_modal.dismiss')}
         handleConfirm={handleContactSupport}
         handleCancel={() => {}}
+      />
+      <GlobalConfirmDialog
+        isOpen={isPaymentDialogOpen}
+        onClose={() => setIsPaymentDialogOpen(false)}
+      title={'支付订单创建成功'}
+        content={paymentUrlForDialog ? `支付链接：${paymentUrlForDialog}` : '支付链接创建成功'}
+        confirmText={'打开链接支付'}
+        hideCancel={true}
+        handleConfirm={() => {
+          if (paymentUrlForDialog) {
+            window.open(paymentUrlForDialog, '_blank');
+          }
+          setIsPaymentDialogOpen(false);
+        }}
       />
     </div>
   );

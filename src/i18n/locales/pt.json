@@ -385,6 +385,8 @@
     "confirm_withdraw": "Confirmar saque",
     "min_withdraw_amount": "Valor mínimo de saque",
     "max_withdraw_amount": "Valor máximo de saque",
+    "min_deposit_amount": "Valor mínimo de depósito",
+    "max_deposit_amount": "Valor máximo de depósito",
     "withdraw_fee_label": "Taxa de saque",
     "withdraw_failed_retry": "Saque falhou, tente novamente",
     "withdraw_success": "Saque bem-sucedido!",

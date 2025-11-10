@@ -385,6 +385,8 @@
     "confirm_withdraw": "出金を確認",
     "min_withdraw_amount": "最小出金額",
     "max_withdraw_amount": "最大出金額",
+    "min_deposit_amount": "最低入金額",
+    "max_deposit_amount": "最大入金額",
     "withdraw_fee_label": "出金手数料",
     "withdraw_failed_retry": "出金に失敗しました。再試行してください",
     "withdraw_success": "出金成功！",

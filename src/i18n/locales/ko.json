@@ -385,6 +385,8 @@
     "confirm_withdraw": "출금 확인",
     "min_withdraw_amount": "최소 출금 금액",
     "max_withdraw_amount": "최대 출금 금액",
+    "min_deposit_amount": "최소 입금 금액",
+    "max_deposit_amount": "최대 입금 금액",
     "withdraw_fee_label": "출금 수수료",
     "withdraw_failed_retry": "출금 실패, 다시 시도하세요",
     "withdraw_success": "출금 성공!",

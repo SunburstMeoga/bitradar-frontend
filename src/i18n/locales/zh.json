@@ -386,6 +386,8 @@
     "confirm_withdraw": "确认提现",
     "min_withdraw_amount": "最小提现金额",
     "max_withdraw_amount": "最大提现金额",
+    "min_deposit_amount": "最低充值金额",
+    "max_deposit_amount": "最高充值金额",
     "withdraw_fee_label": "提现手续费",
     "withdraw_failed_retry": "提现失败，请重试",
     "withdraw_success": "提现成功！",
@@ -412,7 +414,10 @@
     "withdraw_not_permitted": "当前账户无提现权限，请通过申请",
     "tx_failed": "交易失败",
     "fiat_exchange_request_submitted": "法币充值请求已提交",
-    "fiat_withdraw_request_submitted": "法币提现请求已提交"
+    "fiat_withdraw_request_submitted": "法币提现请求已提交",
+    "estimated_received": "预估到账",
+    "cny_to_usdt_prefix": "1 CNY =",
+    "usdt_suffix": "USDT"
   },
   "trade": {
     "trade_amount": "交易金额",

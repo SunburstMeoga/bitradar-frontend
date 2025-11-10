@@ -385,6 +385,8 @@
     "confirm_withdraw": "Confirm Withdrawal",
     "min_withdraw_amount": "Minimum Withdrawal Amount",
     "max_withdraw_amount": "Maximum Withdrawal Amount",
+    "min_deposit_amount": "Minimum Deposit Amount",
+    "max_deposit_amount": "Maximum Deposit Amount",
     "withdraw_fee_label": "Withdrawal Fee",
     "withdraw_failed_retry": "Withdrawal failed, please retry",
     "withdraw_success": "Withdrawal successful!",

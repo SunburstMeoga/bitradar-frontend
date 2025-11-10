@@ -34,7 +34,7 @@ const Modal = ({ isOpen, onClose, children, className = '', closeOnOverlayClick 
 
       {/* 弹窗卡片内容 */}
       <div
-        className={`relative bg-[#1f1f1f] rounded-[12px] w-[330px] max-h-[90vh] overflow-y-auto box-border ${className}`}
+        className={`relative bg-[#1f1f1f] rounded-[12px] w-[330px] max-h-[90vh] overflow-y-auto overflow-x-hidden box-border ${className}`}
         onClick={(e) => e.stopPropagation()}
       >
         {children}

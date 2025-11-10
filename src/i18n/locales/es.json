@@ -394,6 +394,8 @@
     "confirm_withdraw": "Confirmar retiro",
     "min_withdraw_amount": "Cantidad mínima de retiro",
     "max_withdraw_amount": "Cantidad máxima de retiro",
+    "min_deposit_amount": "Cantidad mínima de depósito",
+    "max_deposit_amount": "Cantidad máxima de depósito",
     "withdraw_fee_label": "Comisión de retiro",
     "withdraw_failed_retry": "El retiro falló, inténtalo de nuevo",
     "withdraw_success": "¡Retiro exitoso!",
