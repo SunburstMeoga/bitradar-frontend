@@ -19,6 +19,7 @@ const GlobalConfirmDialog = ({
   closeOnOverlayClick = false,
   confirmLoading = false,
   hideCancel = false,
+  showCloseIcon = false,
 }) => {
   const { t } = useTranslation();
 
@@ -46,10 +47,20 @@ const GlobalConfirmDialog = ({
     <Modal isOpen={isOpen} onClose={closeOnOverlayClick ? onClose : () => {}} className="p-0">
       <div className="flex flex-col w-full">
         {/* Header */}
-        <div className="px-5 pt-5 pb-3 border-b border-[#2a2a2a]">
+        <div className="px-5 pt-5 pb-3 border-b border-[#2a2a2a] relative">
           <div className="text-white text-[16px] font-semibold">
             {title || t('common.error')}
           </div>
+          {showCloseIcon && (
+            <button
+              type="button"
+              aria-label="Close"
+              onClick={onClose}
+              className="absolute right-4 top-4 text-[#9d9d9d] hover:text-white"
+            >
+              ×
+            </button>
+          )}
         </div>
 
         {/* Content */}

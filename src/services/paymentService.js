@@ -42,6 +42,24 @@ class PaymentService extends ApiService {
       throw error;
     }
   }
+
+  /**
+   * 查詢支付訂單狀態
+   * GET /payment/order/:order_id
+   * @param {string} orderId - 商戶訂單號（mer_order_tid）
+   */
+  async getOrder(orderId) {
+    try {
+      const response = await this.get(`/payment/order/${orderId}`);
+      if (response && response.success) {
+        return { success: true, data: response.data };
+      }
+      throw new Error(response?.message || '查询订单状态失败');
+    } catch (error) {
+      console.error('查询订单状态失败:', error);
+      throw error;
+    }
+  }
 }
 
 const paymentService = new PaymentService();

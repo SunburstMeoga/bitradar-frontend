@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import usePageTitle from '../../hooks/usePageTitle';
 import toast from 'react-hot-toast';
@@ -350,6 +350,77 @@ const Withdraw = () => {
   const [isFiatChannelOpen, setIsFiatChannelOpen] = useState(false);
   const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
   const [paymentUrlForDialog, setPaymentUrlForDialog] = useState('');
+  const [paymentOrderId, setPaymentOrderId] = useState('');
+  const [paymentOrderStatus, setPaymentOrderStatus] = useState(''); // PENDING/SUCCESS/FAILED/CANCELLED/EXPIRED
+  const pollTimerRef = useRef(null);
+  const pollCountRef = useRef(0);
+
+  const isTerminalStatus = (status) => ['SUCCESS', 'FAILED', 'CANCELLED', 'EXPIRED'].includes(status);
+  const getStatusText = (status) => {
+    if (status === 'SUCCESS') return '支付成功';
+    if (status === 'FAILED') return '支付失败';
+    if (status === 'PENDING') return '待支付';
+    if (status === 'CANCELLED' || status === 'EXPIRED') return '支付失败';
+    return '待支付';
+  };
+
+  const refreshPaymentOrderStatus = async () => {
+    if (!paymentOrderId) return;
+    try {
+      const res = await paymentService.getOrder(paymentOrderId);
+      if (res?.success && res.data) {
+        const nextStatus = res.data.status;
+        setPaymentOrderStatus(nextStatus || 'PENDING');
+        if (isTerminalStatus(nextStatus)) {
+          if (pollTimerRef.current) {
+            clearInterval(pollTimerRef.current);
+            pollTimerRef.current = null;
+          }
+        }
+      }
+    } catch (err) {
+      console.error('刷新订单状态失败:', err);
+    }
+  };
+
+  useEffect(() => {
+    if (isPaymentDialogOpen && paymentOrderId && !isTerminalStatus(paymentOrderStatus)) {
+      pollCountRef.current = 0;
+      if (pollTimerRef.current) {
+        clearInterval(pollTimerRef.current);
+        pollTimerRef.current = null;
+      }
+      pollTimerRef.current = setInterval(async () => {
+        try {
+          pollCountRef.current += 1;
+          const res = await paymentService.getOrder(paymentOrderId);
+          if (res?.success && res.data) {
+            const nextStatus = res.data.status;
+            setPaymentOrderStatus(nextStatus || 'PENDING');
+            if (isTerminalStatus(nextStatus)) {
+              clearInterval(pollTimerRef.current);
+              pollTimerRef.current = null;
+            }
+          }
+        } catch (e) {
+          console.error('轮询订单状态失败:', e);
+        } finally {
+          if (pollCountRef.current >= 72) {
+            if (pollTimerRef.current) {
+              clearInterval(pollTimerRef.current);
+              pollTimerRef.current = null;
+            }
+          }
+        }
+      }, 5000);
+    }
+    return () => {
+      if (pollTimerRef.current) {
+        clearInterval(pollTimerRef.current);
+        pollTimerRef.current = null;
+      }
+    };
+  }, [isPaymentDialogOpen, paymentOrderId, paymentOrderStatus]);
 
   // 加载法币支付渠道（登录后）
   useEffect(() => {
@@ -528,10 +599,15 @@ const Withdraw = () => {
       if (orderRes?.success) {
         const data = orderRes.data;
         const url = data?.payment_url || data?.pay_url;
+        const merOrderTid = data?.mer_order_tid || data?.order_id || '';
         if (url) {
           // 弹出确认对话框，点击确认再打开链接
           setPaymentUrlForDialog(url);
           setIsPaymentDialogOpen(true);
+        }
+        if (merOrderTid) {
+          setPaymentOrderId(merOrderTid);
+          setPaymentOrderStatus(data?.status || 'PENDING');
         }
         
         // 展示汇率与预期获得USDT
@@ -817,7 +893,7 @@ const Withdraw = () => {
       <ExchangeCard title={t('exchange.chain_platform_title')} rows={card1Rows} onOpenRecords={() => navigate('/token-history?token_symbol=USDT&transaction_type=all')} />
 
       {/* 卡片2：法币 ↔ 平台USDT */}
-      <ExchangeCard title={t('exchange.fiat_platform_title')} rows={card2Rows} onOpenRecords={() => navigate('/token-history')} />
+      <ExchangeCard title={t('exchange.fiat_platform_title')} rows={card2Rows} onOpenRecords={() => navigate('/token-history?token_symbol=USDT&transaction_type=all')} />
 
       <GlobalConfirmDialog
         isOpen={banDialogOpen}
@@ -832,8 +908,32 @@ const Withdraw = () => {
       <GlobalConfirmDialog
         isOpen={isPaymentDialogOpen}
         onClose={() => setIsPaymentDialogOpen(false)}
-      title={'支付订单创建成功'}
-        content={paymentUrlForDialog ? `支付链接：${paymentUrlForDialog}` : '支付链接创建成功'}
+        title={'支付订单创建成功'}
+        showCloseIcon={true}
+        content={(
+          <div className="space-y-2">
+            <div className="break-all">
+              支付链接：{paymentUrlForDialog ? (
+                <a href={paymentUrlForDialog} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300">
+                  {paymentUrlForDialog}
+                </a>
+              ) : '创建成功'}
+            </div>
+            {paymentOrderId ? (
+              <div className="flex items-center gap-2">
+                <span>充值状态：{getStatusText(paymentOrderStatus)}</span>
+                {!isTerminalStatus(paymentOrderStatus) && (
+                  <div
+                    onClick={refreshPaymentOrderStatus}
+                    className="px-2 py-1 rounded bg-[#2a2a2a] text-[#e5e7eb] text-[12px] cursor-pointer hover:bg-[#343434]"
+                  >
+                    刷新
+                  </div>
+                )}
+              </div>
+            ) : null}
+          </div>
+        )}
         confirmText={'打开链接支付'}
         hideCancel={true}
         handleConfirm={() => {
