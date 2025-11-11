@@ -761,16 +761,16 @@ const Withdraw = () => {
         </div>
       )
     },
-    {
-      title: t('exchange.fiat_withdraw'),
-      value: card2WithdrawAmount,
-      onChange: handleCard2WithdrawChange,
-      placeholder: t('exchange.enter_withdraw_amount'),
-      actionLabel: t('exchange.withdraw'),
-      onAction: handleCard2Withdraw,
-      disabled: card2Submitting,
-      isLoading: card2Submitting
-    }
+    // {
+    //   title: t('exchange.fiat_withdraw'),
+    //   value: card2WithdrawAmount,
+    //   onChange: handleCard2WithdrawChange,
+    //   placeholder: t('exchange.enter_withdraw_amount'),
+    //   actionLabel: t('exchange.withdraw'),
+    //   onAction: handleCard2Withdraw,
+    //   disabled: card2Submitting,
+    //   isLoading: card2Submitting
+    // }
   ];
 
   // 提现状态
