@@ -54,7 +54,7 @@ const AnimatedAmount = ({ amount, fontSize = '20vw', mdFontSize = 'text-xl', mdD
 };
 
 // 兑换卡片组件（复用兑换页UI）
-const ExchangeCard = ({ title, rows, onOpenRecords,buttonText = t('exchange.records')  }) => {
+const ExchangeCard = ({ title, rows, onOpenRecords,buttonText = '充值记录'  }) => {
   const { t } = useTranslation();
   return (
     <div
@@ -890,10 +890,10 @@ const Withdraw = () => {
       </div>
 
       {/* 卡片1：链上USDT ↔ 平台USDT */}
-      <ExchangeCard title={t('exchange.chain_platform_title')} rows={card1Rows} onOpenRecords={() => navigate('/token-history?token_symbol=USDT&transaction_type=all')} />
+      <ExchangeCard title={t('exchange.chain_platform_title')} rows={card1Rows} buttonText={t('exchange.records')} onOpenRecords={() => navigate('/token-history?token_symbol=USDT&transaction_type=all')} />
 
       {/* 卡片2：法币 ↔ 平台USDT */}
-      <ExchangeCard title={t('exchange.fiat_platform_title')} rows={card2Rows} buttonText={'充值记录'} onOpenRecords={() => navigate('/token-history?token_symbol=USDT&transaction_type=all')} />
+      <ExchangeCard title={t('exchange.fiat_platform_title')} rows={card2Rows}  onOpenRecords={() => navigate('/token-history?token_symbol=USDT&transaction_type=all')} />
 
       <GlobalConfirmDialog
         isOpen={banDialogOpen}
