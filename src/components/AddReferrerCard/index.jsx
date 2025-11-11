@@ -211,7 +211,7 @@ const AddReferrerCard = ({ onBack, onClose, onSuccess }) => {
             >
               <div className="flex items-center gap-2 text-[#e4e7e7] text-[14px] md:text-sm">
                 <span>{t('wallet.type_or')}</span>
-                <div
+                {/* <div
                   onClick={(e) => {
                     e.stopPropagation();
                     handlePaste();
@@ -220,7 +220,7 @@ const AddReferrerCard = ({ onBack, onClose, onSuccess }) => {
                 >
                   <PasteIcon />
                   <span>{t('wallet.paste')}</span>
-                </div>
+                </div> */}
                 <span>{t('wallet.referral_code_text')}</span>
               </div>
             </div>
