@@ -796,7 +796,7 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
                  if (orderData.status === 'PENDING') {
                    // 订单仍在等待结算
                    console.log('⏳ 订单仍在等待结算:', bet.id);
-                   return bet;
+                   return { ...bet, isWin: false };
                  } else {
                    // 订单已结算，使用API返回的真实数据
                    const isWin = orderData.status === 'WIN';
@@ -890,6 +890,7 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
         const result = await fetchOrders(1, 100, selectedToken || 'all', false, 'all');
         if (result && result.success) {
           const orders = result.data || [];
+          const nowTs = Date.now();
           const mapped = orders.map(order => {
             const isPending = order?.profit_loss === "0" || order?.status === 'PENDING';
             const createdTs = Date.parse(order?.created_at);
@@ -901,7 +902,7 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
               price: safeParseFloat(order?.entry_price, 0),
               settlementPrice: isPending ? undefined : safeParseFloat(order?.exit_price, 0),
               status: isPending ? 'active' : 'settled',
-              isWin: isPending ? undefined : (order?.status === 'WIN'),
+              isWin: isPending ? ((Number.isFinite(expiryTs) && expiryTs <= nowTs) ? false : undefined) : (order?.status === 'WIN'),
               profit: isPending ? undefined : safeParseFloat(order?.profit_loss, 0),
               direction: order?.order_type === 'CALL' ? 'up' : 'down',
               orderDetail: order
