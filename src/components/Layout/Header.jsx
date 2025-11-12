@@ -110,7 +110,7 @@ const Header = () => {
             window.location.reload();
           } catch (error) {
             console.error('账户切换后重新登录失败:', error);
-            toast.error(`账户切换登录失败: ${error.message}`);
+            toast.error(t('toast.account_switch_failed', { message: error.message }));
           }
         };
 
@@ -150,7 +150,7 @@ const Header = () => {
       // 2. 然后进行Web3登录认证
       try {
         await login(result.account);
-        toast.success('钱包连接并登录成功！');
+        toast.success(t('toast.wallet_connected'));
 
         // 3. 登录成功后获取用户信息、余额与会员数据
         try {
@@ -171,12 +171,12 @@ const Header = () => {
         }
       } catch (authError) {
         console.error('Web3登录失败:', authError);
-        toast.error(`登录失败: ${authError.message}`);
+        toast.error(t('toast.login_failed', { message: authError.message }));
         // 即使登录失败，钱包连接仍然保持
       }
     } catch (error) {
       console.error('Failed to connect wallet:', error);
-      toast.error(error.message);
+      toast.error(t('toast.wallet_connect_failed', { message: error.message }));
     } finally {
       setIsConnecting(false);
     }

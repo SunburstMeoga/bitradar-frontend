@@ -154,19 +154,19 @@ const PaymentConfirmCard = ({ membershipLevel, onBack, onClose, onPaymentSuccess
     const currentLevel = membershipInfo?.membership_type || MEMBERSHIP_LEVELS.NONE;
 
     if (currentLevel === MEMBERSHIP_LEVELS.GOLD) {
-      toast.error('您已经是最高等级会员');
+      toast.error(t('toast.already_highest_member'));
       return false;
     }
 
     // 检查 2: 目标等级是否有效
     if (!['silver', 'gold'].includes(targetType)) {
-      toast.error('无效的升级目标');
+      toast.error(t('toast.invalid_upgrade_target'));
       return false;
     }
 
     // 检查 3: 升级路径是否有效
     if (currentLevel === MEMBERSHIP_LEVELS.SILVER && targetType === 'silver') {
-      toast.error('您已经是银牌会员');
+      toast.error(t('toast.already_silver_member'));
       return false;
     }
 
@@ -212,7 +212,7 @@ const PaymentConfirmCard = ({ membershipLevel, onBack, onClose, onPaymentSuccess
         shortfall: shortfall
       });
       // toast.error(`余额不足，需要 ${numericRequiredPrice.toFixed(2)} USDT，当前余额 ${numericCurrentBalance.toFixed(2)} USDT`);
-      toast.error('余额不足，请先充值再进行购买。')
+      toast.error(t('toast.insufficient_balance'))
       return false;
     }
 

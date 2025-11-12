@@ -612,7 +612,7 @@ const Withdraw = () => {
         
         // 展示汇率与预期获得USDT
         if (data?.exchange_rate && data?.usdt_amount) {
-          toast.success(`¥${cnyStr} → ${data.usdt_amount} USDT @ ${data.exchange_rate}`);
+          toast.success(t('toast.withdraw_success', { cny: cnyStr, usdt: data.usdt_amount, rate: data.exchange_rate }));
           setFiatRate(parseFloat(data.exchange_rate));
         } else {
           toast.success(orderRes?.message || t('exchange.deposit_success'));

@@ -80,7 +80,7 @@ const SendCard = ({ onBack, onClose, onSelectToken }) => {
       }
     } catch (err) {
       console.error('粘贴失败原因:', err);
-      toast.error('粘贴功能不可用，请手动输入地址');
+      toast.error(t('toast.paste_unavailable', { field: t('wallet.address') }));
     }
   };
 

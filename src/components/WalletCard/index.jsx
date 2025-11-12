@@ -315,7 +315,7 @@ const WalletCard = ({ onClose, onSendClick, onActivityClick, onAddReferrerClick,
           return attemptGetReferralCode();
         } else {
           // 所有重试都失败了，显示错误提示
-          toast.error(error.message || '获取推荐码失败，请稍后重试');
+          toast.error(error.message || t('toast.get_referral_failed'));
           return false;
         }
       }
@@ -367,7 +367,7 @@ const WalletCard = ({ onClose, onSendClick, onActivityClick, onAddReferrerClick,
     }
     // 关闭弹窗
     onClose();
-    toast.success('已断开钱包连接');
+    toast.success(t('toast.wallet_disconnected'));
   };
 
   // 切换语言展开状态
