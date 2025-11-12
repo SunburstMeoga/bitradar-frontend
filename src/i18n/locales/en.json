@@ -416,7 +416,10 @@
     "withdraw_not_permitted": "Current account has no withdrawal permission, please apply",
     "tx_failed": "Transaction failed",
     "fiat_exchange_request_submitted": "Fiat deposit request submitted",
-    "fiat_withdraw_request_submitted": "Fiat withdrawal request submitted"
+    "fiat_withdraw_request_submitted": "Fiat withdrawal request submitted",
+    "estimated_received": "预估到账",
+    "cny_to_usdt_prefix": "1 CNY =",
+    "usdt_suffix": "USDT"
   },
   "trade": {
     "trade_amount": "Trade Amount",
@@ -523,9 +526,32 @@
     "title": "An Error Occurred",
     "description": "An unexpected error occurred. Please refresh the page and try again.",
     "refresh": "Refresh"
-  }
-  ,
+  },
   "system_maintenance": {
     "banner_text": "Dear users: The system is under maintenance and is expected to end at 19:00 Eastern Standard Time (EST). During this period, betting will be suspended. Thank you for your understanding!"
+  },
+  "toast": {
+    "wallet_connected": "钱包连接并登录成功！",
+    "account_switch_failed": "账户切换登录失败: {{message}}",
+    "login_failed": "登录失败: {{message}}",
+    "wallet_connect_failed": "连接钱包失败: {{message}}",
+    "bet_amount_range": "下注金额需在 {{min}} - {{max}} 之间",
+    "bet_amount_min": "下注金额不能低于最小值 {{min}}",
+    "bet_amount_max": "下注金额不能超过最大值 {{max}}",
+    "wallet_disconnected": "已断开钱包连接",
+    "paste_unavailable": "粘贴功能不可用，请手动输入{{field}}",
+    "get_referral_failed": "获取推荐码失败，请稍后重试",
+    "referral_code_required": "请输入推荐码",
+    "wallet_required": "请先连接钱包",
+    "already_highest_member": "您已经是最高等级会员",
+    "invalid_upgrade_target": "无效的升级目标",
+    "already_silver_member": "您已经是银牌会员",
+    "insufficient_balance": "余额不足，请先充值再进行购买。",
+    "get_member_info_failed": "获取会员信息失败",
+    "luckyusd_claim_success": "成功领取LuckyUSD！",
+    "luckyusd_claim_failed": "领取LuckyUSD失败，请稍后重试",
+    "network_data_load_failed": "加载网体数据失败，请稍后重试",
+    "withdraw_success": "¥{{cny}} → {{usdt}} USDT @ {{rate}}",
+    "captcha_title": "请完成安全验证"
   }
 }

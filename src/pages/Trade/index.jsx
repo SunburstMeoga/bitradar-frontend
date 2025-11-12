@@ -456,7 +456,7 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
       // 2. 进行Web3登录认证
       try {
         await login(result.account);
-        toast.success('钱包连接并登录成功！');
+        toast.success(t('toast.wallet_connected'));
 
         // 3. 获取用户信息、余额与会员数据
         try {
@@ -471,11 +471,11 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
         }
       } catch (authError) {
         console.error('Web3登录失败:', authError);
-        toast.error(`登录失败: ${authError.message}`);
+        toast.error(t('toast.login_failed', { message: authError.message }));
       }
     } catch (error) {
       console.error('连接钱包失败:', error);
-      toast.error(`连接钱包失败: ${error.message}`);
+      toast.error(t('toast.wallet_connect_failed', { message: error.message }));
     } finally {
       setIsConnecting(false);
     }
@@ -537,14 +537,14 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
         const maxAmt = orderConfigs ? parseFloat(orderConfigs.max_bet_amount) : undefined;
         if (Number.isFinite(minAmt) && Number.isFinite(maxAmt)) {
           if (orderData.amount < minAmt || orderData.amount > maxAmt) {
-            toast.error(`下注金额需在 ${minAmt} - ${maxAmt} 之间`);
+            toast.error(t('toast.bet_amount_range', { min: minAmt, max: maxAmt }));
             return;
           }
         } else if (Number.isFinite(minAmt) && orderData.amount < minAmt) {
-          toast.error(`下注金额不能低于最小值 ${minAmt}`);
+          toast.error(t('toast.bet_amount_min', { min: minAmt }));
           return;
         } else if (Number.isFinite(maxAmt) && orderData.amount > maxAmt) {
-          toast.error(`下注金额不能超过最大值 ${maxAmt}`);
+          toast.error(t('toast.bet_amount_max', { max: maxAmt }));
           return;
         }
       } catch (_) {}
@@ -641,7 +641,7 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
           // 标记后续下注需通过安全验证
           setIsCaptchaRequired(true);
           setIsCaptchaOpen(true);
-          toast(t('captcha.title'));
+          toast(t('toast.captcha_title'));
         }
       }
     } catch (error) {
@@ -734,7 +734,7 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
     if (shouldGateByCaptcha) {
       setIsCaptchaOpen(true);
       pendingDirectionRef.current = direction;
-      toast(t('captcha.title'));
+      toast(t('toast.captcha_title'));
       setIsPlacingBet(false);
       return;
     }

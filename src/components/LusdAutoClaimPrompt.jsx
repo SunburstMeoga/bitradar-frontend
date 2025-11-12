@@ -40,12 +40,12 @@ const LusdAutoClaimPrompt = () => {
     setConfirmLoading(true);
     try {
       await lusdService.claimLusd();
-      toast.success(t('account.claim.success'));
+      toast.success(t('toast.luckyusd_claim_success'));
       try { fetchUserBalance && fetchUserBalance(); } catch (_) {}
       setOpen(false);
     } catch (err) {
       console.warn('[LusdAutoClaimPrompt] 领取LuckyUSD失败:', err);
-      toast.error(t('account.claim.failed_retry'));
+      toast.error(t('toast.luckyusd_claim_failed'));
       setOpen(false); // 按“失败后关闭，下次加载再提示”的策略
     } finally {
       setConfirmLoading(false);

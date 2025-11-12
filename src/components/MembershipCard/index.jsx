@@ -126,7 +126,7 @@ const MembershipCard = ({ onBack, onClose, onBuyMembership }) => {
         await Promise.allSettled(promises);
       } catch (error) {
         console.error('获取会员数据失败:', error);
-        toast.error('获取会员信息失败');
+        toast.error(t('toast.get_member_info_failed'));
       } finally {
         setIsDataLoading(false);
       }

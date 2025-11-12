@@ -11,12 +11,12 @@ const ReferralBindModal = ({ isOpen, onClose, walletAddress }) => {
   // 处理绑定推荐关系
   const handleBind = async () => {
     if (!referralCode.trim()) {
-      toast.error('请输入推荐码');
+      toast.error(t('toast.referral_code_required'));
       return;
     }
 
     if (!walletAddress) {
-      toast.error('请先连接钱包');
+      toast.error(t('toast.wallet_required'));
       return;
     }
 

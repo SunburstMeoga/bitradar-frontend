@@ -280,7 +280,7 @@ const NetworkDetails = () => {
     } catch (err) {
       console.error('加载网体数据失败:', err);
       setError(err.message || '加载网体数据失败');
-      toast.error('加载网体数据失败，请稍后重试');
+      toast.error(t('toast.network_data_load_failed'));
     } finally {
       setLoading(false);
     }
