@@ -1157,17 +1157,15 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
                 </div>
 
                 {/* 时间模块：放置在中间 */}
-                <div className="h-[38vw] md:h-10 flex flex-col items-center justify-center">
+                 <div className="h-[38vw] md:h-10 flex flex-col items-center justify-center">
                   {/* <img src={timeIcon} alt="Time" className="w-[16vw] md:w-4 h-[16vw] md:h-4 mb-[4vw] md:mb-1" />
                   <span className="text-white text-size-[15vw] md:text-sm font-semibold">{t('history.duration_1m')}</span> */}
-                  <div className="text-white flex flex-col items-center text-size-[10vw] md:text-sm font-semibold">
+                  <div className="text-white flex flex-col items-center text-size-[8vw] md:text-sm font-semibold">
                     <div>预计可获得奖励</div>
                     <div>1,000</div>
                     </div> 
-                  <div className="text-white flex flex-col items-center text-size-[10vw] md:text-sm font-semibold">
-                    <div>
-                      LuckyUSD领取次数</div>
-                      <div>3</div></div> 
+                  <div className="text-white flex flex-col items-center text-size-[8vw] md:text-sm font-semibold">
+                    LuckyUSD领取次数：3</div> 
                 </div>
 
                 {/* Down按钮 */}
