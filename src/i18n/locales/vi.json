@@ -276,8 +276,8 @@
     },
     "promotion": {
       "intro_1": "Chỉ người dùng nâng cấp lên thành viên (Vàng hoặc Bạc) mới có quyền đào từ giao dịch.",
-      "intro_2": "Lần đào đầu tiên cần kích hoạt. Tiêu chuẩn: đạt lợi nhuận ròng 300 LUSD trước thời điểm quyết toán (00:00 giờ New York / 13:00 giờ Bắc Kinh). Nếu chưa đạt, khoản lỗ sẽ được tích lũy cho đến khi lợi nhuận ròng đạt tiêu chuẩn, sau đó được kích hoạt và nhận thưởng ROCKET tương ứng.",
-      "intro_3": "Sau khi kích hoạt, quyết toán diễn ra hàng ngày; lỗ của ngày trước không tính vào ngày tiếp theo.",
+      "intro_2": "Vào lúc nửa đêm giờ New York, quyết toán ROCKET được thực hiện dựa trên tỷ lệ lợi nhuận ròng của người dùng. Tỷ lệ hiện tại: 300 LUSD lợi nhuận ròng nhận 60 token ROCKET thưởng. Quyết toán diễn ra hàng ngày; lỗ của ngày trước không được tính vào ngày tiếp theo.",
+      "intro_3": "",
       "section1_title": "Thành viên hưởng thưởng đào từ giao dịch theo 6 cấp:",
       "section1_example": "Ví dụ: A → B → C → D → E → F; A, B, C, D, E, F đều là thành viên Vàng. Nếu F nhận 60 ROCKET từ đào giao dịch, A, B, C, D, E mỗi người nhận 10 ROCKET.",
       "section1_silver_note": "Thành viên Bạc hưởng thưởng theo cấp tương tự.",
