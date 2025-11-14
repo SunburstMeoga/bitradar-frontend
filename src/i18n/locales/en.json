@@ -279,8 +279,8 @@
     },
     "promotion": {
       "intro_1": "Only users who upgrade to Membership (Gold or Silver) enjoy trading mining entitlement.",
-      "intro_2": "First mining requires activation. Activation standard: achieve a net profit of 300 LUSD before the settlement time (00:00 New York time / 13:00 Beijing time). If the first attempt does not meet the standard, losses will accumulate until net profit reaches the standard, then activation occurs and corresponding ROCKET token rewards are granted.",
-      "intro_3": "After activation, settlement occurs daily; losses from the previous day do not carry into the next day.",
+      "intro_2": "At midnight New York time, ROCKET settlement is conducted based on users' net profit ratio. Current ratio: 300 LUSD net profit earns 60 ROCKET token rewards. Settlement occurs daily; losses from the previous day do not carry into the next day's calculation.",
+      "intro_3": "",
       "section1_title": "Membership 6-level trading mining rewards:",
       "section1_example": "For example: A → B → C → D → E → F; A, B, C, D, E, F are all Gold members. If F generates 60 ROCKET rewards from trading mining, A, B, C, D, and E each receive 10 ROCKET.",
       "section1_silver_note": "Silver members enjoy the same level rewards.",
