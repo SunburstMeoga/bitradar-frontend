@@ -794,7 +794,7 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
 
                  // 根据订单状态判断是否已结算
                  if (orderData.status === 'PENDING') {
-                   // 订单仍在等待结算
+                   // 订单仍在等待结算，保持临时亏样式
                    console.log('⏳ 订单仍在等待结算:', bet.id);
                    return { ...bet, isWin: false };
                  } else {
@@ -834,17 +834,20 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
           };
 
           // 异步执行订单状态检查
-          checkOrderStatus().then(updatedBet => {
-            if (updatedBet.status === 'settled') {
-              // 如果订单已结算，更新状态
-              setUserBets(prevBets => 
-                prevBets.map(b => b.id === updatedBet.id ? updatedBet : b)
-              );
-            }
-          });
+          if (!bet._finalStatusCheckTriggered) {
+            checkOrderStatus().then(updatedBet => {
+              if (updatedBet.status === 'settled') {
+                // 如果订单已结算，更新状态并停止后续轮询
+                setUserBets(prevBets => 
+                  prevBets.map(b => b.id === updatedBet.id ? updatedBet : b)
+                );
+                try { visibleBetIdsRef.current.delete(updatedBet.id); } catch (_) {}
+              }
+            });
+          }
 
-          // 暂时返回原始bet，等待异步更新
-          return bet;
+          // 到期时立即临时标记为亏，并避免重复触发详情查询
+          return { ...bet, isWin: false, _finalStatusCheckTriggered: true };
         }
 
         return bet;
