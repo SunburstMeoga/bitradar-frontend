@@ -1162,7 +1162,7 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
                   <span className="text-white text-size-[15vw] md:text-sm font-semibold">{t('history.duration_1m')}</span> */}
                   <div className="text-white flex flex-col items-center text-size-[8vw] md:text-sm font-semibold">
                     <div>预计可获得奖励</div>
-                    <div>1,000</div>
+                    <div>1,000Rocket</div>
                     </div> 
                   <div className="text-white flex flex-col items-center text-size-[8vw] md:text-sm font-semibold">
                     LuckyUSD领取次数：3</div> 
