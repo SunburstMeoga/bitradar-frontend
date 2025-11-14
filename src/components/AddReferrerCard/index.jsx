@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import { referralService } from '../../services';
 import { useWeb3Store } from '../../store';
 import toast from 'react-hot-toast';
-import { readFromClipboard } from '../../utils/clipboard';
 
 // 返回按钮SVG组件
 const BackIcon = () => (
@@ -31,31 +30,12 @@ const CloseIcon = () => (
   </svg>
 );
 
-// 粘贴按钮SVG组件
-const PasteIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-    <path 
-      d="M13.333 6h-6c-.736 0-1.333.597-1.333 1.333v6c0 .736.597 1.333 1.333 1.333h6c.736 0 1.333-.597 1.333-1.333v-6c0-.736-.597-1.333-1.333-1.333z" 
-      stroke="rgb(228,231,231)" 
-      strokeWidth="1.5" 
-      strokeLinecap="round" 
-      strokeLinejoin="round"
-    />
-    <path 
-      d="M3.333 10h-.666c-.737 0-1.334-.597-1.334-1.333v-6c0-.736.597-1.333 1.334-1.333h6c.736 0 1.333.597 1.333 1.333v.666" 
-      stroke="rgb(228,231,231)" 
-      strokeWidth="1.5" 
-      strokeLinecap="round" 
-      strokeLinejoin="round"
-    />
-  </svg>
-);
+
 
 const AddReferrerCard = ({ onBack, onClose, onSuccess }) => {
   const { t } = useTranslation();
   const { account } = useWeb3Store();
   const [inviteCode, setInviteCode] = useState('');
-  const [isCodeFocused, setIsCodeFocused] = useState(false);
   const [isValidating, setIsValidating] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [validationResult, setValidationResult] = useState(null);
@@ -95,38 +75,9 @@ const AddReferrerCard = ({ onBack, onClose, onSuccess }) => {
     }
   };
 
-  // 处理粘贴功能
-  const handlePaste = async () => {
-    try {
-      const text = await readFromClipboard();
-      setInviteCode(text || '');
-      setIsCodeFocused(true);
-      if (textareaRef.current) {
-        textareaRef.current.focus();
-      }
-      if (text && text.trim()) {
-        await validateInviteCode(text);
-      }
-    } catch (err) {
-      console.error('粘贴失败原因:', err);
-      toast.error(t('toast.paste_unavailable', { field: t('wallet.referral_code') }));
-    }
-  };
 
-  // 处理邀请码输入区域点击
-  const handleCodeAreaClick = () => {
-    setIsCodeFocused(true);
-    if (textareaRef.current) {
-      textareaRef.current.focus();
-    }
-  };
 
-  // 处理textarea失焦
-  const handleTextareaBlur = () => {
-    if (!inviteCode.trim()) {
-      setIsCodeFocused(false);
-    }
-  };
+
 
   // 处理邀请码输入变化
   const handleCodeChange = async (e) => {
@@ -202,57 +153,31 @@ const AddReferrerCard = ({ onBack, onClose, onSuccess }) => {
           className="w-[290px] md:w-full h-[102px] md:h-24 bg-[#1B1C1C] border border-[#171818] rounded-[20px] md:rounded-2xl relative mb-[20px] md:mb-5"
           style={{ padding: '11px 18px 11px 12px', boxSizing: 'border-box' }}
         >
-          {!isCodeFocused && !inviteCode.trim() ? (
-            /* 提示文案层 */
-            <div
-              className="absolute inset-0 flex items-center justify-center cursor-text"
-              onClick={handleCodeAreaClick}
-              style={{ padding: '11px 18px 11px 12px', boxSizing: 'border-box' }}
-            >
-              <div className="flex items-center gap-2 text-[#e4e7e7] text-[14px] md:text-sm">
-                <span>{t('wallet.type_or')}</span>
-                {/* <div
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handlePaste();
-                  }}
-                  className="w-[80px] md:w-20 h-[36px] md:h-9 rounded-full border border-[rgb(228,231,231)] flex items-center justify-center gap-1 cursor-pointer hover:bg-[rgba(228,231,231,0.1)]"
-                >
-                  <PasteIcon />
-                  <span>{t('wallet.paste')}</span>
-                </div> */}
-                <span>{t('wallet.referral_code_text')}</span>
+          {/* Textarea */}
+          <div className="w-full h-full flex flex-col">
+            <textarea
+              ref={textareaRef}
+              value={inviteCode}
+              onChange={handleCodeChange}
+              className="w-full h-[46px] md:h-12 bg-transparent text-white text-[14px] md:text-sm resize-none outline-none border-none"
+              style={{ caretColor: '#5671FB' }}
+              placeholder="请输入验证码"
+            />
+            {/* 验证状态显示 */}
+            {inviteCode.trim() && (
+              <div className="flex items-center gap-1 mt-1">
+                {isValidating ? (
+                  <span className="text-[10px] text-[#949E9E]">{t('wallet.validating')}</span>
+                ) : validationResult ? (
+                  validationResult.isValid ? (
+                    <span className="text-[10px] text-green-400">✓ {t('wallet.valid_referral_code')}</span>
+                  ) : (
+                    <span className="text-[10px] text-red-400">✗ {validationResult.message}</span>
+                  )
+                ) : null}
               </div>
-            </div>
-          ) : (
-            /* Textarea */
-            <div className="w-full h-full flex flex-col">
-              <textarea
-                ref={textareaRef}
-                value={inviteCode}
-                onChange={handleCodeChange}
-                onFocus={() => setIsCodeFocused(true)}
-                onBlur={handleTextareaBlur}
-                className="w-full h-[46px] md:h-12 bg-transparent text-white text-[14px] md:text-sm resize-none outline-none border-none"
-                style={{ caretColor: '#5671FB' }}
-                placeholder=""
-              />
-              {/* 验证状态显示 */}
-              {inviteCode.trim() && (
-                <div className="flex items-center gap-1 mt-1">
-                  {isValidating ? (
-                    <span className="text-[10px] text-[#949E9E]">{t('wallet.validating')}</span>
-                  ) : validationResult ? (
-                    validationResult.isValid ? (
-                      <span className="text-[10px] text-green-400">✓ {t('wallet.valid_referral_code')}</span>
-                    ) : (
-                      <span className="text-[10px] text-red-400">✗ {validationResult.message}</span>
-                    )
-                  ) : null}
-                </div>
-              )}
-            </div>
-          )}
+            )}
+          </div>
         </div>
 
         {/* 获得奖励说明 */}
