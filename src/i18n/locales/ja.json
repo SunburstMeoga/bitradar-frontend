@@ -73,6 +73,7 @@
     "invite_code_description": "招待関係を紐付け、チームと協力し、最大の報酬を獲得",
     "type_or_paste_referral_code": "推薦コードを入力または貼り付け",
     "referral_code_text": "推薦コード",
+    "invite_code_placeholder": "招待コードを入力してください",
     "invalid_referral_code": "無効な推薦コード",
     "validation_failed": "検証失敗",
     "please_enter_valid_referral_code": "有効な推薦コードを入力してください",

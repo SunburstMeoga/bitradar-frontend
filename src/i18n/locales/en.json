@@ -72,6 +72,7 @@
     "invite_code_description": "Bind your invite relationship, team up with the community, and reap maximum rewards!",
     "type_or_paste_referral_code": "Type or paste referral code",
     "referral_code_text": "Referral Code",
+    "invite_code_placeholder": "Please enter invite code",
     "invalid_referral_code": "Invalid referral code",
     "validation_failed": "Validation failed",
     "please_enter_valid_referral_code": "Please enter a valid referral code",

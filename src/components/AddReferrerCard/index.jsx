@@ -161,7 +161,7 @@ const AddReferrerCard = ({ onBack, onClose, onSuccess }) => {
               onChange={handleCodeChange}
               className="w-full h-[46px] md:h-12 bg-transparent text-white text-[14px] md:text-sm resize-none outline-none border-none"
               style={{ caretColor: '#5671FB' }}
-              placeholder="请输入验证码"
+              placeholder={t('wallet.invite_code_placeholder')}
             />
             {/* 验证状态显示 */}
             {inviteCode.trim() && (
