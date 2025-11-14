@@ -72,6 +72,7 @@
     "invite_code_description": "초대 관계를 바인딩하고 팀과 협력하여 최대 보상 획득",
     "type_or_paste_referral_code": "추천 코드를 입력 또는 붙여넣기",
     "referral_code_text": "추천 코드",
+    "invite_code_placeholder": "초대 코드를 입력하세요",
     "invalid_referral_code": "유효하지 않은 추천 코드",
     "validation_failed": "검증 실패",
     "please_enter_valid_referral_code": "유효한 추천 코드를 입력하세요",

@@ -72,6 +72,7 @@
     "invite_code_description": "Vincule o relacionamento de convite e colabore com a equipe para maximizar as recompensas",
     "type_or_paste_referral_code": "Digite ou cole o código de indicação",
     "referral_code_text": "Código de indicação",
+    "invite_code_placeholder": "Por favor, insira o código de convite",
     "invalid_referral_code": "Código de indicação inválido",
     "validation_failed": "Validação falhou",
     "please_enter_valid_referral_code": "Insira um código de indicação válido",

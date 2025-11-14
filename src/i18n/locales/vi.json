@@ -72,6 +72,7 @@
     "invite_code_description": "Liên kết quan hệ mời và hợp tác cùng đội để tối đa hóa phần thưởng",
     "type_or_paste_referral_code": "Nhập hoặc dán mã giới thiệu",
     "referral_code_text": "Mã giới thiệu",
+    "invite_code_placeholder": "Vui lòng nhập mã mời",
     "invalid_referral_code": "Mã giới thiệu không hợp lệ",
     "validation_failed": "Xác thực thất bại",
     "please_enter_valid_referral_code": "Vui lòng nhập mã giới thiệu hợp lệ",
