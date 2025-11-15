@@ -63,6 +63,22 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
   const [estimatedSelfReward, setEstimatedSelfReward] = useState(null);
   const [claimCountToday, setClaimCountToday] = useState(null);
 
+  // 刷新自身奖励进度（订单结算后需要再次获取最新数据）
+  const refreshSelfRewardProgress = useCallback(async () => {
+    if (!isAuthenticated) return;
+    try {
+      const res = await networkService.getSelfRewardProgress();
+      if (res.success && res.data) {
+        try {
+          setEstimatedSelfReward(res.data.estimated_self_reward);
+          setClaimCountToday(res.data.claim_count_today);
+        } catch (_) {}
+      }
+    } catch (err) {
+      console.warn('⚠️ 获取自身奖励进度失败:', err);
+    }
+  }, [isAuthenticated]);
+
   // 计算PriceChart的动态高度：填满可视区剩余高度（基于真实渲染尺寸）
   const calculateChartHeight = () => {
     // 若 mainAreaHeight 尚未就绪，给出合理的默认值以避免闪烁
@@ -176,13 +192,17 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
           console.error('❌ 查询订单详情失败:', id, error);
         }
       }
-      if (hasAnySettled && typeof fetchBalance === 'function') {
-        await fetchBalance();
+      if (hasAnySettled) {
+        if (typeof fetchBalance === 'function') {
+          await fetchBalance();
+        }
+        // 订单结算后，刷新自身奖励进度
+        await refreshSelfRewardProgress();
       }
     } catch (error) {
       console.error('❌ 轮询订单状态失败:', error);
     }
-  }, [isAuthenticated, fetchBalance]);
+  }, [isAuthenticated, fetchBalance, refreshSelfRewardProgress]);
 
   // 启动轮询：每5秒检查一次订单状态，若有结算则刷新余额
   useEffect(() => {
@@ -843,6 +863,17 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
               setUserBets(prevBets => 
                 prevBets.map(b => b.id === updatedBet.id ? updatedBet : b)
               );
+              // 订单结算后刷新自身奖励进度
+              networkService.getSelfRewardProgress()
+                .then(res => {
+                  if (res && res.success && res.data) {
+                    try {
+                      setEstimatedSelfReward(res.data.estimated_self_reward);
+                      setClaimCountToday(res.data.claim_count_today);
+                    } catch (_) {}
+                  }
+                })
+                .catch(err => console.warn('⚠️ 获取自身奖励进度失败:', err));
             }
           });
 
@@ -948,24 +979,10 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
     }
   }, [balance, selectedToken]); // 只依赖余额数据和选中的币种
 
-  // 获取自身奖励进度（estimated_self_reward / claim_count_today）
+  // 首次进入或认证后，获取自身奖励进度（estimated_self_reward / claim_count_today）
   useEffect(() => {
-    const fetchSelfRewardProgress = async () => {
-      if (!isAuthenticated) return;
-      try {
-        const res = await networkService.getSelfRewardProgress();
-        if (res.success && res.data) {
-          try {
-            setEstimatedSelfReward(res.data.estimated_self_reward);
-            setClaimCountToday(res.data.claim_count_today);
-          } catch (_) {}
-        }
-      } catch (err) {
-        console.warn('⚠️ 获取自身奖励进度失败:', err);
-      }
-    };
-    fetchSelfRewardProgress();
-  }, [isAuthenticated]);
+    refreshSelfRewardProgress();
+  }, [refreshSelfRewardProgress]);
 
   // 接收图表可见下注点集合，但不再用它覆盖完整 userBets
   // 仅用于后续可能的分析/调试，保持完整历史以避免开盘点消失
@@ -1184,7 +1201,7 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
                   <span className="text-white text-size-[15vw] md:text-sm font-semibold">{t('history.duration_1m')}</span> */}
                   <div className="text-white flex flex-col items-center text-size-[8vw] md:text-size-[2vw] font-semibold">
                     <div>{t('trade.estimated_reward')}</div>
-                    <div>{formatNumber(safeParseFloat(estimatedSelfReward || '0', 0), 2)}</div>
+                    <div>{formatNumber(safeParseFloat(estimatedSelfReward || '0', 0), 2)}ROCKET</div>
                   </div>
                   <div className="text-white flex flex-col items-center text-size-[8vw] md:text-size-[2vw] font-semibold">
                     {t('trade.luckyusd_claim_count')}: {claimCountToday ?? '--'}
