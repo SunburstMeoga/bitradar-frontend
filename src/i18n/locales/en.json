@@ -429,7 +429,9 @@
     "select_token": "Select Token",
     "price_chart_area": "Price Chart Area",
     "binary_options": "Binary Options",
-    "previous_order_unfinished": "The previous order has not ended yet, betting is temporarily unavailable"
+    "previous_order_unfinished": "The previous order has not ended yet, betting is temporarily unavailable",
+    "estimated_reward": "Estimated Reward",
+    "luckyusd_claim_count": "LuckyUSD Claim Count"
   },
   "token_history": {
     "title": "Token History",

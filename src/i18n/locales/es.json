@@ -437,7 +437,9 @@
     "select_token": "Seleccionar token",
     "price_chart_area": "Área del gráfico de precio",
     "binary_options": "Opciones binarias",
-    "previous_order_unfinished": "La orden anterior aún no ha finalizado, no se puede apostar por ahora"
+    "previous_order_unfinished": "La orden anterior aún no ha finalizado, no se puede apostar por ahora",
+    "estimated_reward": "Recompensa estimada",
+    "luckyusd_claim_count": "Conteo de reclamos de LuckyUSD"
   },
   "token_history": {
     "title": "Historial de tokens",

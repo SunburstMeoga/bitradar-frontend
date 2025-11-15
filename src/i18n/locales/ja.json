@@ -429,7 +429,9 @@
     "select_token": "トークンを選択",
     "price_chart_area": "価格チャートエリア",
     "binary_options": "二項オプション",
-    "previous_order_unfinished": "前回の注文がまだ終了していないため、現在はベットできません"
+    "previous_order_unfinished": "前回の注文がまだ終了していないため、現在はベットできません",
+    "estimated_reward": "予想報酬",
+    "luckyusd_claim_count": "LuckyUSD 受け取り回数"
   },
   "token_history": {
     "title": "トークン履歴",

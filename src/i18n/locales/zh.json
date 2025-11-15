@@ -430,7 +430,9 @@
     "select_token": "选择币种",
     "price_chart_area": "价格图表区域",
     "binary_options": "二元期权",
-    "previous_order_unfinished": "上一笔订单暂未结束，暂时无法下注"
+    "previous_order_unfinished": "上一笔订单暂未结束，暂时无法下注",
+    "estimated_reward": "预计可获得奖励",
+    "luckyusd_claim_count": "LuckyUSD领取次数"
   },
   "token_history": {
     "title": "代币记录",

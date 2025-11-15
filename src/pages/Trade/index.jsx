@@ -5,7 +5,7 @@ import useViewportHeight from '../../hooks/useViewportHeight';
 import { useApiCall } from '../../hooks/useApiCall';
 import { useAuthStore, useUserStore, useWeb3Store } from '../../store';
 import { safeParseFloat, formatNumber } from '../../utils/format';
-import { orderService, tokenService } from '../../services';
+import { orderService, tokenService, networkService } from '../../services';
 import { connectWallet } from '../../utils/web3';
 import Modal from '../../components/Modal';
 import CaptchaModal from '../../components/Captcha/CaptchaModal.jsx';
@@ -59,6 +59,9 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
   const [isCaptchaRequired, setIsCaptchaRequired] = useState(false);
   const [isCaptchaVerified, setIsCaptchaVerified] = useState(false);
   const [isPostSuccessCooldown, setIsPostSuccessCooldown] = useState(false);
+  // 自身奖励进度
+  const [estimatedSelfReward, setEstimatedSelfReward] = useState(null);
+  const [claimCountToday, setClaimCountToday] = useState(null);
 
   // 计算PriceChart的动态高度：填满可视区剩余高度（基于真实渲染尺寸）
   const calculateChartHeight = () => {
@@ -949,6 +952,25 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
     }
   }, [balance, selectedToken]); // 只依赖余额数据和选中的币种
 
+  // 获取自身奖励进度（estimated_self_reward / claim_count_today）
+  useEffect(() => {
+    const fetchSelfRewardProgress = async () => {
+      if (!isAuthenticated) return;
+      try {
+        const res = await networkService.getSelfRewardProgress();
+        if (res.success && res.data) {
+          try {
+            setEstimatedSelfReward(res.data.estimated_self_reward);
+            setClaimCountToday(res.data.claim_count_today);
+          } catch (_) {}
+        }
+      } catch (err) {
+        console.warn('⚠️ 获取自身奖励进度失败:', err);
+      }
+    };
+    fetchSelfRewardProgress();
+  }, [isAuthenticated]);
+
   // 接收图表可见下注点集合，但不再用它覆盖完整 userBets
   // 仅用于后续可能的分析/调试，保持完整历史以避免开盘点消失
   const handleVisibleUserBetsChange = useCallback((visibleBets) => {
@@ -1165,11 +1187,12 @@ const { balance, profile, fetchBalance, fetchProfile, fetchMembershipInfo, fetch
                   {/* <img src={timeIcon} alt="Time" className="w-[16vw] md:w-4 h-[16vw] md:h-4 mb-[4vw] md:mb-1" />
                   <span className="text-white text-size-[15vw] md:text-sm font-semibold">{t('history.duration_1m')}</span> */}
                   <div className="text-white flex flex-col items-center text-size-[8vw] md:text-size-[2vw] font-semibold">
-                    <div>预计可获得奖励</div>
-                    <div>1,000Rocket</div>
-                    </div> 
+                    <div>{t('trade.estimated_reward')}</div>
+                    <div>{formatNumber(safeParseFloat(estimatedSelfReward || '0', 0), 2)}</div>
+                  </div>
                   <div className="text-white flex flex-col items-center text-size-[8vw] md:text-size-[2vw] font-semibold">
-                    LuckyUSD领取次数：3</div> 
+                    {t('trade.luckyusd_claim_count')}: {claimCountToday ?? '--'}
+                  </div>
                 </div>
 
                 {/* Down按钮 */}

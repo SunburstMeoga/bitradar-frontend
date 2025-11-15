@@ -429,7 +429,9 @@
     "select_token": "Chọn token",
     "price_chart_area": "Khu vực biểu đồ giá",
     "binary_options": "Quyền chọn nhị phân",
-    "previous_order_unfinished": "Đơn trước chưa kết thúc, hiện chưa thể đặt cược"
+    "previous_order_unfinished": "Đơn trước chưa kết thúc, hiện chưa thể đặt cược",
+    "estimated_reward": "Phần thưởng ước tính",
+    "luckyusd_claim_count": "Số lần nhận LuckyUSD"
   },
   "token_history": {
     "title": "Lịch sử token",
