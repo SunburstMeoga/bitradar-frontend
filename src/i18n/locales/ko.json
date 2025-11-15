@@ -426,7 +426,9 @@
     "select_token": "토큰 선택",
     "price_chart_area": "가격 차트 영역",
     "binary_options": "이진 옵션",
-    "previous_order_unfinished": "이전 주문이 아직 종료되지 않아, 현재 베팅할 수 없습니다"
+    "previous_order_unfinished": "이전 주문이 아직 종료되지 않아, 현재 베팅할 수 없습니다",
+    "estimated_reward": "예상 보상",
+    "luckyusd_claim_count": "LuckyUSD 수령 횟수"
   },
   "token_history": {
     "title": "토큰 기록",

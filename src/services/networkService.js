@@ -369,6 +369,36 @@ class NetworkService extends ApiService {
       };
     }
   }
+
+  /**
+   * 获取自身奖励进度（需要认证）
+   * GET /referral-activity/self-reward-progress
+   * @returns {Promise<Object>} { estimated_self_reward, claim_count_today, ... }
+   */
+  async getSelfRewardProgress() {
+    try {
+      console.log('📈 获取自身奖励进度...');
+      const response = await this.get('/referral-activity/self-reward-progress');
+
+      // 兼容标准 success/data 结构
+      if (response?.success && response?.data) {
+        const data = response.data;
+        console.log('✅ 自身奖励进度获取成功:', data);
+        return {
+          success: true,
+          data
+        };
+      }
+
+      throw new Error(response?.message || '获取自身奖励进度失败');
+    } catch (error) {
+      console.error('❌ 获取自身奖励进度失败:', error);
+      return {
+        success: false,
+        message: error.message || '获取自身奖励进度失败'
+      };
+    }
+  }
 }
 
 export default new NetworkService();
